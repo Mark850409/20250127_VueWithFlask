@@ -393,7 +393,17 @@ export default {
     async resetToCommit(hash) {
       const result = await Swal.fire({
         title: '確認回退版本',
-        text: '這將會丟失之後的所有更改！確定要繼續嗎？',
+        html: `
+          <div class="text-left">
+            <p class="mb-2">此操作將會：</p>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>丟失該版本之後的所有提交記錄</li>
+              <li>刪除所有未追蹤的文件</li>
+              <li>將工作目錄恢復到該版本的狀態</li>
+            </ul>
+            <p class="mt-4 text-red-400">此操作無法撤銷，確定要繼續嗎？</p>
+          </div>
+        `,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
@@ -420,6 +430,7 @@ export default {
         await Swal.fire({
           icon: 'success',
           title: '回退成功',
+          text: '已恢復到選定的版本狀態',
           timer: 1500,
           showConfirmButton: false
         });

@@ -105,7 +105,29 @@ class GitOperations:
             raise Exception("倉庫未初始化")
         
         try:
+            # 先執行reset
             self.repo.git.reset('--' + mode, commit_hash)
+            
+            # 清理未追蹤的文件
+            if mode == 'hard':
+                # 獲取所有未追蹤的文件
+                untracked_files = self.repo.untracked_files
+                # 刪除未追蹤的文件
+                for file_path in untracked_files:
+                    full_path = os.path.join(self.repo_path, file_path)
+                    if os.path.exists(full_path):
+                        os.remove(full_path)
+                
+                # 清理空目錄
+                for root, dirs, files in os.walk(self.repo_path, topdown=False):
+                    for name in dirs:
+                        try:
+                            dir_path = os.path.join(root, name)
+                            if not os.listdir(dir_path):  # 如果目錄為空
+                                os.rmdir(dir_path)
+                        except:
+                            pass
+            
             return f"成功回退到提交 {commit_hash}"
         except git.exc.GitCommandError as e:
             raise Exception(f"版本回退失敗：{str(e)}") 
