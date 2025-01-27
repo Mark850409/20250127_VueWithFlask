@@ -209,18 +209,42 @@
 
     <!-- 點餐推薦系統 -->
     <div v-else>
-      <nav class="bg-white/80 backdrop-blur-md shadow-lg fixed w-full z-50 transition-all duration-300">
+      <nav class="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
         <div class="container mx-auto px-4">
-          <div class="flex justify-between items-center h-16">
-            <div class="flex items-center space-x-2">
-              <img src="@/assets/food/food-logo.png" alt="Logo" class="w-8 h-8 object-contain">
-              <span class="text-xl font-bold bg-gradient-to-r from-red-500 to-orange-500 
-                           bg-clip-text text-transparent">美食推薦</span>
+          <div class="flex items-center justify-between h-16">
+            <!-- Logo -->
+            <router-link to="/" class="flex items-center space-x-3">
+              <img src="https://api.dicebear.com/7.x/bottts/svg?seed=food" 
+                   alt="Logo" class="h-10 w-10">
+              <span class="text-lg font-bold text-gray-800">
+                基於文字探勘與情感分析的點餐推薦系統
+              </span>
+            </router-link>
+
+            <!-- Navigation Links -->
+            <div class="flex-1 flex justify-center">
+              <div class="flex items-center space-x-8">
+                <router-link to="/" class="flex items-center">
+                  <i class="fas fa-home mr-1"></i>
+                  首頁
+                </router-link>
+                <router-link to="/features" class="flex items-center">
+                  <i class="fas fa-star mr-1"></i>
+                  平台特色
+                </router-link>
+                <router-link to="/learning" class="flex items-center">
+                  <i class="fas fa-book mr-1"></i>
+                  學習中心
+                </router-link>
+                <router-link to="/pricing" class="flex items-center">
+                  <i class="fas fa-tag mr-1"></i>
+                  定價方案
+                </router-link>
+              </div>
             </div>
-            <div class="flex items-center space-x-4">
-              <a href="#home" class="nav-link">首頁</a>
-              <a href="#recommend" class="nav-link">推薦</a>
-              <a href="#about" class="nav-link">關於我們</a>
+
+            <!-- Right Side -->
+            <div class="flex items-center">
               <button @click="toggleView" 
                       class="ml-4 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 
                              text-white rounded-lg hover:from-blue-600 hover:to-blue-700 
@@ -233,20 +257,31 @@
         </div>
       </nav>
 
-      <FoodRecommendation />
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
+
+      <!-- 返回首頁按鈕 - 只在非首頁路由顯示 -->
+      <div v-if="$route.path !== '/'" 
+           class="fixed bottom-8 right-8 z-50">
+        <router-link to="/" 
+          class="flex items-center px-4 py-2 bg-gray-800 text-white rounded-lg 
+                 hover:bg-gray-700 transition duration-300 shadow-lg">
+          <i class="fas fa-home mr-2"></i>
+          返回首頁
+        </router-link>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import Swal from 'sweetalert2'
-import FoodRecommendation from './components/food/FoodRecommendation.vue'
 
 export default {
   name: 'App',
-  components: {
-    FoodRecommendation
-  },
   data() {
     return {
       repoPath: '',
@@ -620,4 +655,19 @@ export default {
     }
   }
 }
-</script> 
+</script>
+
+<style>
+/* 頁面切換動畫 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 其他樣式... */
+</style> 
