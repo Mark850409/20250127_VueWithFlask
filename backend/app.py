@@ -139,6 +139,9 @@ def push():
         return jsonify({'message': '請先初始化倉庫'}), 400
     
     data = request.json
+    if not data:
+        return jsonify({'message': '無效的請求數據'}), 400
+    
     remote = data.get('remote', 'origin')
     branch = data.get('branch', 'master')
     
@@ -146,7 +149,13 @@ def push():
         git_ops.push(remote, branch)
         return jsonify({'message': f'成功推送到遠程倉庫 {remote}/{branch}'})
     except Exception as e:
-        return jsonify({'message': f'推送失敗: {str(e)}'}), 500
+        error_message = str(e)
+        if "認證" in error_message or "權限" in error_message:
+            return jsonify({'message': f'推送失敗: {error_message}. 請確保已配置正確的認證信息'}), 401
+        elif "拒絕" in error_message:
+            return jsonify({'message': f'推送失敗: {error_message}. 請先拉取並合併遠程更改'}), 409
+        else:
+            return jsonify({'message': f'推送失敗: {error_message}'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True) 

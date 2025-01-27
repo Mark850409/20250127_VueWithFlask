@@ -287,7 +287,14 @@ export default {
     async pushToRemote() {
       try {
         const response = await fetch('http://localhost:5000/push', {
-          method: 'POST'
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            remote: this.remoteConfig.name || 'origin',
+            branch: 'master'
+          })
         });
         const data = await response.json();
         this.output = data.message;

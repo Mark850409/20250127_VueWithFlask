@@ -69,5 +69,19 @@ class GitOperations:
         if not self.repo:
             raise Exception("倉庫未初始化")
         
-        remote = self.repo.remote(name=remote_name)
-        remote.push(refspec=f'refs/heads/{branch}:refs/heads/{branch}') 
+        try:
+            remote = self.repo.remote(name=remote_name)
+            if not remote:
+                raise Exception(f"遠程倉庫 {remote_name} 不存在")
+            
+            if not self.repo.heads:
+                raise Exception("沒有可推送的提交")
+            
+            remote.push(refspec=f'refs/heads/{branch}:refs/heads/{branch}')
+        except git.exc.GitCommandError as e:
+            if "Permission denied" in str(e):
+                raise Exception("推送被拒絕：權限不足，請檢查認證信息")
+            elif "rejected" in str(e):
+                raise Exception("推送被拒絕：請先拉取最新更改")
+            else:
+                raise Exception(f"推送失敗：{str(e)}") 

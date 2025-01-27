@@ -145,7 +145,23 @@ git-helper/
 1. 使用前確保已安裝Git
 2. 需要正確配置Git用戶信息
 3. 推送到遠程倉庫時需要適當的權限
-4. 建議在操作前備份重要數據
+4. 使用HTTPS推送時需要配置個人訪問令牌（Personal Access Token）
+5. 使用SSH推送時需要配置SSH密鑰
+
+### 配置遠程倉庫認證
+
+#### 使用HTTPS（推薦新手使用）：
+1. 在GitHub設置中生成個人訪問令牌（Personal Access Token）
+2. 使用令牌作為密碼進行認證
+3. 可以使用Git憑證管理器保存認證信息
+
+#### 使用SSH：
+1. 生成SSH密鑰對：
+   ```bash
+   ssh-keygen -t ed25519 -C "your_email@example.com"
+   ```
+2. 將公鑰添加到GitHub賬戶
+3. 確保使用SSH URL作為遠程倉庫地址
 
 ## 貢獻指南
 
