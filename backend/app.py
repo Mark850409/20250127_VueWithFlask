@@ -187,23 +187,6 @@ def reset_commit():
     except Exception as e:
         return jsonify({'message': f'版本回退失敗: {str(e)}'}), 500
 
-@app.route('/commit/delete', methods=['POST'])
-def delete_commit():
-    if not git_ops:
-        return jsonify({'message': '請先初始化倉庫'}), 400
-    
-    data = request.json
-    commit_hash = data.get('hash')
-    
-    if not commit_hash:
-        return jsonify({'message': '請提供提交哈希值'}), 400
-    
-    try:
-        message = git_ops.delete_commit(commit_hash)
-        return jsonify({'message': message})
-    except Exception as e:
-        return jsonify({'message': f'刪除提交失敗: {str(e)}'}), 500
-
 @app.route('/pull', methods=['POST'])
 def pull():
     if not git_ops:

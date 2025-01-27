@@ -63,9 +63,9 @@
         <!-- 狀態輸出 -->
         <div class="card md:col-span-2 lg:col-span-1">
           <h2 class="text-xl font-semibold mb-4 text-blue-400">狀態與輸出</h2>
-          <pre class="bg-gray-900 p-4 rounded-lg overflow-auto max-h-[300px] text-sm font-mono">
-            {{ output || '等待操作...' }}
-          </pre>
+          <div class="output-container">
+            <pre class="output-content" v-html="formattedOutput"></pre>
+          </div>
         </div>
       </div>
     </main>
@@ -185,14 +185,6 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                             d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                  </button>
-                  <button @click="deleteCommit(commit.hash)"
-                          class="p-2 rounded-full hover:bg-yellow-600 transition-colors"
-                          title="刪除此版本">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
                 </td>
@@ -534,107 +526,6 @@ export default {
           text: error.message
         });
       }
-    },
-    async deleteCommit(hash) {
-      const result = await Swal.fire({
-        title: '確認刪除提交',
-        html: `
-          <div class="text-left">
-            <p class="mb-2">警告！此操作將會：</p>
-            <ul class="list-disc pl-5 space-y-1">
-              <li class="text-red-400">永久刪除該提交記錄</li>
-              <li>重寫之後的所有提交歷史</li>
-              <li>可能導致與遠程倉庫不同步</li>
-              <li>可能需要強制推送到遠程倉庫</li>
-            </ul>
-            <p class="mt-4 text-red-400 font-bold">此操作無法撤銷且可能破壞倉庫，確定要繼續嗎？</p>
-          </div>
-        `,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: '是的，刪除！',
-        cancelButtonText: '取消',
-        input: 'checkbox',
-        inputValue: 0,
-        inputPlaceholder: '我了解這是危險操作，並已備份重要數據',
-        inputValidator: (result) => {
-          return new Promise((resolve) => {
-            if (result) {
-              resolve()
-            } else {
-              resolve('請確認您了解操作風險')
-            }
-          })
-        }
-      });
-
-      if (!result.isConfirmed) return;
-      
-      try {
-        const response = await fetch('http://localhost:5000/commit/delete', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ hash })
-        });
-        
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.message);
-        }
-        
-        const data = await response.json();
-        this.output = data.message;
-        this.showCommitHistoryModal = false;
-        
-        // 詢問是否要強制推送到遠程
-        const pushResult = await Swal.fire({
-          title: '更新遠程倉庫',
-          text: '是否要強制推送這些更改到遠程倉庫？這將覆蓋遠程的提交歷史。',
-          icon: 'question',
-          showCancelButton: true,
-          confirmButtonText: '是的，強制推送',
-          cancelButtonText: '暫時不要'
-        });
-        
-        if (pushResult.isConfirmed) {
-          const pushResponse = await fetch('http://localhost:5000/push', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              remote: this.remoteConfig.name || 'origin',
-              branch: 'master',
-              force: true
-            })
-          });
-          const pushData = await pushResponse.json();
-          if (!pushResponse.ok) {
-            throw new Error(pushData.message);
-          }
-        }
-        
-        // 重新獲取提交歷史和狀態
-        await this.getCommitHistory();
-        await this.checkStatus();
-        await Swal.fire({
-          icon: 'success',
-          title: '刪除成功',
-          text: '已刪除指定的提交記錄',
-          timer: 1500,
-          showConfirmButton: false
-        });
-      } catch (error) {
-        await Swal.fire({
-          icon: 'error',
-          title: '操作失敗',
-          text: error.message
-        });
-      }
     }
   },
   watch: {
@@ -642,6 +533,42 @@ export default {
       if (newVal) {
         this.getCommitHistory();
       }
+    }
+  },
+  computed: {
+    formattedOutput() {
+      if (!this.output) {
+        return '<span class="text-gray-500">等待操作...</span>';
+      }
+      
+      // 將git status的輸出進行格式化
+      return this.output
+        .split('\n')
+        .map(line => {
+          if (line.includes('modified:')) {
+            return line.replace('modified:', '<span class="text-yellow-400">modified:</span>');
+          }
+          if (line.includes('new file:')) {
+            return line.replace('new file:', '<span class="text-green-400">new file:</span>');
+          }
+          if (line.includes('deleted:')) {
+            return line.replace('deleted:', '<span class="text-red-400">deleted:</span>');
+          }
+          if (line.includes('On branch')) {
+            return line.replace('On branch', '<span class="text-blue-400">On branch</span>');
+          }
+          if (line.includes('Changes to be committed:')) {
+            return '<span class="text-green-400">' + line + '</span>';
+          }
+          if (line.includes('Changes not staged for commit:')) {
+            return '<span class="text-yellow-400">' + line + '</span>';
+          }
+          if (line.includes('Untracked files:')) {
+            return '<span class="text-gray-400">' + line + '</span>';
+          }
+          return line;
+        })
+        .join('\n');
     }
   }
 }

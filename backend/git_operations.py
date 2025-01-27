@@ -137,57 +137,6 @@ class GitOperations:
         except git.exc.GitCommandError as e:
             raise Exception(f"版本回退失敗：{str(e)}")
 
-    def delete_commit(self, commit_hash):
-        if not self.repo:
-            raise Exception("倉庫未初始化")
-        
-        try:
-            # 獲取所有提交
-            commits = list(self.repo.iter_commits())
-            target_commit = None
-            commits_to_cherry_pick = []
-            
-            # 找到目標提交和之後的提交
-            found_target = False
-            for commit in commits:
-                if commit.hexsha.startswith(commit_hash):
-                    found_target = True
-                    target_commit = commit
-                    continue
-                if found_target:
-                    commits_to_cherry_pick.insert(0, commit)
-            
-            if not target_commit:
-                raise Exception("找不到指定的提交")
-            
-            # 檢查是否為第一個提交
-            if not target_commit.parents:
-                raise Exception("無法刪除第一個提交，這可能會破壞倉庫。如果確實需要，請考慮重新初始化倉庫。")
-            
-            # 重置到目標提交的父提交
-            parent = target_commit.parents[0]
-            self.repo.git.reset('--hard', parent.hexsha)
-            
-            # 重新應用之後的提交
-            for commit in commits_to_cherry_pick:
-                try:
-                    self.repo.git.cherry_pick(commit.hexsha)
-                except git.exc.GitCommandError as e:
-                    # 如果cherry-pick失敗，中止操作並還原
-                    self.repo.git.cherry_pick('--abort')
-                    # 嘗試還原到原始狀態
-                    try:
-                        self.repo.git.reset('--hard', target_commit.hexsha)
-                    except:
-                        pass
-                    raise Exception(f"重新應用提交時失敗：{str(e)}")
-            
-            return f"成功刪除提交 {commit_hash}"
-        except git.exc.GitCommandError as e:
-            raise Exception(f"刪除提交失敗：{str(e)}")
-        except Exception as e:
-            raise Exception(f"刪除提交失敗：{str(e)}")
-
     def pull(self, remote_name='origin', branch='master'):
         if not self.repo:
             raise Exception("倉庫未初始化")

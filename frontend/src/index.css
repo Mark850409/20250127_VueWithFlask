@@ -104,4 +104,56 @@
 
 .commit-message-body {
   @apply text-gray-300 whitespace-pre-wrap;
+}
+
+/* 輸出區域樣式 */
+.output-container {
+  @apply bg-gray-900 p-4 rounded-lg overflow-auto max-h-[300px];
+}
+
+.output-content {
+  @apply text-sm font-mono text-gray-200 whitespace-pre-wrap;
+}
+
+/* 自定義滾動條樣式 - 全局 */
+::-webkit-scrollbar {
+  @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-800 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-600 rounded-full hover:bg-gray-500 transition-colors;
+}
+
+/* 輸出區域特定的滾動條樣式 */
+.output-container::-webkit-scrollbar {
+  @apply w-2;
+}
+
+.output-container::-webkit-scrollbar-track {
+  @apply bg-gray-900 rounded-full;
+}
+
+.output-container::-webkit-scrollbar-thumb {
+  @apply bg-gray-700 rounded-full hover:bg-gray-600 transition-colors;
+}
+
+/* 美化狀態信息 */
+.status-message {
+  @apply mb-2 p-2 rounded;
+}
+
+.status-success {
+  @apply bg-green-900/50 text-green-400;
+}
+
+.status-warning {
+  @apply bg-yellow-900/50 text-yellow-400;
+}
+
+.status-error {
+  @apply bg-red-900/50 text-red-400;
 } 
