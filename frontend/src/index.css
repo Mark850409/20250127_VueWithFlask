@@ -156,4 +156,24 @@
 
 .status-error {
   @apply bg-red-900/50 text-red-400;
+}
+
+/* 導航欄連結樣式 */
+.nav-link {
+  @apply relative text-gray-600 hover:text-gray-800 py-2;
+}
+
+.nav-link::after {
+  content: '';
+  @apply absolute left-0 bottom-0 w-0 h-0.5 bg-gradient-to-r from-red-500 to-orange-500 
+         transition-all duration-300;
+}
+
+.nav-link:hover::after {
+  @apply w-full;
+}
+
+/* 頁腳漸變背景 */
+.footer-gradient {
+  background: linear-gradient(180deg, rgba(31,41,55,0) 0%, rgba(31,41,55,1) 100%);
 } 
