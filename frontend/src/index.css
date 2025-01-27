@@ -56,4 +56,52 @@
 
 .swal2-cancel {
   @apply bg-red-600 hover:bg-red-700 !important;
+}
+
+/* 提交訊息文本框樣式 */
+.commit-message-textarea {
+  @apply bg-gray-700 border-gray-600 text-gray-100 font-mono !important;
+  line-height: 1.5 !important;
+}
+
+/* 提交歷史表格樣式 */
+.commit-history-table td {
+  vertical-align: top;
+}
+
+.commit-message-cell {
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-width: 50%;
+}
+
+/* 調整提交歷史模態框寬度 */
+.commit-history-modal {
+  @apply w-[90vw] max-w-[1200px] !important;
+}
+
+/* 自定義滾動條樣式 */
+.commit-history-modal ::-webkit-scrollbar {
+  @apply w-2;
+}
+
+.commit-history-modal ::-webkit-scrollbar-track {
+  @apply bg-gray-800 rounded-full;
+}
+
+.commit-history-modal ::-webkit-scrollbar-thumb {
+  @apply bg-gray-600 rounded-full hover:bg-gray-500 transition-colors;
+}
+
+/* 提交信息樣式 */
+.commit-message {
+  @apply text-sm leading-relaxed;
+}
+
+.commit-message-title {
+  @apply text-blue-400 font-semibold mb-1;
+}
+
+.commit-message-body {
+  @apply text-gray-300 whitespace-pre-wrap;
 } 

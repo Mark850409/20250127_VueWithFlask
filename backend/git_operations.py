@@ -99,7 +99,7 @@ class GitOperations:
         for commit in self.repo.iter_commits():
             commits.append({
                 'hash': commit.hexsha[:7],
-                'message': commit.message,
+                'message': commit.message.replace('\n', '\n'),  # 保留原始換行
                 'author': f"{commit.author.name} <{commit.author.email}>",
                 'date': commit.committed_datetime.strftime('%Y-%m-%d %H:%M:%S')
             })

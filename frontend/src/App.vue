@@ -149,33 +149,51 @@
     <!-- 添加提交歷史模態框 -->
     <div v-if="showCommitHistoryModal" 
          class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div class="card w-[800px] max-h-[80vh] overflow-hidden flex flex-col">
+      <div class="card commit-history-modal max-h-[80vh] overflow-hidden flex flex-col">
         <h3 class="text-xl font-semibold mb-4 text-blue-400">提交歷史</h3>
         <div class="overflow-auto flex-1">
-          <table class="w-full text-left">
+          <table class="w-full text-left border-separate border-spacing-0">
             <thead class="bg-gray-700">
               <tr>
-                <th class="p-3">提交哈希</th>
-                <th class="p-3">提交信息</th>
-                <th class="p-3">作者</th>
-                <th class="p-3">日期</th>
-                <th class="p-3">操作</th>
+                <th class="sticky top-0 z-10 bg-gray-700 p-3 whitespace-nowrap w-24">提交哈希</th>
+                <th class="sticky top-0 z-10 bg-gray-700 p-3 whitespace-nowrap w-[50%]">提交信息</th>
+                <th class="sticky top-0 z-10 bg-gray-700 p-3 whitespace-nowrap w-40">作者</th>
+                <th class="sticky top-0 z-10 bg-gray-700 p-3 whitespace-nowrap w-32">日期</th>
+                <th class="sticky top-0 z-10 bg-gray-700 p-3 whitespace-nowrap w-24">操作</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="commit in commits" :key="commit.hash" class="border-b border-gray-700">
-                <td class="p-3 font-mono">{{ commit.hash }}</td>
-                <td class="p-3">{{ commit.message }}</td>
-                <td class="p-3">{{ commit.author }}</td>
-                <td class="p-3">{{ commit.date }}</td>
-                <td class="p-3 space-x-2">
+              <tr v-for="commit in commits" :key="commit.hash" 
+                  class="hover:bg-gray-700/50 transition-colors">
+                <td class="p-3 font-mono whitespace-nowrap text-sm">{{ commit.hash }}</td>
+                <td class="p-3 min-w-[400px]">
+                  <div class="commit-message">
+                    <div class="commit-message-title">
+                      {{ commit.message.split('\n')[0] }}
+                    </div>
+                    <div v-if="commit.message.includes('\n')" class="commit-message-body">
+                      {{ commit.message.split('\n').slice(1).join('\n') }}
+                    </div>
+                  </div>
+                </td>
+                <td class="p-3 whitespace-nowrap text-sm">{{ commit.author }}</td>
+                <td class="p-3 whitespace-nowrap text-sm">{{ commit.date }}</td>
+                <td class="p-3 whitespace-nowrap space-x-2 text-center">
                   <button @click="resetToCommit(commit.hash)" 
-                          class="btn btn-danger text-sm">
-                    回退到此版本
+                          class="p-2 rounded-full hover:bg-red-600 transition-colors"
+                          title="回退到此版本">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
                   </button>
                   <button @click="deleteCommit(commit.hash)"
-                          class="btn btn-warning text-sm">
-                    刪除此版本
+                          class="p-2 rounded-full hover:bg-yellow-600 transition-colors"
+                          title="刪除此版本">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
                   </button>
                 </td>
               </tr>
@@ -258,9 +276,13 @@ export default {
         title: '提交更改',
         input: 'textarea',
         inputLabel: '提交信息',
-        inputPlaceholder: '請輸入提交信息...',
+        inputPlaceholder: 'feat: 新功能描述\n\n功能的詳細說明...',
         inputAttributes: {
-          'aria-label': '提交信息'
+          'aria-label': '提交信息',
+          'style': 'height: 150px; font-family: monospace;'
+        },
+        customClass: {
+          input: 'commit-message-textarea'
         },
         showCancelButton: true,
         confirmButtonText: '提交',
