@@ -7,9 +7,6 @@
           <button @click="showConfigModal = true" class="btn btn-primary">
             配置 Git
           </button>
-          <button @click="exit" class="btn btn-danger">
-            退出
-          </button>
         </div>
       </div>
     </nav>
@@ -526,6 +523,7 @@ export default {
               <li class="text-red-400">永久刪除該提交記錄</li>
               <li>重寫之後的所有提交歷史</li>
               <li>可能導致與遠程倉庫不同步</li>
+              <li>可能需要強制推送到遠程倉庫</li>
             </ul>
             <p class="mt-4 text-red-400 font-bold">此操作無法撤銷且可能破壞倉庫，確定要繼續嗎？</p>
           </div>
@@ -560,9 +558,44 @@ export default {
           },
           body: JSON.stringify({ hash })
         });
+        
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message);
+        }
+        
         const data = await response.json();
         this.output = data.message;
         this.showCommitHistoryModal = false;
+        
+        // 詢問是否要強制推送到遠程
+        const pushResult = await Swal.fire({
+          title: '更新遠程倉庫',
+          text: '是否要強制推送這些更改到遠程倉庫？這將覆蓋遠程的提交歷史。',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: '是的，強制推送',
+          cancelButtonText: '暫時不要'
+        });
+        
+        if (pushResult.isConfirmed) {
+          const pushResponse = await fetch('http://localhost:5000/push', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              remote: this.remoteConfig.name || 'origin',
+              branch: 'master',
+              force: true
+            })
+          });
+          const pushData = await pushResponse.json();
+          if (!pushResponse.ok) {
+            throw new Error(pushData.message);
+          }
+        }
+        
         // 重新獲取提交歷史和狀態
         await this.getCommitHistory();
         await this.checkStatus();
@@ -576,13 +609,10 @@ export default {
       } catch (error) {
         await Swal.fire({
           icon: 'error',
-          title: '刪除失敗',
+          title: '操作失敗',
           text: error.message
         });
       }
-    },
-    exit() {
-      window.close();
     }
   },
   watch: {

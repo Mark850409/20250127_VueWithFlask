@@ -144,16 +144,17 @@ def push():
     
     remote = data.get('remote', 'origin')
     branch = data.get('branch', 'master')
+    force = data.get('force', False)
     
     try:
-        git_ops.push(remote, branch)
+        git_ops.push(remote, branch, force)
         return jsonify({'message': f'成功推送到遠程倉庫 {remote}/{branch}'})
     except Exception as e:
         error_message = str(e)
         if "認證" in error_message or "權限" in error_message:
             return jsonify({'message': f'推送失敗: {error_message}. 請確保已配置正確的認證信息'}), 401
         elif "拒絕" in error_message:
-            return jsonify({'message': f'推送失敗: {error_message}. 請先拉取並合併遠程更改'}), 409
+            return jsonify({'message': f'推送失敗: {error_message}'}), 409
         else:
             return jsonify({'message': f'推送失敗: {error_message}'}), 500
 

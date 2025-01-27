@@ -65,7 +65,7 @@ class GitOperations:
                 self.repo.delete_remote(name)
                 self.repo.create_remote(name, url)
 
-    def push(self, remote_name='origin', branch='master'):
+    def push(self, remote_name='origin', branch='master', force=False):
         if not self.repo:
             raise Exception("倉庫未初始化")
         
@@ -77,12 +77,17 @@ class GitOperations:
             if not self.repo.heads:
                 raise Exception("沒有可推送的提交")
             
-            remote.push(refspec=f'refs/heads/{branch}:refs/heads/{branch}')
+            # 添加強制推送選項
+            if force:
+                remote.push(refspec=f'refs/heads/{branch}:refs/heads/{branch}', force=True)
+            else:
+                remote.push(refspec=f'refs/heads/{branch}:refs/heads/{branch}')
+            
         except git.exc.GitCommandError as e:
             if "Permission denied" in str(e):
                 raise Exception("推送被拒絕：權限不足，請檢查認證信息")
             elif "rejected" in str(e):
-                raise Exception("推送被拒絕：請先拉取最新更改")
+                raise Exception("推送被拒絕：請先拉取最新更改或使用強制推送")
             else:
                 raise Exception(f"推送失敗：{str(e)}")
 
@@ -137,21 +142,48 @@ class GitOperations:
             raise Exception("倉庫未初始化")
         
         try:
-            # 使用 git rebase -i 來刪除指定提交
-            # 首先找到目標提交的父提交
-            commit = self.repo.commit(commit_hash)
-            parent = commit.parents[0].hexsha
+            # 獲取所有提交
+            commits = list(self.repo.iter_commits())
+            target_commit = None
+            commits_to_cherry_pick = []
             
-            # 使用 git rebase --onto 來跳過指定的提交
-            self.repo.git.rebase('--onto', commit_hash + '^', commit_hash, 'HEAD')
+            # 找到目標提交和之後的提交
+            found_target = False
+            for commit in commits:
+                if commit.hexsha.startswith(commit_hash):
+                    found_target = True
+                    target_commit = commit
+                    continue
+                if found_target:
+                    commits_to_cherry_pick.insert(0, commit)
+            
+            if not target_commit:
+                raise Exception("找不到指定的提交")
+            
+            # 檢查是否為第一個提交
+            if not target_commit.parents:
+                raise Exception("無法刪除第一個提交，這可能會破壞倉庫。如果確實需要，請考慮重新初始化倉庫。")
+            
+            # 重置到目標提交的父提交
+            parent = target_commit.parents[0]
+            self.repo.git.reset('--hard', parent.hexsha)
+            
+            # 重新應用之後的提交
+            for commit in commits_to_cherry_pick:
+                try:
+                    self.repo.git.cherry_pick(commit.hexsha)
+                except git.exc.GitCommandError as e:
+                    # 如果cherry-pick失敗，中止操作並還原
+                    self.repo.git.cherry_pick('--abort')
+                    # 嘗試還原到原始狀態
+                    try:
+                        self.repo.git.reset('--hard', target_commit.hexsha)
+                    except:
+                        pass
+                    raise Exception(f"重新應用提交時失敗：{str(e)}")
             
             return f"成功刪除提交 {commit_hash}"
         except git.exc.GitCommandError as e:
-            # 如果出現錯誤，中止rebase
-            try:
-                self.repo.git.rebase('--abort')
-            except:
-                pass
             raise Exception(f"刪除提交失敗：{str(e)}")
         except Exception as e:
             raise Exception(f"刪除提交失敗：{str(e)}")

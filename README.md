@@ -15,6 +15,10 @@ Git小助手是一個輕量級的Git圖形化工具，提供基本的Git操作�
 - 遠程倉庫配置
 - 推送代碼
 - Git配置設置
+- 提交歷史查看
+- 版本回退
+- 提交刪除
+- 遠程同步
 
 ### 技術棧
 
@@ -23,6 +27,7 @@ Git小助手是一個輕量級的Git圖形化工具，提供基本的Git操作�
 - Tailwind CSS
 - Vite
 - Fetch API
+- SweetAlert2
 
 後端：
 - Python 3.8+
@@ -44,16 +49,19 @@ Git小助手是一個輕量級的Git圖形化工具，提供基本的Git操作�
 ```bash
 cd backend
 python -m venv venv
-```
-2. 激活虛擬環境：
-```bash
+
+# Windows
+venv\Scripts\activate
+# Linux/Mac
 source venv/bin/activate
 ```
-3. 安裝依賴：
+
+2. 安裝依賴：
 ```bash
 pip install -r requirements.txt
 ```
-4. 運行Flask應用：
+
+3. 運行Flask應用：
 ```bash
 python app.py
 ```
@@ -69,14 +77,10 @@ cd frontend
 ```bash
 npm install
 ```
-3. 運行Vite開發環境：
+
+3. 運行開發服務器：
 ```bash
 npm run dev
-```
-
-4. 訪問前端應用：
-```bash
-http://localhost:3000
 ```
 
 ## 使用說明
@@ -99,41 +103,20 @@ http://localhost:3000
    - 可以創建新分支或切換到現有分支
 
 5. **遠程倉庫操作**
-   - 點擊「配置遠程倉庫」
-   - 輸入遠程倉庫URL
-   - 使用「推送到遠程」將代碼推送到遠程倉庫
+   - 點擊「配置遠程倉庫」配置遠程倉庫
+   - 使用「推送到遠程」推送代碼
+   - 使用「拉取遠程更新」同步遠程更改
 
-
-## 開發指南
-
-### 項目結構
-```
-git-helper/
-├── frontend/
-│ ├── src/
-│ │ ├── components/
-│ │ ├── App.vue
-│ │ └── main.js
-│ ├── index.html
-│ └── package.json
-└── backend/
-├── app.py
-├── git_operations.py
-└── requirements.txt
-```
-
-
-### 開發模式
-
-1. 後端開發
-   - 修改 `app.py` 添加新的路由
-   - 在 `git_operations.py` 中實現新的Git操作
-
-2. 前端開發
-   - 在 `App.vue` 中添加新的UI元素
-   - 實現對應的方法處理用戶操作
+6. **歷史管理**
+   - 點擊「查看提交歷史」查看所有提交
+   - 可以回退到指定版本
+   - 可以刪除指定提交（需謹慎使用）
 
 ## 版本記錄
+
+### v1.0.5 (2025-01-27)
+- 移除退出按鈕
+- 改進界面布局
 
 ### v1.0.4 (2025-01-27)
 - 增加拉取遠程更新功能
@@ -162,6 +145,7 @@ git-helper/
 3. 推送到遠程倉庫時需要適當的權限
 4. 使用HTTPS推送時需要配置個人訪問令牌（Personal Access Token）
 5. 使用SSH推送時需要配置SSH密鑰
+6. 刪除提交時需要特別謹慎，建議先備份
 
 ### 配置遠程倉庫認證
 
@@ -178,13 +162,6 @@ git-helper/
 2. 將公鑰添加到GitHub賬戶
 3. 確保使用SSH URL作為遠程倉庫地址
 
-## 貢獻指南
-
-1. Fork 本專案
-2. 創建新的功能分支
-3. 提交更改
-4. 發起 Pull Request
-
 ## 授權協議
 
 本專案採用 MIT 授權協議。
@@ -198,3 +175,4 @@ markhsu
 - Vue.js 團隊
 - Flask 開發團隊
 - GitPython 專案
+- SweetAlert2 團隊
