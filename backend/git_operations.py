@@ -130,4 +130,53 @@ class GitOperations:
             
             return f"成功回退到提交 {commit_hash}"
         except git.exc.GitCommandError as e:
-            raise Exception(f"版本回退失敗：{str(e)}") 
+            raise Exception(f"版本回退失敗：{str(e)}")
+
+    def delete_commit(self, commit_hash):
+        if not self.repo:
+            raise Exception("倉庫未初始化")
+        
+        try:
+            # 使用 git rebase -i 來刪除指定提交
+            # 首先找到目標提交的父提交
+            commit = self.repo.commit(commit_hash)
+            parent = commit.parents[0].hexsha
+            
+            # 使用 git rebase --onto 來跳過指定的提交
+            self.repo.git.rebase('--onto', commit_hash + '^', commit_hash, 'HEAD')
+            
+            return f"成功刪除提交 {commit_hash}"
+        except git.exc.GitCommandError as e:
+            # 如果出現錯誤，中止rebase
+            try:
+                self.repo.git.rebase('--abort')
+            except:
+                pass
+            raise Exception(f"刪除提交失敗：{str(e)}")
+        except Exception as e:
+            raise Exception(f"刪除提交失敗：{str(e)}")
+
+    def pull(self, remote_name='origin', branch='master'):
+        if not self.repo:
+            raise Exception("倉庫未初始化")
+        
+        try:
+            remote = self.repo.remote(name=remote_name)
+            if not remote:
+                raise Exception(f"遠程倉庫 {remote_name} 不存在")
+            
+            # 先獲取遠程更新
+            remote.fetch()
+            
+            # 檢查是否有衝突
+            if self.repo.is_dirty():
+                raise Exception("有未提交的更改，請先提交或暫存更改")
+            
+            # 執行拉取
+            remote.pull(branch)
+            return f"成功從 {remote_name}/{branch} 拉取更新"
+        except git.exc.GitCommandError as e:
+            if "resolve" in str(e) or "conflict" in str(e):
+                raise Exception("拉取時發生衝突，請手動解決衝突")
+            else:
+                raise Exception(f"拉取失敗：{str(e)}") 

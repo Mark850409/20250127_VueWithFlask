@@ -54,6 +54,9 @@
             <button @click="pushToRemote" class="btn btn-success w-full">
               推送到遠程
             </button>
+            <button @click="pullFromRemote" class="btn btn-primary w-full">
+              拉取遠程更新
+            </button>
             <button @click="showCommitHistoryModal = true" class="btn btn-primary w-full">
               查看提交歷史
             </button>
@@ -168,10 +171,14 @@
                 <td class="p-3">{{ commit.message }}</td>
                 <td class="p-3">{{ commit.author }}</td>
                 <td class="p-3">{{ commit.date }}</td>
-                <td class="p-3">
+                <td class="p-3 space-x-2">
                   <button @click="resetToCommit(commit.hash)" 
                           class="btn btn-danger text-sm">
                     回退到此版本
+                  </button>
+                  <button @click="deleteCommit(commit.hash)"
+                          class="btn btn-warning text-sm">
+                    刪除此版本
                   </button>
                 </td>
               </tr>
@@ -372,9 +379,76 @@ export default {
           })
         });
         const data = await response.json();
-        this.output = data.message;
+        
+        if (response.status === 409) {
+          const result = await Swal.fire({
+            icon: 'warning',
+            title: '版本不同步',
+            text: '遠程倉庫有新的更新，需要先拉取最新代碼',
+            showCancelButton: true,
+            confirmButtonText: '拉取更新',
+            cancelButtonText: '取消'
+          });
+          
+          if (result.isConfirmed) {
+            await this.pullFromRemote();
+          }
+          return;
+        }
+        
+        if (!response.ok) {
+          throw new Error(data.message);
+        }
+        
+        await Swal.fire({
+          icon: 'success',
+          title: '推送成功',
+          text: data.message,
+          timer: 1500,
+          showConfirmButton: false
+        });
       } catch (error) {
-        this.output = `錯誤: ${error.message}`;
+        await Swal.fire({
+          icon: 'error',
+          title: '推送失敗',
+          text: error.message
+        });
+      }
+    },
+    async pullFromRemote() {
+      try {
+        const response = await fetch('http://localhost:5000/pull', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            remote: this.remoteConfig.name || 'origin',
+            branch: 'master'
+          })
+        });
+        const data = await response.json();
+        
+        if (response.ok) {
+          await Swal.fire({
+            icon: 'success',
+            title: '拉取成功',
+            text: data.message,
+            timer: 1500,
+            showConfirmButton: false
+          });
+          await this.checkStatus();
+          await this.getCommitHistory();
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        await Swal.fire({
+          icon: 'error',
+          title: '拉取失敗',
+          text: error.message,
+          showConfirmButton: true
+        });
       }
     },
     async getCommitHistory() {
@@ -438,6 +512,71 @@ export default {
         await Swal.fire({
           icon: 'error',
           title: '回退失敗',
+          text: error.message
+        });
+      }
+    },
+    async deleteCommit(hash) {
+      const result = await Swal.fire({
+        title: '確認刪除提交',
+        html: `
+          <div class="text-left">
+            <p class="mb-2">警告！此操作將會：</p>
+            <ul class="list-disc pl-5 space-y-1">
+              <li class="text-red-400">永久刪除該提交記錄</li>
+              <li>重寫之後的所有提交歷史</li>
+              <li>可能導致與遠程倉庫不同步</li>
+            </ul>
+            <p class="mt-4 text-red-400 font-bold">此操作無法撤銷且可能破壞倉庫，確定要繼續嗎？</p>
+          </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: '是的，刪除！',
+        cancelButtonText: '取消',
+        input: 'checkbox',
+        inputValue: 0,
+        inputPlaceholder: '我了解這是危險操作，並已備份重要數據',
+        inputValidator: (result) => {
+          return new Promise((resolve) => {
+            if (result) {
+              resolve()
+            } else {
+              resolve('請確認您了解操作風險')
+            }
+          })
+        }
+      });
+
+      if (!result.isConfirmed) return;
+      
+      try {
+        const response = await fetch('http://localhost:5000/commit/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ hash })
+        });
+        const data = await response.json();
+        this.output = data.message;
+        this.showCommitHistoryModal = false;
+        // 重新獲取提交歷史和狀態
+        await this.getCommitHistory();
+        await this.checkStatus();
+        await Swal.fire({
+          icon: 'success',
+          title: '刪除成功',
+          text: '已刪除指定的提交記錄',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        await Swal.fire({
+          icon: 'error',
+          title: '刪除失敗',
           text: error.message
         });
       }
