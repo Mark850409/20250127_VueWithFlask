@@ -84,4 +84,28 @@ class GitOperations:
             elif "rejected" in str(e):
                 raise Exception("推送被拒絕：請先拉取最新更改")
             else:
-                raise Exception(f"推送失敗：{str(e)}") 
+                raise Exception(f"推送失敗：{str(e)}")
+
+    def get_commit_history(self):
+        if not self.repo:
+            raise Exception("倉庫未初始化")
+        
+        commits = []
+        for commit in self.repo.iter_commits():
+            commits.append({
+                'hash': commit.hexsha[:7],
+                'message': commit.message,
+                'author': f"{commit.author.name} <{commit.author.email}>",
+                'date': commit.committed_datetime.strftime('%Y-%m-%d %H:%M:%S')
+            })
+        return commits
+
+    def reset_to_commit(self, commit_hash, mode='hard'):
+        if not self.repo:
+            raise Exception("倉庫未初始化")
+        
+        try:
+            self.repo.git.reset('--' + mode, commit_hash)
+            return f"成功回退到提交 {commit_hash}"
+        except git.exc.GitCommandError as e:
+            raise Exception(f"版本回退失敗：{str(e)}") 

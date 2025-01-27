@@ -54,6 +54,9 @@
             <button @click="pushToRemote" class="btn btn-success w-full">
               推送到遠程
             </button>
+            <button @click="showCommitHistoryModal = true" class="btn btn-primary w-full">
+              查看提交歷史
+            </button>
           </div>
         </div>
 
@@ -142,10 +145,52 @@
         </div>
       </div>
     </div>
+
+    <!-- 添加提交歷史模態框 -->
+    <div v-if="showCommitHistoryModal" 
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div class="card w-[800px] max-h-[80vh] overflow-hidden flex flex-col">
+        <h3 class="text-xl font-semibold mb-4 text-blue-400">提交歷史</h3>
+        <div class="overflow-auto flex-1">
+          <table class="w-full text-left">
+            <thead class="bg-gray-700">
+              <tr>
+                <th class="p-3">提交哈希</th>
+                <th class="p-3">提交信息</th>
+                <th class="p-3">作者</th>
+                <th class="p-3">日期</th>
+                <th class="p-3">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="commit in commits" :key="commit.hash" class="border-b border-gray-700">
+                <td class="p-3 font-mono">{{ commit.hash }}</td>
+                <td class="p-3">{{ commit.message }}</td>
+                <td class="p-3">{{ commit.author }}</td>
+                <td class="p-3">{{ commit.date }}</td>
+                <td class="p-3">
+                  <button @click="resetToCommit(commit.hash)" 
+                          class="btn btn-danger text-sm">
+                    回退到此版本
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-4 flex justify-end">
+          <button @click="showCommitHistoryModal = false" class="btn btn-danger">
+            關閉
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import Swal from 'sweetalert2'
+
 export default {
   name: 'App',
   data() {
@@ -163,7 +208,9 @@ export default {
       remoteConfig: {
         name: '',
         url: ''
-      }
+      },
+      showCommitHistoryModal: false,
+      commits: []
     }
   },
   methods: {
@@ -203,8 +250,26 @@ export default {
       }
     },
     async commit() {
-      const message = prompt('請輸入提交信息：');
-      if (!message) return;
+      const result = await Swal.fire({
+        title: '提交更改',
+        input: 'textarea',
+        inputLabel: '提交信息',
+        inputPlaceholder: '請輸入提交信息...',
+        inputAttributes: {
+          'aria-label': '提交信息'
+        },
+        showCancelButton: true,
+        confirmButtonText: '提交',
+        cancelButtonText: '取消',
+        inputValidator: (value) => {
+          if (!value) {
+            return '請輸入提交信息！'
+          }
+        }
+      });
+
+      if (!result.isConfirmed) return;
+      const message = result.value;
       
       try {
         const response = await fetch('http://localhost:5000/commit', {
@@ -216,8 +281,18 @@ export default {
         });
         const data = await response.json();
         this.output = data.message;
+        await Swal.fire({
+          icon: 'success',
+          title: '提交成功',
+          timer: 1500,
+          showConfirmButton: false
+        });
       } catch (error) {
-        this.output = `錯誤: ${error.message}`;
+        await Swal.fire({
+          icon: 'error',
+          title: '提交失敗',
+          text: error.message
+        });
       }
     },
     async createBranch() {
@@ -302,8 +377,69 @@ export default {
         this.output = `錯誤: ${error.message}`;
       }
     },
+    async getCommitHistory() {
+      try {
+        const response = await fetch('http://localhost:5000/commits');
+        const data = await response.json();
+        if (data.commits) {
+          this.commits = data.commits;
+        } else {
+          this.output = data.message;
+        }
+      } catch (error) {
+        this.output = `錯誤: ${error.message}`;
+      }
+    },
+    async resetToCommit(hash) {
+      const result = await Swal.fire({
+        title: '確認回退版本',
+        text: '這將會丟失之後的所有更改！確定要繼續嗎？',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: '是的，回退！',
+        cancelButtonText: '取消'
+      });
+
+      if (!result.isConfirmed) return;
+      
+      try {
+        const response = await fetch('http://localhost:5000/reset', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ hash })
+        });
+        const data = await response.json();
+        this.output = data.message;
+        this.showCommitHistoryModal = false;
+        // 重新獲取狀態
+        await this.checkStatus();
+        await Swal.fire({
+          icon: 'success',
+          title: '回退成功',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        await Swal.fire({
+          icon: 'error',
+          title: '回退失敗',
+          text: error.message
+        });
+      }
+    },
     exit() {
       window.close();
+    }
+  },
+  watch: {
+    showCommitHistoryModal(newVal) {
+      if (newVal) {
+        this.getCommitHistory();
+      }
     }
   }
 }

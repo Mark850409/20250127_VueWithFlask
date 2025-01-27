@@ -11,7 +11,8 @@
   "dependencies": {
     "vue": "^3.3.4",
     "@headlessui/vue": "^1.7.16",
-    "@heroicons/vue": "^2.0.18"
+    "@heroicons/vue": "^2.0.18",
+    "sweetalert2": "^11.10.5"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.3.4",

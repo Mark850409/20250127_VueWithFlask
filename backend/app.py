@@ -157,5 +157,34 @@ def push():
         else:
             return jsonify({'message': f'推送失敗: {error_message}'}), 500
 
+@app.route('/commits', methods=['GET'])
+def get_commits():
+    if not git_ops:
+        return jsonify({'message': '請先初始化倉庫'}), 400
+    
+    try:
+        commits = git_ops.get_commit_history()
+        return jsonify({'commits': commits})
+    except Exception as e:
+        return jsonify({'message': f'獲取提交歷史失敗: {str(e)}'}), 500
+
+@app.route('/reset', methods=['POST'])
+def reset_commit():
+    if not git_ops:
+        return jsonify({'message': '請先初始化倉庫'}), 400
+    
+    data = request.json
+    commit_hash = data.get('hash')
+    mode = data.get('mode', 'hard')
+    
+    if not commit_hash:
+        return jsonify({'message': '請提供提交哈希值'}), 400
+    
+    try:
+        message = git_ops.reset_to_commit(commit_hash, mode)
+        return jsonify({'message': message})
+    except Exception as e:
+        return jsonify({'message': f'版本回退失敗: {str(e)}'}), 500
+
 if __name__ == '__main__':
     app.run(debug=True) 
