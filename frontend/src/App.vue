@@ -265,12 +265,10 @@
 
       <!-- 返回首頁按鈕 - 只在非首頁路由顯示 -->
       <div v-if="$route.path !== '/'" 
-           class="fixed bottom-8 right-8 z-50">
+           class="fixed bottom-6 right-6 z-50">
         <router-link to="/" 
-          class="flex items-center px-4 py-2 bg-gray-800 text-white rounded-lg 
-                 hover:bg-gray-700 transition duration-300 shadow-lg">
-          <i class="fas fa-home mr-2"></i>
-          返回首頁
+                     class="w-12 h-12 bg-gray-800 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-700 transform hover:scale-110 transition-all duration-300">
+          <i class="fas fa-home text-xl"></i>
         </router-link>
       </div>
     </div>
