@@ -13,7 +13,7 @@ import RatingManagement from './components/admin/order/RatingManagement.vue'
 import CommentManagement from './components/admin/order/CommentManagement.vue'
 import UserManagement from './components/admin/personal/UserManagement.vue'
 import FavoriteManagement from './components/admin/personal/FavoriteManagement.vue'
-
+import Login from './views/auth/Login.vue'
 const routes = [
   {
     path: '/',
@@ -34,6 +34,11 @@ const routes = [
     path: '/pricing',
     name: 'Pricing',
     component: Pricing
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login
   },
   {
     path: '/admin',

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-gray-50 pt-16">
     <PageBanner
       title="學習中心"
       subtitle="功能導覽・使用教學"

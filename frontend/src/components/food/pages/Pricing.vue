@@ -1,11 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-gray-50 pt-16">
     <PageBanner
       title="定價方案"
-      subtitle="靈活選擇・專屬服務"
-      description="我們提供多種靈活的方案選擇，從免費的基礎版到功能完整的企業版，
-                  根據您的需求量身打造最適合的服務方案。無論是個人使用還是企業需求，
-                  我們都能為您提供最優質的解決方案。"
+      subtitle="靈活選擇・專業服務"
+      description="我們提供多種靈活的方案選擇，從個人使用到企業需求，都能找到最適合的服務組合。
+                  讓我們為您打造最優質的推薦體驗。"
     />
     
     <!-- 定價方案卡片 -->

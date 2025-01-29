@@ -208,143 +208,125 @@
     </div>
 
     <!-- 點餐推薦系統 -->
-    <div v-else>
-      <nav class="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
-        <div class="container mx-auto px-4">
-          <div class="flex items-center justify-between h-16">
-            <!-- Logo -->
-            <router-link to="/" class="flex items-center space-x-3">
-              <img src="https://api.dicebear.com/7.x/bottts/svg?seed=food" 
-                   alt="Logo" class="h-10 w-10">
-              <span class="text-lg font-bold text-gray-800">
-                基於文字探勘與情感分析的點餐推薦系統
-              </span>
-            </router-link>
+    <div v-else class="min-h-screen bg-gray-50">
+      <!-- 使用共用 Navbar -->
+      <Navbar />
+      
+      <!-- 路由視圖 -->
+      <router-view></router-view>
 
-            <!-- Navigation Links -->
-            <div class="flex-1 flex justify-center">
-              <div class="flex items-center space-x-8">
-                <router-link to="/" class="flex items-center">
-                  <i class="fas fa-home mr-1"></i>
-                  首頁
-                </router-link>
-                <router-link to="/features" class="flex items-center">
-                  <i class="fas fa-star mr-1"></i>
-                  平台特色
-                </router-link>
-                <router-link to="/learning" class="flex items-center">
-                  <i class="fas fa-book mr-1"></i>
-                  學習中心
-                </router-link>
-                <router-link to="/pricing" class="flex items-center">
-                  <i class="fas fa-tag mr-1"></i>
-                  定價方案
-                </router-link>
-              </div>
-            </div>
+      <!-- 添加共用 Footer -->
+      <Footer />
 
-            <!-- Right Side -->
-            <div class="flex items-center">
-              <button @click="toggleView" 
-                      class="ml-4 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 
-                             text-white rounded-lg hover:from-blue-600 hover:to-blue-700 
-                             transition-all duration-300 transform hover:scale-105 
-                             shadow-md hover:shadow-lg">
-                Git 小助手
+      <!-- Git 小助手按鈕 -->
+      <button @click="showGitHelper = true" 
+              class="fixed bottom-6 left-6 bg-gray-800 text-white p-4 rounded-full 
+                     shadow-lg hover:bg-gray-700 transition-colors duration-200 
+                     flex items-center justify-center z-50">
+        <i class="fas fa-code-branch text-xl"></i>
+      </button>
+
+      <!-- Git 小助手 Modal -->
+      <div v-if="showGitHelper" 
+           class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-gray-800 text-white rounded-xl shadow-lg w-full max-w-4xl max-h-[80vh] 
+                    flex flex-col">
+          <div class="p-6 flex-1 overflow-auto">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-2xl font-bold">Git 操作小助手</h2>
+              <button @click="showGitHelper = false" 
+                      class="text-gray-400 hover:text-white transition-colors duration-200">
+                <i class="fas fa-times text-xl"></i>
               </button>
+            </div>
+            <!-- Git 操作內容 -->
+            <div class="space-y-4">
+              <!-- 這裡可以添加 Git 操作相關的內容 -->
             </div>
           </div>
         </div>
-      </nav>
-
-      <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
-          <component :is="Component" />
-        </transition>
-      </router-view>
-
-      <!-- 返回首頁按鈕 - 只在非首頁路由顯示 -->
-      <div v-if="$route.path !== '/'" 
-           class="fixed bottom-6 right-6 z-50">
-        <router-link to="/" 
-                     class="w-12 h-12 bg-gray-800 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-700 transform hover:scale-110 transition-all duration-300">
-          <i class="fas fa-home text-xl"></i>
-        </router-link>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import Navbar from './components/common/Navbar.vue'
+import Footer from './components/common/Footer.vue'
+import { ref } from 'vue'
 import Swal from 'sweetalert2'
 
 export default {
   name: 'App',
-  data() {
-    return {
-      repoPath: '',
-      output: '',
-      showBranchModal: false,
-      showConfigModal: false,
-      showRemoteModal: false,
-      branchName: '',
-      gitConfig: {
-        name: '',
-        email: ''
-      },
-      remoteConfig: {
-        name: '',
-        url: ''
-      },
-      showCommitHistoryModal: false,
-      commits: [],
-      showGitHelper: false
-    }
+  components: {
+    Navbar,
+    Footer
   },
-  methods: {
-    toggleView() {
-      this.showGitHelper = !this.showGitHelper;
-      // 如果切換到 Git 小助手，滾動到頂部
-      if (this.showGitHelper) {
-        window.scrollTo(0, 0);
+  setup() {
+    const showGitHelper = ref(false)
+    const repoPath = ref('')
+    const output = ref('')
+    const showBranchModal = ref(false)
+    const showConfigModal = ref(false)
+    const showRemoteModal = ref(false)
+    const branchName = ref('')
+    const gitConfig = ref({
+      name: '',
+      email: ''
+    })
+    const remoteConfig = ref({
+      name: '',
+      url: ''
+    })
+    const showCommitHistoryModal = ref(false)
+    const commits = ref([])
+
+    const toggleView = () => {
+      showGitHelper.value = !showGitHelper.value
+      if (showGitHelper.value) {
+        window.scrollTo(0, 0)
       }
-    },
-    async initRepo() {
+    }
+
+    const initRepo = async () => {
       try {
         const response = await fetch('http://localhost:5000/init', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ path: this.repoPath })
-        });
-        const data = await response.json();
-        this.output = data.message;
+          body: JSON.stringify({ path: repoPath.value })
+        })
+        const data = await response.json()
+        output.value = data.message
       } catch (error) {
-        this.output = `錯誤: ${error.message}`;
+        output.value = `錯誤: ${error.message}`
       }
-    },
-    async checkStatus() {
+    }
+
+    const checkStatus = async () => {
       try {
-        const response = await fetch('http://localhost:5000/status');
-        const data = await response.json();
-        this.output = data.message;
+        const response = await fetch('http://localhost:5000/status')
+        const data = await response.json()
+        output.value = data.message
       } catch (error) {
-        this.output = `錯誤: ${error.message}`;
+        output.value = `錯誤: ${error.message}`
       }
-    },
-    async addFiles() {
+    }
+
+    const addFiles = async () => {
       try {
         const response = await fetch('http://localhost:5000/add', {
           method: 'POST'
-        });
-        const data = await response.json();
-        this.output = data.message;
+        })
+        const data = await response.json()
+        output.value = data.message
       } catch (error) {
-        this.output = `錯誤: ${error.message}`;
+        output.value = `錯誤: ${error.message}`
       }
-    },
-    async commit() {
+    }
+
+    const commit = async () => {
       const result = await Swal.fire({
         title: '提交更改',
         input: 'textarea',
@@ -365,10 +347,10 @@ export default {
             return '請輸入提交信息！'
           }
         }
-      });
+      })
 
-      if (!result.isConfirmed) return;
-      const message = result.value;
+      if (!result.isConfirmed) return
+      const message = result.value
       
       try {
         const response = await fetch('http://localhost:5000/commit', {
@@ -377,88 +359,93 @@ export default {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ message })
-        });
-        const data = await response.json();
-        this.output = data.message;
+        })
+        const data = await response.json()
+        output.value = data.message
         await Swal.fire({
           icon: 'success',
           title: '提交成功',
           timer: 1500,
           showConfirmButton: false
-        });
+        })
       } catch (error) {
         await Swal.fire({
           icon: 'error',
           title: '提交失敗',
           text: error.message
-        });
+        })
       }
-    },
-    async createBranch() {
+    }
+
+    const createBranch = async () => {
       try {
         const response = await fetch('http://localhost:5000/branch/create', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ name: this.branchName })
-        });
-        const data = await response.json();
-        this.output = data.message;
-        this.showBranchModal = false;
+          body: JSON.stringify({ name: branchName.value })
+        })
+        const data = await response.json()
+        output.value = data.message
+        showBranchModal.value = false
       } catch (error) {
-        this.output = `錯誤: ${error.message}`;
+        output.value = `錯誤: ${error.message}`
       }
-    },
-    async switchBranch() {
+    }
+
+    const switchBranch = async () => {
       try {
         const response = await fetch('http://localhost:5000/branch/switch', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ name: this.branchName })
-        });
-        const data = await response.json();
-        this.output = data.message;
-        this.showBranchModal = false;
+          body: JSON.stringify({ name: branchName.value })
+        })
+        const data = await response.json()
+        output.value = data.message
+        showBranchModal.value = false
       } catch (error) {
-        this.output = `錯誤: ${error.message}`;
+        output.value = `錯誤: ${error.message}`
       }
-    },
-    async saveConfig() {
+    }
+
+    const saveConfig = async () => {
       try {
         const response = await fetch('http://localhost:5000/config', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(this.gitConfig)
-        });
-        const data = await response.json();
-        this.output = data.message;
-        this.showConfigModal = false;
+          body: JSON.stringify(gitConfig.value)
+        })
+        const data = await response.json()
+        output.value = data.message
+        showConfigModal.value = false
       } catch (error) {
-        this.output = `錯誤: ${error.message}`;
+        output.value = `錯誤: ${error.message}`
       }
-    },
-    async addRemote() {
+    }
+
+    const addRemote = async () => {
       try {
         const response = await fetch('http://localhost:5000/remote/add', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(this.remoteConfig)
-        });
-        const data = await response.json();
-        this.output = data.message;
-        this.showRemoteModal = false;
+          body: JSON.stringify(remoteConfig.value)
+        })
+        const data = await response.json()
+        output.value = data.message
+        showRemoteModal.value = false
       } catch (error) {
-        this.output = `錯誤: ${error.message}`;
+        output.value = `錯誤: ${error.message}`
       }
-    },
-    async pushToRemote() {
+    }
+
+    const pushToRemote = async () => {
       try {
         const response = await fetch('http://localhost:5000/push', {
           method: 'POST',
@@ -466,11 +453,11 @@ export default {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            remote: this.remoteConfig.name || 'origin',
+            remote: remoteConfig.value.name || 'origin',
             branch: 'master'
           })
-        });
-        const data = await response.json();
+        })
+        const data = await response.json()
         
         if (response.status === 409) {
           const result = await Swal.fire({
@@ -480,16 +467,16 @@ export default {
             showCancelButton: true,
             confirmButtonText: '拉取更新',
             cancelButtonText: '取消'
-          });
+          })
           
           if (result.isConfirmed) {
-            await this.pullFromRemote();
+            await pullFromRemote()
           }
-          return;
+          return
         }
         
         if (!response.ok) {
-          throw new Error(data.message);
+          throw new Error(data.message)
         }
         
         await Swal.fire({
@@ -498,16 +485,17 @@ export default {
           text: data.message,
           timer: 1500,
           showConfirmButton: false
-        });
+        })
       } catch (error) {
         await Swal.fire({
           icon: 'error',
           title: '推送失敗',
           text: error.message
-        });
+        })
       }
-    },
-    async pullFromRemote() {
+    }
+
+    const pullFromRemote = async () => {
       try {
         const response = await fetch('http://localhost:5000/pull', {
           method: 'POST',
@@ -515,11 +503,11 @@ export default {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            remote: this.remoteConfig.name || 'origin',
+            remote: remoteConfig.value.name || 'origin',
             branch: 'master'
           })
-        });
-        const data = await response.json();
+        })
+        const data = await response.json()
         
         if (response.ok) {
           await Swal.fire({
@@ -528,11 +516,11 @@ export default {
             text: data.message,
             timer: 1500,
             showConfirmButton: false
-          });
-          await this.checkStatus();
-          await this.getCommitHistory();
+          })
+          await checkStatus()
+          await getCommitHistory()
         } else {
-          throw new Error(data.message);
+          throw new Error(data.message)
         }
       } catch (error) {
         await Swal.fire({
@@ -540,23 +528,25 @@ export default {
           title: '拉取失敗',
           text: error.message,
           showConfirmButton: true
-        });
+        })
       }
-    },
-    async getCommitHistory() {
+    }
+
+    const getCommitHistory = async () => {
       try {
-        const response = await fetch('http://localhost:5000/commits');
-        const data = await response.json();
+        const response = await fetch('http://localhost:5000/commits')
+        const data = await response.json()
         if (data.commits) {
-          this.commits = data.commits;
+          commits.value = data.commits
         } else {
-          this.output = data.message;
+          output.value = data.message
         }
       } catch (error) {
-        this.output = `錯誤: ${error.message}`;
+        output.value = `錯誤: ${error.message}`
       }
-    },
-    async resetToCommit(hash) {
+    }
+
+    const resetToCommit = async (hash) => {
       const result = await Swal.fire({
         title: '確認回退版本',
         html: `
@@ -576,9 +566,9 @@ export default {
         cancelButtonColor: '#3085d6',
         confirmButtonText: '是的，回退！',
         cancelButtonText: '取消'
-      });
+      })
 
-      if (!result.isConfirmed) return;
+      if (!result.isConfirmed) return
       
       try {
         const response = await fetch('http://localhost:5000/reset', {
@@ -587,69 +577,87 @@ export default {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ hash })
-        });
-        const data = await response.json();
-        this.output = data.message;
-        this.showCommitHistoryModal = false;
-        // 重新獲取狀態
-        await this.checkStatus();
+        })
+        const data = await response.json()
+        output.value = data.message
+        showCommitHistoryModal.value = false
+        await checkStatus()
         await Swal.fire({
           icon: 'success',
           title: '回退成功',
           text: '已恢復到選定的版本狀態',
           timer: 1500,
           showConfirmButton: false
-        });
+        })
       } catch (error) {
         await Swal.fire({
           icon: 'error',
           title: '回退失敗',
           text: error.message
-        });
+        })
       }
     }
-  },
-  watch: {
-    showCommitHistoryModal(newVal) {
-      if (newVal) {
-        this.getCommitHistory();
-      }
+
+    return {
+      showGitHelper,
+      repoPath,
+      output,
+      showBranchModal,
+      showConfigModal,
+      showRemoteModal,
+      branchName,
+      gitConfig,
+      remoteConfig,
+      showCommitHistoryModal,
+      commits,
+      toggleView,
+      initRepo,
+      checkStatus,
+      addFiles,
+      commit,
+      createBranch,
+      switchBranch,
+      saveConfig,
+      addRemote,
+      pushToRemote,
+      pullFromRemote,
+      getCommitHistory,
+      resetToCommit
     }
   },
   computed: {
     formattedOutput() {
       if (!this.output) {
-        return '<span class="text-gray-500">等待操作...</span>';
+        return '<span class="text-gray-500">等待操作...</span>'
       }
       
-      // 將git status的輸出進行格式化
       return this.output
         .split('\n')
         .map(line => {
           if (line.includes('modified:')) {
-            return line.replace('modified:', '<span class="text-yellow-400">modified:</span>');
+            return line.replace('modified:', '<span class="text-yellow-400">modified:</span>')
           }
           if (line.includes('new file:')) {
-            return line.replace('new file:', '<span class="text-green-400">new file:</span>');
+            return line.replace('new file:', '<span class="text-green-400">new file:</span>')
           }
           if (line.includes('deleted:')) {
-            return line.replace('deleted:', '<span class="text-red-400">deleted:</span>');
+            return line.replace('deleted:', '<span class="text-red-400">deleted:</span>')
           }
           if (line.includes('On branch')) {
-            return line.replace('On branch', '<span class="text-blue-400">On branch</span>');
+            return line.replace('On branch', '<span class="text-blue-400">On branch</span>')
           }
           if (line.includes('Changes to be committed:')) {
-            return '<span class="text-green-400">' + line + '</span>';
+            return '<span class="text-green-400">' + line + '</span>'
           }
           if (line.includes('Changes not staged for commit:')) {
-            return '<span class="text-yellow-400">' + line + '</span>';
+            return '<span class="text-yellow-400">' + line + '</span>'
           }
           if (line.includes('Untracked files:')) {
-            return '<span class="text-gray-400">' + line + '</span>';
+            return '<span class="text-gray-400">' + line + '</span>'
           }
-          return line;
+          return line
         })
-        .join('\n');
+        .join('\n')
     }
   }
 }

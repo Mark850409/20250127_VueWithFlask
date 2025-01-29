@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-gray-50 pt-16">
     <PageBanner
       title="平台特色"
       subtitle="智能推薦・精準分析"
