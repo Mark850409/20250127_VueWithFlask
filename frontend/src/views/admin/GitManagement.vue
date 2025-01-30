@@ -584,8 +584,11 @@ export default {
 
     async push() {
       try {
-        // 添加請求頭，指定 Content-Type
-        const response = await axios.post('/push', {}, {
+        // 添加遠程倉庫名稱和分支名稱作為參數
+        const response = await axios.post('/push', {
+          remote: this.remote.name,
+          branch: this.currentBranch
+        }, {
           headers: {
             'Content-Type': 'application/json'
           }
@@ -630,8 +633,11 @@ export default {
 
       if (result.isConfirmed) {
         try {
-          // 添加請求頭，指定 Content-Type
-          const response = await axios.post('/force-push', {}, {
+          // 添加遠程倉庫名稱和分支名稱作為參數
+          const response = await axios.post('/force-push', {
+            remote: this.remote.name,
+            branch: this.currentBranch
+          }, {
             headers: {
               'Content-Type': 'application/json'
             }
