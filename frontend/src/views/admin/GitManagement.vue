@@ -128,10 +128,16 @@
         <h2 class="text-lg font-semibold mb-4">提交操作</h2>
         <div class="space-y-4">
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">提交信息</label>
+            <label class="block text-sm font-medium text-gray-700">
+              提交信息 <span class="text-red-500">*</span>
+            </label>
             <textarea v-model="commitMessage" 
                       class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      :class="{ 'border-red-500': showCommitError && !commitMessage }"
                       rows="3"></textarea>
+            <p v-if="showCommitError && !commitMessage" class="text-red-500 text-xs mt-1">
+              請輸入提交信息
+            </p>
           </div>
           <div class="flex space-x-4">
             <button @click="addFiles" 
@@ -152,9 +158,15 @@
         <div class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-700">分支名稱</label>
+              <label class="block text-sm font-medium text-gray-700">
+                分支名稱 <span class="text-red-500">*</span>
+              </label>
               <input v-model="branchName" type="text" 
-                     class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                     class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                     :class="{ 'border-red-500': showBranchError && !branchName }">
+              <p v-if="showBranchError && !branchName" class="text-red-500 text-xs mt-1">
+                請輸入分支名稱
+              </p>
             </div>
           </div>
           <div class="flex space-x-4">
@@ -193,22 +205,59 @@
       <div class="bg-white rounded-lg shadow p-6">
         <h2 class="text-lg font-semibold mb-4">提交歷史</h2>
         <div class="space-y-4">
-          <button @click="getHistory" 
-                  class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
-            <i class="fas fa-history mr-2"></i>刷新歷史
-          </button>
+          <!-- 工具列 -->
+          <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+              <button @click="getHistory" 
+                      class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                <i class="fas fa-history mr-2"></i>刷新歷史
+              </button>
+              <!-- 搜尋框 -->
+              <div class="relative">
+                <input v-model="searchQuery"
+                       type="text"
+                       placeholder="搜尋提交..."
+                       class="pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+              </div>
+            </div>
+            <!-- 每頁顯示筆數 -->
+            <div class="flex items-center space-x-2">
+              <span class="text-sm text-gray-600">每頁顯示：</span>
+              <select v-model="pageSize" 
+                      class="border rounded-lg pl-3 pr-8 py-1 focus:ring-2 focus:ring-blue-500 appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTMgNWg2TDYgOXoiIGZpbGw9IiM2QjcyODAiLz48L3N2Zz4=')] bg-no-repeat bg-right-1 pr-8">
+                <option :value="10">10</option>
+                <option :value="20">20</option>
+                <option :value="50">50</option>
+                <option :value="100">100</option>
+              </select>
+            </div>
+          </div>
+
           <div class="overflow-x-auto">
-            <table v-if="commits.length" class="min-w-full divide-y divide-gray-200">
+            <table v-if="filteredCommits.length" class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">提交哈希</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">作者</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">日期</th>
+                  <th @click="sortBy('hash')" 
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                    提交哈希
+                    <i :class="getSortIcon('hash')" class="ml-1"></i>
+                  </th>
+                  <th @click="sortBy('author')" 
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                    作者
+                    <i :class="getSortIcon('author')" class="ml-1"></i>
+                  </th>
+                  <th @click="sortBy('date')" 
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                    日期
+                    <i :class="getSortIcon('date')" class="ml-1"></i>
+                  </th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="commit in commits" :key="commit.hash">
+                <tr v-for="commit in paginatedCommits" :key="commit.hash">
                   <td class="px-6 py-4 whitespace-nowrap font-mono text-sm">{{ commit.hash.substring(0, 7) }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm">{{ commit.author }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm">{{ commit.date }}</td>
@@ -230,7 +279,33 @@
               </tbody>
             </table>
             <div v-else class="text-center text-gray-500 py-4">
-              暫無提交記錄
+              {{ searchQuery ? '沒有符合搜尋條件的提交記錄' : '暫無提交記錄' }}
+            </div>
+          </div>
+
+          <!-- 分頁控制 -->
+          <div v-if="filteredCommits.length" class="flex justify-between items-center mt-4">
+            <div class="text-sm text-gray-600">
+              顯示 {{ startIndex + 1 }} 到 {{ endIndex }} 筆，共 {{ filteredCommits.length }} 筆
+            </div>
+            <div class="flex space-x-2">
+              <button @click="currentPage--" 
+                      :disabled="currentPage === 1"
+                      class="px-3 py-1 border rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                上一頁
+              </button>
+              <button v-for="page in totalPages" 
+                      :key="page"
+                      @click="currentPage = page"
+                      :class="['px-3 py-1 border rounded-lg hover:bg-gray-100', 
+                               currentPage === page ? 'bg-blue-500 text-white hover:bg-blue-600' : '']">
+                {{ page }}
+              </button>
+              <button @click="currentPage++" 
+                      :disabled="currentPage === totalPages"
+                      class="px-3 py-1 border rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                下一頁
+              </button>
             </div>
           </div>
         </div>
@@ -270,12 +345,67 @@ export default {
       isRepoConfigured: false,
       showConfigError: false,
       showRemoteError: false,
+      showCommitError: false,
+      showBranchError: false,
       repoPath: 'D:/AI_project/20250127_VueWithFlask',  // 添加倉庫路徑
       currentBranch: 'master',  // 添加當前分支狀態
       parsedStatus: {
         untracked: [],
         modified: []
+      },
+      searchQuery: '',
+      currentPage: 1,
+      pageSize: 10,
+      sortKey: 'date',
+      sortOrder: 'desc'
+    }
+  },
+  computed: {
+    filteredCommits() {
+      let result = [...this.commits]
+      
+      // 搜尋過濾
+      if (this.searchQuery) {
+        const query = this.searchQuery.toLowerCase()
+        result = result.filter(commit => 
+          commit.hash.toLowerCase().includes(query) ||
+          commit.author.toLowerCase().includes(query) ||
+          commit.date.toLowerCase().includes(query)
+        )
       }
+      
+      // 排序
+      result.sort((a, b) => {
+        let aVal = a[this.sortKey]
+        let bVal = b[this.sortKey]
+        
+        if (this.sortKey === 'date') {
+          aVal = new Date(aVal)
+          bVal = new Date(bVal)
+        }
+        
+        if (this.sortOrder === 'asc') {
+          return aVal > bVal ? 1 : -1
+        } else {
+          return aVal < bVal ? 1 : -1
+        }
+      })
+      
+      return result
+    },
+    paginatedCommits() {
+      const start = (this.currentPage - 1) * this.pageSize
+      const end = start + this.pageSize
+      return this.filteredCommits.slice(start, end)
+    },
+    totalPages() {
+      return Math.ceil(this.filteredCommits.length / this.pageSize)
+    },
+    startIndex() {
+      return (this.currentPage - 1) * this.pageSize
+    },
+    endIndex() {
+      return Math.min(this.startIndex + this.pageSize, this.filteredCommits.length)
     }
   },
   methods: {
@@ -378,20 +508,14 @@ export default {
     },
 
     async commit() {
+      this.showCommitError = true
       if (!this.commitMessage) {
-        Swal.fire({
-          icon: 'warning',
-          title: '請輸入提交信息',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000
-        })
         return
       }
       try {
         await axios.post('/commit', { message: this.commitMessage })
         this.commitMessage = ''
+        this.showCommitError = false
         Swal.fire({
           icon: 'success',
           title: '更改已提交',
@@ -407,20 +531,24 @@ export default {
     },
 
     async createBranch() {
+      this.showBranchError = true
       if (!this.branchName) return
       try {
         await axios.post('/branch/create', { name: this.branchName })
         this.branchName = ''
+        this.showBranchError = false
       } catch (error) {
         // 錯誤處理已在 axios 攔截器中完成
       }
     },
 
     async switchBranch() {
+      this.showBranchError = true
       if (!this.branchName) return
       try {
         await axios.post('/branch/switch', { name: this.branchName })
         this.branchName = ''
+        this.showBranchError = false
         await this.checkStatus()
       } catch (error) {
         // 錯誤處理已在 axios 攔截器中完成
@@ -463,19 +591,50 @@ export default {
     },
 
     async resetToCommit(hash) {
-      try {
-        await axios.post('/reset', { hash })
-        Swal.fire({
-          icon: 'success',
-          title: '已回退到指定版本',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000
-        })
-        this.getHistory()
-      } catch (error) {
-        // 錯誤處理已在 axios 攔截器中完成
+      // 添加確認提示視窗
+      const result = await Swal.fire({
+        title: '確認回退版本？',
+        html: `
+          <div class="text-left">
+            <p class="mb-4 text-gray-600">您即將回退到提交 <span class="font-mono bg-gray-100 px-2 py-1 rounded">${hash.substring(0, 7)}</span></p>
+            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+              <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
+              <span class="text-sm text-yellow-700">
+                此操作將會重置當前工作目錄到選定的版本，且無法復原。
+                <br>請確保您已經提交或備份了所有重要更改。
+              </span>
+            </div>
+          </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '確認回退',
+        cancelButtonText: '取消',
+        customClass: {
+          popup: 'rounded-lg shadow-xl',
+        }
+      })
+
+      // 如果用戶確認，則執行回退操作
+      if (result.isConfirmed) {
+        try {
+          await axios.post('/reset', { hash })
+          await this.checkStatus() // 更新倉庫狀態
+          await this.getHistory() // 更新提交歷史
+          Swal.fire({
+            icon: 'success',
+            title: '已回退到指定版本',
+            text: `成功回退到 ${hash.substring(0, 7)}`,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+          })
+        } catch (error) {
+          // 錯誤處理已在 axios 攔截器中完成
+        }
       }
     },
 
@@ -583,6 +742,27 @@ export default {
         .filter(file => !file.includes('__pycache__')); // 排除 __pycache__
 
       return result;
+    },
+    sortBy(key) {
+      if (this.sortKey === key) {
+        this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc'
+      } else {
+        this.sortKey = key
+        this.sortOrder = 'desc'
+      }
+    },
+    getSortIcon(key) {
+      if (this.sortKey !== key) return 'fas fa-sort'
+      return this.sortOrder === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'
+    }
+  },
+  watch: {
+    // 當搜尋條件或每頁筆數改變時，重置頁碼
+    searchQuery() {
+      this.currentPage = 1
+    },
+    pageSize() {
+      this.currentPage = 1
     }
   },
   mounted() {
