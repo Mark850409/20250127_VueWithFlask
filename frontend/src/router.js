@@ -1,8 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import FoodRecommendation from './components/food/FoodRecommendation.vue'
-import Features from './components/food/pages/Features.vue'
-import Learning from './components/food/pages/Learning.vue'
-import Pricing from './components/food/pages/Pricing.vue'
+import FrontLayout from './layouts/FrontLayout.vue'
 import AdminLayout from './components/admin/AdminLayout.vue'
 import Dashboard from './components/admin/Dashboard.vue'
 import AccountManagement from './components/admin/system/AccountManagement.vue'
@@ -13,32 +10,39 @@ import RatingManagement from './components/admin/order/RatingManagement.vue'
 import CommentManagement from './components/admin/order/CommentManagement.vue'
 import UserManagement from './components/admin/personal/UserManagement.vue'
 import FavoriteManagement from './components/admin/personal/FavoriteManagement.vue'
-import Login from './views/auth/Login.vue'
+import GitManagement from '@/views/admin/GitManagement.vue'
+
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: FoodRecommendation
-  },
-  {
-    path: '/features',
-    name: 'Features',
-    component: Features
-  },
-  {
-    path: '/learning',
-    name: 'Learning',
-    component: Learning
-  },
-  {
-    path: '/pricing',
-    name: 'Pricing',
-    component: Pricing
+    component: FrontLayout,
+    children: [
+      {
+        path: '',
+        name: 'Home',
+        component: () => import('./components/food/FoodRecommendation.vue')
+      },
+      {
+        path: 'features',
+        name: 'Features',
+        component: () => import('./components/food/pages/Features.vue')
+      },
+      {
+        path: 'learning',
+        name: 'Learning',
+        component: () => import('./components/food/pages/Learning.vue')
+      },
+      {
+        path: 'pricing',
+        name: 'Pricing',
+        component: () => import('./components/food/pages/Pricing.vue')
+      }
+    ]
   },
   {
     path: '/login',
     name: 'Login',
-    component: Login
+    component: () => import('./views/auth/Login.vue')
   },
   {
     path: '/admin',
@@ -47,47 +51,56 @@ const routes = [
       {
         path: '',
         name: 'Dashboard',
-        component: Dashboard
+        component: () => import('./components/admin/Dashboard.vue')
       },
       {
         path: 'accounts',
         name: 'AccountManagement',
-        component: AccountManagement
+        component: () => import('./components/admin/system/AccountManagement.vue')
       },
       {
         path: 'logs',
         name: 'LogManagement', 
-        component: LogManagement
+        component: () => import('./components/admin/system/LogManagement.vue')
       },
       {
         path: 'menus',
         name: 'MenuManagement',
-        component: MenuManagement
+        component: () => import('./components/admin/system/MenuManagement.vue')
       },
       {
         path: 'shops',
         name: 'ShopManagement',
-        component: ShopManagement
+        component: () => import('./components/admin/order/ShopManagement.vue')
       },
       {
         path: 'ratings',
         name: 'RatingManagement',
-        component: RatingManagement
+        component: () => import('./components/admin/order/RatingManagement.vue')
       },
       {
         path: 'comments',
         name: 'CommentManagement',
-        component: CommentManagement
+        component: () => import('./components/admin/order/CommentManagement.vue')
       },
       {
         path: 'users',
         name: 'UserManagement',
-        component: UserManagement
+        component: () => import('./components/admin/personal/UserManagement.vue')
       },
       {
         path: 'favorites',
         name: 'FavoriteManagement',
-        component: FavoriteManagement
+        component: () => import('./components/admin/personal/FavoriteManagement.vue')
+      },
+      {
+        path: 'git',
+        name: 'GitManagement',
+        component: GitManagement,
+        meta: {
+          requiresAuth: true,
+          title: '版控管理'
+        }
       }
     ]
   }

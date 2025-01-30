@@ -4,11 +4,19 @@ from git_operations import GitOperations
 import os
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={
+    r"/*": {
+        "origins": ["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:5173"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+        "expose_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True
+    }
+})
 
 git_ops = None
 
-@app.route('/init', methods=['POST'])
+@app.route('/api/init', methods=['POST'])
 def init_repo():
     global git_ops
     data = request.json
@@ -24,7 +32,7 @@ def init_repo():
     except Exception as e:
         return jsonify({'message': f'初始化倉庫失敗: {str(e)}'}), 500
 
-@app.route('/status', methods=['GET'])
+@app.route('/api/status', methods=['GET'])
 def check_status():
     if not git_ops:
         return jsonify({'message': '請先初始化倉庫'}), 400
@@ -35,7 +43,7 @@ def check_status():
     except Exception as e:
         return jsonify({'message': f'獲取狀態失敗: {str(e)}'}), 500
 
-@app.route('/add', methods=['POST'])
+@app.route('/api/add', methods=['POST'])
 def add_files():
     if not git_ops:
         return jsonify({'message': '請先初始化倉庫'}), 400
@@ -46,7 +54,7 @@ def add_files():
     except Exception as e:
         return jsonify({'message': f'添加文件失敗: {str(e)}'}), 500
 
-@app.route('/commit', methods=['POST'])
+@app.route('/api/commit', methods=['POST'])
 def commit():
     if not git_ops:
         return jsonify({'message': '請先初始化倉庫'}), 400
@@ -63,7 +71,7 @@ def commit():
     except Exception as e:
         return jsonify({'message': f'提交失敗: {str(e)}'}), 500
 
-@app.route('/branch/create', methods=['POST'])
+@app.route('/api/branch/create', methods=['POST'])
 def create_branch():
     if not git_ops:
         return jsonify({'message': '請先初始化倉庫'}), 400
@@ -80,7 +88,7 @@ def create_branch():
     except Exception as e:
         return jsonify({'message': f'創建分支失敗: {str(e)}'}), 500
 
-@app.route('/branch/switch', methods=['POST'])
+@app.route('/api/branch/switch', methods=['POST'])
 def switch_branch():
     if not git_ops:
         return jsonify({'message': '請先初始化倉庫'}), 400
@@ -97,7 +105,7 @@ def switch_branch():
     except Exception as e:
         return jsonify({'message': f'切換分支失敗: {str(e)}'}), 500
 
-@app.route('/config', methods=['POST'])
+@app.route('/api/config', methods=['POST'])
 def configure_git():
     if not git_ops:
         return jsonify({'message': '請先初始化倉庫'}), 400
@@ -115,7 +123,7 @@ def configure_git():
     except Exception as e:
         return jsonify({'message': f'配置更新失敗: {str(e)}'}), 500
 
-@app.route('/remote/add', methods=['POST'])
+@app.route('/api/remote/add', methods=['POST'])
 def add_remote():
     if not git_ops:
         return jsonify({'message': '請先初始化倉庫'}), 400
@@ -133,7 +141,7 @@ def add_remote():
     except Exception as e:
         return jsonify({'message': f'添加遠程倉庫失敗: {str(e)}'}), 500
 
-@app.route('/push', methods=['POST'])
+@app.route('/api/push', methods=['POST'])
 def push():
     if not git_ops:
         return jsonify({'message': '請先初始化倉庫'}), 400
@@ -158,7 +166,7 @@ def push():
         else:
             return jsonify({'message': f'推送失敗: {error_message}'}), 500
 
-@app.route('/commits', methods=['GET'])
+@app.route('/api/commits', methods=['GET'])
 def get_commits():
     if not git_ops:
         return jsonify({'message': '請先初始化倉庫'}), 400
@@ -169,7 +177,7 @@ def get_commits():
     except Exception as e:
         return jsonify({'message': f'獲取提交歷史失敗: {str(e)}'}), 500
 
-@app.route('/reset', methods=['POST'])
+@app.route('/api/reset', methods=['POST'])
 def reset_commit():
     if not git_ops:
         return jsonify({'message': '請先初始化倉庫'}), 400
@@ -187,7 +195,7 @@ def reset_commit():
     except Exception as e:
         return jsonify({'message': f'版本回退失敗: {str(e)}'}), 500
 
-@app.route('/pull', methods=['POST'])
+@app.route('/api/pull', methods=['POST'])
 def pull():
     if not git_ops:
         return jsonify({'message': '請先初始化倉庫'}), 400
@@ -207,4 +215,4 @@ def pull():
             return jsonify({'message': f'拉取失敗: {error_message}'}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True) 
+    app.run(host='0.0.0.0', port=5000, debug=True) 
