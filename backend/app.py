@@ -1,218 +1,40 @@
-from flask import Flask, request, jsonify
 from flask_cors import CORS
-from git_operations import GitOperations
-import os
+from flask_openapi3 import OpenAPI, Info
+from models.user import User, db
+from controllers.user_controller import user_bp
+from controllers.git_controller import git_bp
+from config.config import Config
 
-app = Flask(__name__)
-CORS(app, resources={
-    r"/*": {
-        "origins": ["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:5173"],
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
-        "expose_headers": ["Content-Type", "Authorization"],
-        "supports_credentials": True
+info = Info(title='後台管理系統 API', version='1.0.0', description='Git小助手與用戶管理系統的API文檔')
+app = OpenAPI(__name__, info=info)
+
+# 修改 CORS 配置
+CORS(app, 
+    resources={
+        r"/*": {
+            "origins": ["http://localhost:3000", "http://localhost:5173", 
+                       "http://127.0.0.1:3000", "http://127.0.0.1:5173",
+                       "http://localhost:8080", "http://127.0.0.1:8080"],  # 添加所有可能的前端地址
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+            "expose_headers": ["Content-Type", "Authorization"],
+            "supports_credentials": True,
+            "max_age": 600,
+            "send_wildcard": False
+        }
     }
-})
+)
 
-git_ops = None
+app.config.from_object(Config)
 
-@app.route('/api/init', methods=['POST'])
-def init_repo():
-    global git_ops
-    data = request.json
-    path = data.get('path')
-    
-    if not path:
-        return jsonify({'message': '請提供有效的倉庫路徑'}), 400
-    
-    try:
-        git_ops = GitOperations(path)
-        git_ops.init_repo()
-        return jsonify({'message': f'成功初始化倉庫於 {path}'})
-    except Exception as e:
-        return jsonify({'message': f'初始化倉庫失敗: {str(e)}'}), 500
+db.init_app(app)
 
-@app.route('/api/status', methods=['GET'])
-def check_status():
-    if not git_ops:
-        return jsonify({'message': '請先初始化倉庫'}), 400
-    
-    try:
-        status = git_ops.check_status()
-        return jsonify({'message': status})
-    except Exception as e:
-        return jsonify({'message': f'獲取狀態失敗: {str(e)}'}), 500
+with app.app_context():
+    db.create_all()
 
-@app.route('/api/add', methods=['POST'])
-def add_files():
-    if not git_ops:
-        return jsonify({'message': '請先初始化倉庫'}), 400
-    
-    try:
-        git_ops.add_files()
-        return jsonify({'message': '成功添加文件到暫存區'})
-    except Exception as e:
-        return jsonify({'message': f'添加文件失敗: {str(e)}'}), 500
-
-@app.route('/api/commit', methods=['POST'])
-def commit():
-    if not git_ops:
-        return jsonify({'message': '請先初始化倉庫'}), 400
-    
-    data = request.json
-    message = data.get('message')
-    
-    if not message:
-        return jsonify({'message': '請提供提交信息'}), 400
-    
-    try:
-        git_ops.commit(message)
-        return jsonify({'message': '成功提交更改'})
-    except Exception as e:
-        return jsonify({'message': f'提交失敗: {str(e)}'}), 500
-
-@app.route('/api/branch/create', methods=['POST'])
-def create_branch():
-    if not git_ops:
-        return jsonify({'message': '請先初始化倉庫'}), 400
-    
-    data = request.json
-    name = data.get('name')
-    
-    if not name:
-        return jsonify({'message': '請提供分支名稱'}), 400
-    
-    try:
-        git_ops.create_branch(name)
-        return jsonify({'message': f'成功創建分支 {name}'})
-    except Exception as e:
-        return jsonify({'message': f'創建分支失敗: {str(e)}'}), 500
-
-@app.route('/api/branch/switch', methods=['POST'])
-def switch_branch():
-    if not git_ops:
-        return jsonify({'message': '請先初始化倉庫'}), 400
-    
-    data = request.json
-    name = data.get('name')
-    
-    if not name:
-        return jsonify({'message': '請提供分支名稱'}), 400
-    
-    try:
-        git_ops.switch_branch(name)
-        return jsonify({'message': f'成功切換到分支 {name}'})
-    except Exception as e:
-        return jsonify({'message': f'切換分支失敗: {str(e)}'}), 500
-
-@app.route('/api/config', methods=['POST'])
-def configure_git():
-    if not git_ops:
-        return jsonify({'message': '請先初始化倉庫'}), 400
-    
-    data = request.json
-    name = data.get('name')
-    email = data.get('email')
-    
-    if not name or not email:
-        return jsonify({'message': '請提供用戶名和郵箱'}), 400
-    
-    try:
-        git_ops.configure(name, email)
-        return jsonify({'message': '成功更新 Git 配置'})
-    except Exception as e:
-        return jsonify({'message': f'配置更新失敗: {str(e)}'}), 500
-
-@app.route('/api/remote/add', methods=['POST'])
-def add_remote():
-    if not git_ops:
-        return jsonify({'message': '請先初始化倉庫'}), 400
-    
-    data = request.json
-    name = data.get('name', 'origin')
-    url = data.get('url')
-    
-    if not url:
-        return jsonify({'message': '請提供遠程倉庫URL'}), 400
-    
-    try:
-        git_ops.add_remote(name, url)
-        return jsonify({'message': f'成功添加遠程倉庫 {name}'})
-    except Exception as e:
-        return jsonify({'message': f'添加遠程倉庫失敗: {str(e)}'}), 500
-
-@app.route('/api/push', methods=['POST'])
-def push():
-    if not git_ops:
-        return jsonify({'message': '請先初始化倉庫'}), 400
-    
-    data = request.json
-    if not data:
-        return jsonify({'message': '無效的請求數據'}), 400
-    
-    remote = data.get('remote', 'origin')
-    branch = data.get('branch', 'master')
-    force = data.get('force', False)
-    
-    try:
-        git_ops.push(remote, branch, force)
-        return jsonify({'message': f'成功推送到遠程倉庫 {remote}/{branch}'})
-    except Exception as e:
-        error_message = str(e)
-        if "認證" in error_message or "權限" in error_message:
-            return jsonify({'message': f'推送失敗: {error_message}. 請確保已配置正確的認證信息'}), 401
-        elif "拒絕" in error_message:
-            return jsonify({'message': f'推送失敗: {error_message}'}), 409
-        else:
-            return jsonify({'message': f'推送失敗: {error_message}'}), 500
-
-@app.route('/api/commits', methods=['GET'])
-def get_commits():
-    if not git_ops:
-        return jsonify({'message': '請先初始化倉庫'}), 400
-    
-    try:
-        commits = git_ops.get_commit_history()
-        return jsonify({'commits': commits})
-    except Exception as e:
-        return jsonify({'message': f'獲取提交歷史失敗: {str(e)}'}), 500
-
-@app.route('/api/reset', methods=['POST'])
-def reset_commit():
-    if not git_ops:
-        return jsonify({'message': '請先初始化倉庫'}), 400
-    
-    data = request.json
-    commit_hash = data.get('hash')
-    mode = data.get('mode', 'hard')
-    
-    if not commit_hash:
-        return jsonify({'message': '請提供提交哈希值'}), 400
-    
-    try:
-        message = git_ops.reset_to_commit(commit_hash, mode)
-        return jsonify({'message': message})
-    except Exception as e:
-        return jsonify({'message': f'版本回退失敗: {str(e)}'}), 500
-
-@app.route('/api/pull', methods=['POST'])
-def pull():
-    if not git_ops:
-        return jsonify({'message': '請先初始化倉庫'}), 400
-    
-    data = request.json
-    remote = data.get('remote', 'origin')
-    branch = data.get('branch', 'master')
-    
-    try:
-        message = git_ops.pull(remote, branch)
-        return jsonify({'message': message})
-    except Exception as e:
-        error_message = str(e)
-        if "衝突" in error_message:
-            return jsonify({'message': f'拉取失敗: {error_message}'}), 409
-        else:
-            return jsonify({'message': f'拉取失敗: {error_message}'}), 500
+# 註冊藍圖 - 移除 url_prefix，因為已經在路由中包含了
+app.register_api(user_bp)
+app.register_api(git_bp)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True) 

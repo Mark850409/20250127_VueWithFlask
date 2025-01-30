@@ -1,26 +1,63 @@
 import git
 import os
+from models.git import GitStatus
 
 class GitOperations:
     def __init__(self, repo_path):
-        self.repo_path = repo_path
+        self.path = repo_path
         self.repo = None
 
     def init_repo(self):
-        if not os.path.exists(self.repo_path):
-            os.makedirs(self.repo_path)
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
         
-        if not os.path.exists(os.path.join(self.repo_path, '.git')):
-            self.repo = git.Repo.init(self.repo_path)
+        if not os.path.exists(os.path.join(self.path, '.git')):
+            self.repo = git.Repo.init(self.path)
         else:
-            self.repo = git.Repo(self.repo_path)
+            self.repo = git.Repo(self.path)
 
-    def check_status(self):
-        if not self.repo:
-            raise Exception("倉庫未初始化")
-        
-        status = self.repo.git.status()
-        return status
+    def check_status(self) -> GitStatus:
+        """檢查 Git 狀態"""
+        try:
+            if not self.repo:
+                try:
+                    self.repo = git.Repo(self.path)
+                except git.exc.InvalidGitRepositoryError:
+                    raise Exception("不是有效的 Git 倉庫")
+            
+            # 獲取當前分支
+            try:
+                branch = self.repo.active_branch.name
+            except (TypeError, AttributeError):
+                branch = 'HEAD detached'
+            
+            # 獲取未追蹤的文件
+            untracked = list(self.repo.untracked_files)
+            
+            # 獲取已修改的文件
+            modified = []
+            if self.repo.head.is_valid():
+                try:
+                    modified = [item.a_path for item in self.repo.index.diff(None)]
+                except Exception as e:
+                    print(f"Error getting modified files: {e}")
+            
+            # 獲取已暫存的文件
+            staged = []
+            if self.repo.head.is_valid():
+                try:
+                    staged = [item.a_path for item in self.repo.index.diff('HEAD')]
+                except Exception as e:
+                    print(f"Error getting staged files: {e}")
+            
+            return GitStatus(
+                untracked=untracked,
+                modified=modified,
+                staged=staged,
+                branch=branch
+            )
+        except Exception as e:
+            raise Exception(f"獲取 Git 狀態失敗：{str(e)}")
 
     def add_files(self):
         if not self.repo:
@@ -119,12 +156,12 @@ class GitOperations:
                 untracked_files = self.repo.untracked_files
                 # 刪除未追蹤的文件
                 for file_path in untracked_files:
-                    full_path = os.path.join(self.repo_path, file_path)
+                    full_path = os.path.join(self.path, file_path)
                     if os.path.exists(full_path):
                         os.remove(full_path)
                 
                 # 清理空目錄
-                for root, dirs, files in os.walk(self.repo_path, topdown=False):
+                for root, dirs, files in os.walk(self.path, topdown=False):
                     for name in dirs:
                         try:
                             dir_path = os.path.join(root, name)
