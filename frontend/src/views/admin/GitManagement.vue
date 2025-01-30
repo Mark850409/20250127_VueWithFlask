@@ -584,11 +584,15 @@ export default {
 
     async push() {
       try {
-        const response = await axios.post('/push')
+        // 添加請求頭，指定 Content-Type
+        const response = await axios.post('/push', {}, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
         await this.checkStatus()
         await this.getHistory()
         
-        // 添加成功提示
         Swal.fire({
           icon: 'success',
           title: '已成功推送更改',
@@ -603,7 +607,6 @@ export default {
     },
 
     async forcePush() {
-      // 添加確認提示
       const result = await Swal.fire({
         title: '確認強制推送？',
         html: `
@@ -627,11 +630,15 @@ export default {
 
       if (result.isConfirmed) {
         try {
-          const response = await axios.post('/force-push')
+          // 添加請求頭，指定 Content-Type
+          const response = await axios.post('/force-push', {}, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
           await this.checkStatus()
           await this.getHistory()
           
-          // 添加成功提示
           Swal.fire({
             icon: 'success',
             title: '已成功強制推送',
