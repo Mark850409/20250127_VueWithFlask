@@ -1,0 +1,97 @@
+version: "3.3"
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: dockerfiles/frontend/Dockerfile_vue
+    volumes:
+      - './frontend:/app'
+      - '/app/node_modules'
+    ports:
+      - 3000:3000
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - NODE_ENV=development
+      - VITE_BACKEND_URL=http://localhost:5000
+    networks:
+      - api_bridge
+  
+  backend:
+    build:
+      context: .
+      dockerfile: dockerfiles/backend/Dockerfile_python
+    volumes:
+      - './backend:/usr/src/app'
+      - '/usr/bin/git:/usr/bin/git'
+      - './git-repo:/git-repo'
+    ports:
+      - 5000:5000
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - SECRET_KEY=my_precious
+      - GIT_PYTHON_GIT_EXECUTABLE=/usr/bin/git
+      - GIT_REPO_PATH=/git-repo
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=mark
+      - DB_PASSWORD=mark850409
+      - DB_NAME=restaurant
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - api_bridge
+    restart: always
+    
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: restaurant
+      MYSQL_USER: mark
+      MYSQL_PASSWORD: mark850409
+      MYSQL_ROOT_HOST: '%'
+      TZ: Asia/Taipei
+    ports:
+      - "3306:3306"
+    volumes:
+      - './data/mysql:/var/lib/mysql'
+      - './scripts/init.sql:/docker-entrypoint-initdb.d/init.sql'
+    restart: always
+    networks:
+      - api_bridge
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --skip-character-set-client-handshake
+      --bind-address=0.0.0.0
+      --default-time-zone='+08:00'
+      --init-file=/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  
+  # phpmyadmin
+  phpmyadmin:
+    depends_on:
+      - db
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 80:80
+    environment:
+      PMA_HOST: db
+      PMA_ABSOLUTE_URI: http://localhost:80
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: mark
+      MYSQL_PASSWORD: mark850409
+    networks:
+      - api_bridge
+      
+networks:
+  api_bridge:
+    driver: bridge

@@ -14,10 +14,7 @@ build/
 dist/
 
 # Development
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
 
 # Logs
 npm-debug.log*
@@ -63,3 +60,7 @@ frontend/dist/
 *.njsproj
 *.sln
 *.sw? 
+
+# docker
+data/
+data/**

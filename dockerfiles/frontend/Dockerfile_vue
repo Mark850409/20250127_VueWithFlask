@@ -1,0 +1,20 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# 複製 package.json 和 package-lock.json
+COPY ./frontend/package*.json ./
+
+# 安裝依賴
+RUN npm install
+RUN npm install -g vite  # 全局安裝 vite
+
+# 複製源代碼
+COPY ./frontend .
+
+# 設置環境變量
+ENV NODE_ENV=development
+ENV PATH /app/node_modules/.bin:$PATH
+
+# 啟動開發服務器
+CMD ["npm", "run", "dev", "--", "--host"] 

@@ -1,0 +1,31 @@
+FROM python:3.9-slim
+
+WORKDIR /usr/src/app
+
+# 安裝系統依賴
+RUN apt-get update && apt-get install -y \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# 創建並設置 Git 倉庫目錄
+RUN mkdir -p /git-repo && \
+    chmod 777 /git-repo
+
+# 複製 requirements.txt
+COPY ./backend/requirements.txt .
+
+# 安裝依賴
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 複製源代碼
+COPY ./backend .
+
+# 設置環境變量
+ENV FLASK_APP=app.py
+ENV PYTHONPATH=/usr/src/app
+ENV FLASK_ENV=development
+ENV GIT_PYTHON_GIT_EXECUTABLE=/usr/bin/git
+ENV GIT_REPO_PATH=/git-repo
+
+# 啟動服務
+CMD ["python", "app.py"] 

@@ -9,8 +9,6 @@ from schemas.git_schema import (
     GitPushRequest,
     GitResetRequest,
     GitPullRequest,
-    GitCommitResponse,
-    GitStatusResponse,
     ErrorResponse
 )
 

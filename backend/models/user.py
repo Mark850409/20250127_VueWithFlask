@@ -1,7 +1,9 @@
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from models.database import db
+import pytz
 
-db = SQLAlchemy()
+# 設定台灣時區
+tw_tz = pytz.timezone('Asia/Taipei')
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -22,6 +24,6 @@ class User(db.Model):
             'email': self.email,
             'avatar': self.avatar,
             'status': self.status,
-            'register_time': self.register_time.isoformat() if self.register_time else None,
-            'update_time': self.update_time.isoformat() if self.update_time else None
+            'register_time': self.register_time.replace(tzinfo=pytz.UTC).astimezone(tw_tz).strftime('%Y-%m-%d %H:%M:%S') if self.register_time else None,
+            'update_time': self.update_time.replace(tzinfo=pytz.UTC).astimezone(tw_tz).strftime('%Y-%m-%d %H:%M:%S') if self.update_time else None
         } 
