@@ -1,31 +1,11 @@
 <template>
   <div>
-    <!-- 視圖切換按鈕 -->
-    <div class="mb-6 flex justify-end">
-      <div class="bg-white rounded-lg shadow-sm p-1 inline-flex space-x-1">
-        <button @click="viewMode = 'card'" 
-                :class="[
-                  'px-3 py-1.5 rounded transition-colors duration-200 flex items-center',
-                  viewMode === 'card' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'
-                ]">
-          <i class="fas fa-th-large mr-2"></i>卡片
-        </button>
-        <button @click="viewMode = 'list'" 
-                :class="[
-                  'px-3 py-1.5 rounded transition-colors duration-200 flex items-center',
-                  viewMode === 'list' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'
-                ]">
-          <i class="fas fa-list mr-2"></i>列表
-        </button>
-      </div>
-    </div>
-
+    <!-- 移除視圖切換按鈕 -->
+    
     <!-- 系統管理區塊 -->
     <div class="bg-white rounded-lg p-6 mb-6">
       <h2 class="text-lg font-medium mb-4">系統管理</h2>
-      <div :class="[
-        viewMode === 'card' ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-4'
-      ]">
+      <div class="space-y-4">
         <draggable 
           v-model="systemMenus"
           :component-data="{
@@ -40,68 +20,46 @@
           handle=".handle"
         >
           <template #item="{element: menu}">
-            <div :class="[
-              'transition-all duration-300 ease-in-out',
-              viewMode === 'card' 
-                ? 'bg-white rounded-lg shadow-sm hover:shadow-md p-6' 
-                : 'bg-white rounded-lg border border-gray-200 p-4 hover:bg-gray-50'
-            ]">
-              <div :class="[
-                viewMode === 'card' ? 'flex flex-col space-y-4' : 'flex justify-between items-start'
-              ]">
-                <div :class="[
-                  'flex items-center',
-                  viewMode === 'card' ? 'justify-between w-full' : 'space-x-3'
-                ]">
-                  <div class="flex items-center space-x-3">
-                    <div class="handle cursor-move text-gray-400 hover:text-gray-600">
-                      <i class="fas fa-grip-vertical"></i>
-                    </div>
-                    <i :class="['text-xl', menu.icon]"></i>
-                    <div>
-                      <h3 class="font-medium text-gray-900">{{ menu.name }}</h3>
-                      <p class="text-sm text-gray-500">{{ menu.path }}</p>
-                    </div>
+            <div class="bg-white rounded-lg border border-gray-200 p-4 hover:bg-gray-50">
+              <div class="flex justify-between items-start">
+                <div class="flex items-center space-x-3">
+                  <div class="handle cursor-move text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-grip-vertical"></i>
                   </div>
-                  <div class="flex items-center space-x-2">
-                    <button @click="addSubmenu(menu)" 
-                            class="p-1.5 text-gray-600 hover:text-green-600 rounded-full hover:bg-green-50">
-                      <i class="fas fa-plus"></i>
-                    </button>
-                    <button @click="editMenu(menu)" 
-                            class="p-1.5 text-gray-600 hover:text-blue-600 rounded-full hover:bg-blue-50">
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    <button @click="deleteMenu(menu)" 
-                            class="p-1.5 text-gray-600 hover:text-red-600 rounded-full hover:bg-red-50">
-                      <i class="fas fa-trash"></i>
-                    </button>
+                  <i :class="['text-xl', menu.icon]"></i>
+                  <div>
+                    <h3 class="font-medium text-gray-900">{{ menu.name }}</h3>
+                    <p class="text-sm text-gray-500">{{ menu.path }}</p>
                   </div>
                 </div>
-                
-                <!-- 卡片視圖額外顯示描述 -->
-                <div v-if="viewMode === 'card'" class="text-gray-600 text-sm">
-                  {{ menu.description }}
+                <div class="flex items-center space-x-2">
+                  <button @click="addSubmenu(menu)" 
+                          class="p-1.5 text-gray-600 hover:text-green-600 rounded-full hover:bg-green-50">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                  <button @click="editMenu(menu)" 
+                          class="p-1.5 text-gray-600 hover:text-blue-600 rounded-full hover:bg-blue-50">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button @click="deleteMenu(menu)" 
+                          class="p-1.5 text-gray-600 hover:text-red-600 rounded-full hover:bg-red-50">
+                    <i class="fas fa-trash"></i>
+                  </button>
                 </div>
               </div>
               
               <!-- 子選單列表 -->
               <div v-if="menu.children && menu.children.length" 
-                   :class="[
-                     'mt-4',
-                     viewMode === 'card' ? 'border-t pt-4' : 'pl-8'
-                   ]">
+                   class="mt-4 pl-8 space-y-3">
                 <draggable 
                   v-model="menu.children"
                   :component-data="{
                     tag: 'div',
                     type: 'transition-group',
-                    name: !drag ? 'flip-list' : null
+                    name: 'submenu-list'
                   }"
                   item-key="id"
                   :group="{ name: 'submenus' }"
-                  @start="drag=true" 
-                  @end="drag=false"
                   handle=".handle"
                 >
                   <template #item="{element: submenu}">
@@ -354,7 +312,6 @@ export default defineComponent({
   },
   data() {
     return {
-      viewMode: 'list',
       showAddModal: false,
       showIconPicker: false,
       editingMenu: null,
@@ -534,6 +491,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
+/* 移除卡片視圖相關樣式，保留列表動畫效果 */
 .flip-list-move {
   transition: transform 0.5s;
 }
@@ -545,12 +503,8 @@ export default defineComponent({
   opacity: 0.9;
 }
 
-/* 卡片視圖樣式 */
-.card-view {
-  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4;
-}
-
-/* 列表視圖樣式 */
+/* 移除卡片視圖樣式 */
+/* 保留列表視圖樣式 */
 .list-view {
   @apply space-y-2;
 }

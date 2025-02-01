@@ -1,9 +1,6 @@
 from flask_cors import CORS
 from flask_openapi3 import OpenAPI, Info, Server
 from models import db
-from models.user import User
-from models.log import Log
-from models.menu import Menu
 from controllers.user_controller import user_bp
 from controllers.git_controller import git_bp
 from controllers.log_controller import log_bp
@@ -11,6 +8,8 @@ from controllers.menu_controller import menu_bp
 from controllers.store_controller import store_bp
 from controllers.rating_controller import rating_bp
 from controllers.message_controller import message_bp
+from controllers.admin_controller import admin_bp
+from controllers.favorite_controller import favorite_bp
 from config.config import config
 from extensions import jwt
 import os
@@ -70,22 +69,23 @@ jwt.init_app(app)
 # JWT 錯誤處理
 @jwt.invalid_token_loader
 def invalid_token_callback(error):
-    return {'msg': 'Invalid token'}, 401
+    return {'msg': '不合法的token，請重新輸入!!!'}, 401
 
 @jwt.unauthorized_loader
 def unauthorized_callback(error):
-    return {'msg': 'Missing Authorization Header'}, 401
+    return {'msg': '缺少正確的token驗證表頭，請重新輸入!!!'}, 401
 
 # 初始化 SQLAlchemy
 db.init_app(app)
+
+# 從環境變數獲取 CORS origins
+CORS_ORIGINS = os.getenv('CORS_ORIGINS', '').split(',')
 
 # CORS配置
 CORS(app, 
     resources={
         r"/*": {
-            "origins": ["http://localhost:3000", "http://localhost:5173", 
-                       "http://127.0.0.1:3000", "http://127.0.0.1:5173",
-                       "http://localhost:8080", "http://127.0.0.1:8080"],
+            "origins": CORS_ORIGINS,  # 使用環境變數中的 origins
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
             "expose_headers": ["Content-Type", "Authorization"],
@@ -104,6 +104,8 @@ app.register_api(menu_bp)
 app.register_api(store_bp)
 app.register_api(rating_bp)
 app.register_api(message_bp)
+app.register_api(admin_bp)
+app.register_api(favorite_bp)
 
 # JWT 安全配置
 security_scheme = {

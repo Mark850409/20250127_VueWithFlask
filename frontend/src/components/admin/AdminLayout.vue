@@ -209,7 +209,7 @@
                     : 'text-gray-600 hover:bg-gray-100'
                 ]">
                 <i class="fas fa-user text-lg w-6"></i>
-                <span class="ml-3">使用者管理</span>
+                <span class="ml-3">管理員管理</span>
               </router-link>
               <router-link to="/admin/favorites" 
                 class="flex items-center px-4 py-2.5 text-sm rounded-lg transition-colors duration-150"
@@ -306,7 +306,7 @@ export default {
         'ShopManagement': '飲料店管理',
         'RatingManagement': '評分管理',
         'CommentManagement': '留言板管理',
-        'UserManagement': '使用者管理',
+        'UserManagement': '管理員管理',
         'FavoriteManagement': '最愛管理',
         'GitManagement': '版控管理',
       }

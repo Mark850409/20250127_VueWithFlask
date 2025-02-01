@@ -104,4 +104,83 @@ CREATE TABLE IF NOT EXISTS messages (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 創建管理員表
+CREATE TABLE IF NOT EXISTS admins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(120) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'admin',
+    status VARCHAR(20) NOT NULL DEFAULT 'active',
+    avatar VARCHAR(255),
+    last_login DATETIME,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_email (email),
+    INDEX idx_username (username),
+    INDEX idx_role (role),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 插入預設超級管理員
+INSERT INTO admins (username, email, password, role, status, avatar)
+VALUES (
+    'admin',
+    'admin@example.com',
+    -- 預設密碼: admin123
+    '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFX.gtkv4iXTEga',
+    'super_admin',
+    'active',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=admin'
+)
+ON DUPLICATE KEY UPDATE
+    updated_at = CURRENT_TIMESTAMP;
+
+-- 插入預設一般管理員
+INSERT INTO admins (username, email, password, role, status, avatar)
+VALUES (
+    'manager',
+    'manager@example.com',
+    -- 預設密碼: manager123
+    '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFX.gtkv4iXTEga',
+    'admin',
+    'active',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=manager'
+)
+ON DUPLICATE KEY UPDATE
+    updated_at = CURRENT_TIMESTAMP;
+
+-- 添加管理員相關權限
+INSERT INTO permissions (name, description) VALUES
+('admin.view', '查看管理員列表'),
+('admin.create', '創建管理員'),
+('admin.edit', '編輯管理員'),
+('admin.delete', '刪除管理員')
+ON DUPLICATE KEY UPDATE
+    description = VALUES(description);
+
+-- 將管理員權限分配給超級管理員角色
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT 
+    (SELECT id FROM roles WHERE name = 'super_admin'),
+    id
+FROM permissions
+WHERE name LIKE 'admin.%'
+ON DUPLICATE KEY UPDATE
+    updated_at = CURRENT_TIMESTAMP;
+
+-- 創建最愛表
+CREATE TABLE IF NOT EXISTS favorites (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    store_id INT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (store_id) REFERENCES stores(id),
+    UNIQUE KEY unique_favorite (user_id, store_id),
+    INDEX idx_user (user_id),
+    INDEX idx_store (store_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci; 
