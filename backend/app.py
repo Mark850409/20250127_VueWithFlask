@@ -1,6 +1,6 @@
 from flask_cors import CORS
 from flask_openapi3 import OpenAPI, Info, Server
-from models.database import db
+from models import db
 from models.user import User
 from models.log import Log
 from models.menu import Menu
@@ -8,7 +8,11 @@ from controllers.user_controller import user_bp
 from controllers.git_controller import git_bp
 from controllers.log_controller import log_bp
 from controllers.menu_controller import menu_bp
+from controllers.store_controller import store_bp
+from controllers.rating_controller import rating_bp
+from controllers.message_controller import message_bp
 from config.config import config
+from extensions import jwt
 import os
 from dotenv import load_dotenv
 
@@ -42,10 +46,35 @@ servers = [
 ]
 
 # 創建應用實例
-app = OpenAPI(__name__, info=info, servers=servers)
+app = OpenAPI(
+    __name__, 
+    info=info, 
+    servers=servers
+)
 
 # 載入配置
 app.config.from_object(config[env])
+
+# JWT 配置
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key')
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 24 * 60 * 60
+app.config['JWT_TOKEN_LOCATION'] = ['headers']
+app.config['JWT_HEADER_NAME'] = 'Authorization'
+app.config['JWT_HEADER_TYPE'] = 'Bearer'
+app.config['JWT_IDENTITY_CLAIM'] = 'sub'
+app.config['JWT_ERROR_MESSAGE_KEY'] = 'msg'
+
+# 初始化 JWT
+jwt.init_app(app)
+
+# JWT 錯誤處理
+@jwt.invalid_token_loader
+def invalid_token_callback(error):
+    return {'msg': 'Invalid token'}, 401
+
+@jwt.unauthorized_loader
+def unauthorized_callback(error):
+    return {'msg': 'Missing Authorization Header'}, 401
 
 # 初始化 SQLAlchemy
 db.init_app(app)
@@ -67,13 +96,32 @@ CORS(app,
     }
 )
 
-# 註冊所有藍圖（確保在 db.init_app 之後）
+# 註冊所有藍圖
 app.register_api(user_bp)
 app.register_api(git_bp)
 app.register_api(log_bp)
 app.register_api(menu_bp)
+app.register_api(store_bp)
+app.register_api(rating_bp)
+app.register_api(message_bp)
 
-# 創建所有表（確保在註冊藍圖之後）
+# JWT 安全配置
+security_scheme = {
+    'type': 'http',
+    'scheme': 'bearer',
+    'bearerFormat': 'JWT',
+    'description': '請輸入 JWT token，格式為：Bearer your-token-here'
+}
+
+if 'components' not in app.api_doc:
+    app.api_doc['components'] = {}
+if 'securitySchemes' not in app.api_doc['components']:
+    app.api_doc['components']['securitySchemes'] = {}
+
+app.api_doc['components']['securitySchemes']['Bearer'] = security_scheme
+app.api_doc['security'] = [{'Bearer': []}]
+
+# 創建所有表
 with app.app_context():
     db.create_all()
     print("數據庫表已創建")
