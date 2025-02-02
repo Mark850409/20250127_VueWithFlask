@@ -11,7 +11,6 @@ from schemas.git_schema import (
     GitPullRequest,
     ErrorResponse
 )
-
 git_bp = APIBlueprint('git', __name__)
 git_tag = Tag(name='git', description='Git 操作')
 
@@ -175,4 +174,4 @@ def push(body: GitPushRequest):
         elif "拒絕" in error_message:
             return {'message': f'推送失敗: {error_message}'}, 409
         else:
-            return {'message': f'推送失敗: {error_message}'}, 500 
+            return {'message': f'推送失敗: {error_message}'}, 500

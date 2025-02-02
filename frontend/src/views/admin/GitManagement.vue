@@ -55,7 +55,21 @@
 
     <!-- Git 配置 -->
     <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-lg font-semibold mb-4">Git 配置</h2>
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold">Git 配置</h2>
+        <button @click="setRepoPath" 
+                class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+          <i class="fas fa-folder mr-2"></i>設置倉庫路徑
+        </button>
+      </div>
+      <!-- 顯示當前路徑 -->
+      <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+        <div class="flex items-center text-sm text-gray-600">
+          <i class="fas fa-folder-open mr-2"></i>
+          <span class="font-medium mr-2">當前倉庫路徑：</span>
+          <span class="font-mono">{{ repoPath || '尚未設置' }}</span>
+        </div>
+      </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700">
@@ -128,13 +142,20 @@
         <h2 class="text-lg font-semibold mb-4">提交操作</h2>
         <div class="space-y-4">
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">
-              提交信息 <span class="text-red-500">*</span>
-            </label>
-            <textarea v-model="commitMessage" 
-                      class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                      :class="{ 'border-red-500': showCommitError && !commitMessage }"
-                      rows="3"></textarea>
+            <div class="flex justify-between items-center">
+              <label class="block text-sm font-medium text-gray-700">
+                提交信息 <span class="text-red-500">*</span>
+              </label>
+              <button @click="openCommitMessageDialog" 
+                      class="text-blue-500 hover:text-blue-600">
+                <i class="fas fa-edit"></i> 編輯
+              </button>
+            </div>
+            <!-- 預覽區域 -->
+            <div class="w-full px-3 py-2 border rounded-lg bg-gray-50 min-h-[4rem]">
+              <p v-if="commitMessage" class="whitespace-pre-line text-gray-700">{{ commitMessage }}</p>
+              <p v-else class="text-gray-400 italic">尚未輸入提交信息</p>
+            </div>
             <p v-if="showCommitError && !commitMessage" class="text-red-500 text-xs mt-1">
               請輸入提交信息
             </p>
@@ -347,8 +368,8 @@ export default {
       showRemoteError: false,
       showCommitError: false,
       showBranchError: false,
-      repoPath: 'D:/AI_project/20250127_VueWithFlask',  // 添加倉庫路徑
-      currentBranch: 'master',  // 添加當前分支狀態
+      repoPath: localStorage.getItem('repoPath') || '',
+      currentBranch: 'master',
       parsedStatus: {
         untracked: [],
         modified: []
@@ -357,7 +378,8 @@ export default {
       currentPage: 1,
       pageSize: 10,
       sortKey: 'date',
-      sortOrder: 'desc'
+      sortOrder: 'desc',
+      showRepoPathDialog: false
     }
   },
   computed: {
@@ -410,6 +432,11 @@ export default {
   },
   methods: {
     async initRepo() {
+      if (!this.repoPath) {
+        await this.setRepoPath()
+        return
+      }
+
       try {
         await axios.post('/init', { path: this.repoPath })
         Swal.fire({
@@ -420,8 +447,22 @@ export default {
           showConfirmButton: false,
           timer: 3000
         })
+        await this.checkStatus()
       } catch (error) {
-        // 錯誤處理已在 axios 攔截器中完成
+        console.error('Error initializing repo:', error)
+        // 如果初始化失敗，可能是路徑問題，提示重新設置
+        const result = await Swal.fire({
+          icon: 'error',
+          title: '初始化失敗',
+          text: '是否重新設置倉庫路徑？',
+          showCancelButton: true,
+          confirmButtonText: '重新設置',
+          cancelButtonText: '取消'
+        })
+        
+        if (result.isConfirmed) {
+          await this.setRepoPath()
+        }
       }
     },
 
@@ -465,7 +506,11 @@ export default {
         })
         this.isRepoConfigured = true
         this.showRemoteError = false
-        this.checkStatus()
+        
+        // 添加遠程倉庫後，依序執行：
+        await this.checkStatus()  // 1. 檢查倉庫狀態
+        await this.getHistory()   // 2. 獲取提交歷史
+        
       } catch (error) {
         this.isRepoConfigured = false
       }
@@ -512,10 +557,67 @@ export default {
       if (!this.commitMessage) {
         return
       }
+
       try {
+        // 先檢查狀態
+        await this.checkStatus()
+        
+        // 如果有未添加的文件，詢問用戶是否要添加
+        if (this.parsedStatus.modified.length || this.parsedStatus.untracked.length) {
+          const result = await Swal.fire({
+            title: '發現未添加的文件',
+            html: `
+              <div class="text-left">
+                <p class="mb-2">以下文件尚未添加到暫存區：</p>
+                <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100 max-h-48 overflow-y-auto">
+                  ${[...this.parsedStatus.modified, ...this.parsedStatus.untracked]
+                    .map(file => `<div class="text-sm mb-1">
+                      <i class="fas fa-file text-yellow-500 mr-2"></i>${file}
+                    </div>`).join('')}
+                </div>
+                <p class="mt-4 text-sm text-gray-600">
+                  是否要先將這些文件添加到暫存區？
+                </p>
+              </div>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '是，添加文件',
+            cancelButtonText: '否，僅提交已暫存的更改',
+            customClass: {
+              container: 'add-files-modal'
+            }
+          })
+
+          if (result.isConfirmed) {
+            // 用戶選擇添加文件
+            await this.addFiles()
+          } else if (result.dismiss === Swal.DismissReason.cancel) {
+            // 用戶選擇不添加文件，確認是否繼續提交
+            const confirmResult = await Swal.fire({
+              title: '確認僅提交已暫存的更改？',
+              text: '未添加的文件將不會包含在此次提交中',
+              icon: 'question',
+              showCancelButton: true,
+              confirmButtonText: '是，繼續提交',
+              cancelButtonText: '取消'
+            })
+            
+            if (!confirmResult.isConfirmed) {
+              return
+            }
+          }
+        }
+
+        // 執行提交
         await axios.post('/commit', { message: this.commitMessage })
         this.commitMessage = ''
         this.showCommitError = false
+        
+        // 提交成功後更新狀態和歷史
+        await this.checkStatus()
+        await this.getHistory()
+        
         Swal.fire({
           icon: 'success',
           title: '更改已提交',
@@ -524,9 +626,8 @@ export default {
           showConfirmButton: false,
           timer: 3000
         })
-        this.getHistory()
       } catch (error) {
-        // 錯誤處理已在 axios 攔截器中完成
+        console.error('Error during commit:', error)
       }
     },
 
@@ -660,11 +761,11 @@ export default {
     },
 
     async getHistory() {
-      if (!this.isRepoConfigured) return
       try {
         const response = await axios.get('/commits')
         this.commits = response.data.commits
       } catch (error) {
+        console.error('Error getting commit history:', error)
         // 錯誤處理已在 axios 攔截器中完成
       }
     },
@@ -833,6 +934,79 @@ export default {
     getSortIcon(key) {
       if (this.sortKey !== key) return 'fas fa-sort'
       return this.sortOrder === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'
+    },
+    async setRepoPath() {
+      const { value: path } = await Swal.fire({
+        title: '設置倉庫路徑',
+        input: 'text',
+        inputLabel: '請輸入 Git 倉庫的完整路徑',
+        inputValue: this.repoPath,
+        inputPlaceholder: '例如: C:/Projects/my-repo',
+        showCancelButton: true,
+        confirmButtonText: '確認',
+        cancelButtonText: '取消',
+        customClass: {
+          input: 'swal2-input-dark'
+        },
+        didOpen: () => {
+          const style = document.createElement('style')
+          style.textContent = `
+            .swal2-input-dark {
+              color: #000 !important;
+              background-color: #fff !important;
+            }
+          `
+          document.head.appendChild(style)
+        },
+        inputValidator: (value) => {
+          if (!value) {
+            return '請輸入路徑'
+          }
+        }
+      })
+
+      if (path) {
+        this.repoPath = path
+        localStorage.setItem('repoPath', path)
+        await this.initRepo()
+      }
+    },
+    async openCommitMessageDialog() {
+      const { value: message } = await Swal.fire({
+        title: '輸入提交信息',
+        input: 'textarea',
+        inputLabel: '請描述您的更改',
+        inputValue: this.commitMessage,
+        inputPlaceholder: '例如：\nfeat: 添加新功能\n\n- 實現了XXX功能\n- 優化了YYY流程',
+        showCancelButton: true,
+        confirmButtonText: '確認',
+        cancelButtonText: '取消',
+        customClass: {
+          input: 'commit-message-textarea'
+        },
+        didOpen: () => {
+          const style = document.createElement('style')
+          style.textContent = `
+            .commit-message-textarea {
+              height: 200px !important;
+              font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+              color: #000 !important;
+              background-color: #fff !important;
+            }
+          `
+          document.head.appendChild(style)
+        },
+        inputValidator: (value) => {
+          if (!value) {
+            return '請輸入提交信息'
+          }
+        }
+      })
+
+      if (message) {
+        this.commitMessage = message
+        this.showCommitError = false
+      }
     }
   },
   watch: {
@@ -843,10 +1017,6 @@ export default {
     pageSize() {
       this.currentPage = 1
     }
-  },
-  mounted() {
-    // 添加初始化倉庫的調用
-    this.initRepo()
   }
 }
 </script>
