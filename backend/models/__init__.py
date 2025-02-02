@@ -7,6 +7,7 @@ from models.rating import Rating
 from models.comment import Comment
 from models.admin import Admin
 from models.favorite import Favorite
+from models.restaurant import RestaurantTypeList
 
 # 確保所有模型都被導入
-__all__ = ['db', 'User', 'Log', 'Menu', 'Store', 'Rating', 'Comment', 'Admin', 'Favorite'] 
+__all__ = ['db', 'User', 'Log', 'Menu', 'Store', 'Rating', 'Comment', 'Admin', 'Favorite', 'RestaurantTypeList'] 

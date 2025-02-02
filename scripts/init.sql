@@ -183,4 +183,48 @@ CREATE TABLE IF NOT EXISTS favorites (
     UNIQUE KEY unique_favorite (user_id, store_id),
     INDEX idx_user (user_id),
     INDEX idx_store (store_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 創建 Foodpanda 搜尋記錄表
+CREATE TABLE IF NOT EXISTS foodpanda_searches (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    keyword VARCHAR(100) NOT NULL,
+    longitude VARCHAR(20) NOT NULL,
+    latitude VARCHAR(20) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    INDEX idx_user (user_id),
+    INDEX idx_keyword (keyword)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci; 
+
+
+CREATE TABLE IF NOT EXISTS restaurant_type_list (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    normalized_name VARCHAR(255) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    budget DECIMAL(10,2),
+    city VARCHAR(50) NOT NULL,
+    city_CN VARCHAR(50) NOT NULL,
+    customer_phone VARCHAR(20),
+    description TEXT,
+    hero_image VARCHAR(255),
+    hero_listing_image VARCHAR(255),
+    distance DECIMAL(10,2),
+    is_new_until DATETIME,
+    latitude DECIMAL(10,8),
+    longitude DECIMAL(11,8),
+    minimum_delivery_fee DECIMAL(10,2),
+    minimum_delivery_time INT,
+    minimum_order_amount DECIMAL(10,2),
+    minimum_pickup_time INT,
+    primary_cuisine_id VARCHAR(50),
+    rating DECIMAL(3,2),
+    redirection_url VARCHAR(255),
+    review_number INT,
+    tag VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci; 
