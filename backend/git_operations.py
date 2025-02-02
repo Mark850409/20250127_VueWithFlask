@@ -8,27 +8,63 @@ class GitOperations:
         self.repo = None
 
     def init_repo(self):
-        if not os.path.exists(self.path):
-            os.makedirs(self.path)
-        
-        if not os.path.exists(os.path.join(self.path, '.git')):
-            self.repo = git.Repo.init(self.path)
-        else:
-            self.repo = git.Repo(self.path)
+        """初始化 Git 倉庫"""
+        try:
+            print(f"Initializing repo at path: {self.path}")
+            
+            # 確保目錄存在
+            if not os.path.exists(self.path):
+                print(f"Creating directory: {self.path}")
+                os.makedirs(self.path)
+            
+            # 檢查是否已經是 Git 倉庫
+            if not os.path.exists(os.path.join(self.path, '.git')):
+                print("Initializing new git repository...")
+                self.repo = git.Repo.init(self.path)
+                
+                # 配置 Git 用戶信息
+                self.repo.config_writer().set_value("user", "name", "System").release()
+                self.repo.config_writer().set_value("user", "email", "system@example.com").release()
+                
+                # 創建初始提交
+                print("Creating initial commit...")
+                # 創建一個 README 文件
+                readme_path = os.path.join(self.path, 'README.md')
+                if not os.path.exists(readme_path):
+                    with open(readme_path, 'w') as f:
+                        f.write('# Git Repository\nInitialized by system.')
+                
+                # 添加並提交
+                self.repo.index.add(['README.md'])
+                self.repo.index.commit("Initial commit")
+                print("Initial commit created")
+            else:
+                print("Loading existing repository...")
+                self.repo = git.Repo(self.path)
+            
+            return self.repo
+        except Exception as e:
+            print(f"Error initializing repository: {str(e)}")
+            raise Exception(f"初始化 Git 倉庫失敗：{str(e)}")
 
     def check_status(self) -> GitStatus:
         """檢查 Git 狀態"""
         try:
+            print(f"Checking repo at path: {self.path}")
             if not self.repo:
                 try:
+                    print("Initializing repo object...")
                     self.repo = git.Repo(self.path)
-                except git.exc.InvalidGitRepositoryError:
+                except git.exc.InvalidGitRepositoryError as e:
+                    print(f"Invalid git repository: {str(e)}")
                     raise Exception("不是有效的 Git 倉庫")
             
-            # 獲取當前分支
+            print("Getting branch info...")
             try:
                 branch = self.repo.active_branch.name
-            except (TypeError, AttributeError):
+                print(f"Current branch: {branch}")
+            except (TypeError, AttributeError) as e:
+                print(f"Error getting branch: {str(e)}")
                 branch = 'HEAD detached'
             
             # 獲取未追蹤的文件

@@ -14,8 +14,12 @@ cryptography==42.0.5
 pytz==2023.3
 flask-jwt-extended==4.6.0
 googlemaps==4.10.0
-torch>=2.5.1
-transformers==4.31.0
-smolagents==0.1.0
-huggingface-hub==0.16.4
-soundfile==0.12.1
+beautifulsoup4==4.12.3
+selenium==4.18.1
+pandas==2.2.1
+jieba==0.42.1
+scikit-learn==1.4.1.post1
+openai==1.12.0
+nltk==3.8.1
+emoji==2.10.1
+ollama==0.1.6
