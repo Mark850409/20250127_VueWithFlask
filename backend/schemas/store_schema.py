@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
+from flask_openapi3 import FileStorage
 
 class StoreBaseSchema(BaseModel):
     """店家基礎數據"""
@@ -126,3 +127,27 @@ class ErrorResponse(BaseModel):
                 'message': '爬取資料失敗: 連接超時'
             }
         } 
+
+class StorePath(BaseModel):
+    """店家路徑參數"""
+    store_id: int = Field(..., description='店家ID')
+
+class CityPath(BaseModel):
+    """城市路徑參數"""
+    city: str = Field(..., description='城市名稱', example='台北')
+
+class FileUploadResponse(BaseModel):
+    """圖片上傳響應"""
+    url: str = Field(..., description='圖片URL')
+    message: Optional[str] = Field(None, description='響應信息')
+
+class ErrorResponse(BaseModel):
+    """錯誤響應"""
+    message: str = Field(..., description='錯誤信息')
+
+class UploadFileForm(BaseModel):
+    """文件上傳請求"""
+    file: FileStorage = Field(
+        ...,
+        description='圖片文件 (支援 jpg、png、gif、webp 格式，最大 5MB)',
+    )

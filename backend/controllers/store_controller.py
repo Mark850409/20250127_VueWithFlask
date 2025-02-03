@@ -3,7 +3,6 @@ from services.store_service import StoreService
 from services.store_crawler_service import StoreCrawlerService
 from flask_jwt_extended import jwt_required
 from schemas.store_schema import *
-from pydantic import BaseModel, Field
 import os
 from werkzeug.utils import secure_filename
 from flask import request, current_app
@@ -11,14 +10,6 @@ from datetime import datetime
 
 store_bp = APIBlueprint('stores', __name__, url_prefix='/api/stores')
 store_tag = Tag(name='stores', description='店家管理')
-
-class StorePath(BaseModel):
-    """店家路徑參數"""
-    store_id: int = Field(..., description='店家ID')
-
-class CityPath(BaseModel):
-    """城市路徑參數"""
-    city: str = Field(..., description='城市名稱', example='台北')
 
 @store_bp.get('/', tags=[store_tag])
 def get_stores():
@@ -224,18 +215,51 @@ def crawl_stores():
         error_response = ErrorResponse(message=f'爬取資料失敗: {str(e)}')
         return error_response.dict(), 500
 
-@store_bp.post('/upload')
+@store_bp.post(
+    '/upload',
+    tags=[store_tag],
+    responses={
+        "200": FileUploadResponse,
+        "400": ErrorResponse,
+        "500": ErrorResponse
+    }
+)
 @jwt_required()
-def upload_image():
-    """上傳店家圖片
-    
-    Returns:
-        200: 上傳成功
-            url (str): 圖片URL
-        400: 參數錯誤
-            message (str): 錯誤信息
-        500: 服務器錯誤
-            message (str): 錯誤信息
+def upload_image(form: UploadFileForm):
+    """
+    上傳店家圖片
+
+
+    responses:
+      200:
+        description: 上傳成功
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+                message:
+                  type: string
+      400:
+        description: 參數錯誤
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+      500:
+        description: 服務器錯誤
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
     """
     try:
         print("接收到的文件:", request.files)  # 調試用

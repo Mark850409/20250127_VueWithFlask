@@ -24,3 +24,4 @@ nltk==3.8.1
 emoji==2.10.1
 ollama==0.1.6
 Pillow==10.0.0
+marshmallow==3.19.0
