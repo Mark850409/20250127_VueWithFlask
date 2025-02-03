@@ -20,19 +20,19 @@ class StoreService:
     
     def create_store(self, store_data: dict) -> Store:
         """創建店家"""
-        # 驗證城市名稱格式
-        if 'city' in store_data and not store_data['city'].endswith('市') and not store_data['city'].endswith('縣'):
-            store_data['city'] = store_data['city'] + '市'
-            
         return self.dao.create_store(store_data)
     
     def update_store(self, store_id: int, store_data: dict) -> Optional[Store]:
-        """更新店家"""
-        # 驗證城市名稱格式
-        if 'city' in store_data and not store_data['city'].endswith('市') and not store_data['city'].endswith('縣'):
-            store_data['city'] = store_data['city'] + '市'
+        """更新店家信息"""
+        try:
+            store = self.dao.get_store_by_id(store_id)
+            if not store:
+                raise ValueError('店家不存在')
             
-        return self.dao.update_store(store_id, store_data)
+            # 直接傳遞 store_id 和 data 到 dao 層
+            return self.dao.update_store(store_id, store_data)
+        except Exception as e:
+            raise Exception(f'更新店家失敗: {str(e)}')
     
     def delete_store(self, store_id: int) -> bool:
         """刪除店家"""
@@ -40,4 +40,10 @@ class StoreService:
     
     def view_store(self, store_id: int) -> bool:
         """瀏覽店家（增加瀏覽次數）"""
-        return self.dao.increment_views(store_id) 
+        try:
+            store = self.dao.get_store_by_id(store_id)
+            if not store:
+                raise ValueError('店家不存在')
+            return self.dao.increment_views(store_id)
+        except Exception as e:
+            raise Exception(f'瀏覽店家失敗: {str(e)}') 

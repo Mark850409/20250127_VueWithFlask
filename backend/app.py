@@ -22,10 +22,9 @@ from extensions import jwt
 import os
 from dotenv import load_dotenv
 from services.googlemaps_service import GoogleMapsService
-from controllers.restaurant_controller import restaurant_bp
 from pathlib import Path
 from datetime import timedelta
-from flask import request
+from flask import request, send_from_directory
 
 # 獲取當前文件的目錄
 current_dir = Path(__file__).parent
@@ -199,7 +198,6 @@ app.register_api(foodpanda_vendors_bp)
 app.register_api(foodpanda_menu_bp)
 app.register_api(foodpanda_feed_bp)
 app.register_api(googlemaps_bp)
-app.register_api(restaurant_bp)
 
 # JWT 安全配置
 security_scheme = {
@@ -241,7 +239,19 @@ with app.app_context():
     print("數據庫表已創建")
 
 # 確保上傳目錄存在
-os.makedirs('uploads/avatars', exist_ok=True)
+os.makedirs(os.path.join(app.root_path, 'uploads', 'avatars'), exist_ok=True)
+os.makedirs(os.path.join(app.root_path, 'uploads', 'stores'), exist_ok=True)
+
+# 配置上傳文件夾
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
+
+# 添加靜態文件路由
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    print(f"請求訪問文件: {filename}")  # 調試用
+    full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    print(f"完整文件路徑: {full_path}")  # 調試用
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=False)
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))

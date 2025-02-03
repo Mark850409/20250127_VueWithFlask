@@ -84,30 +84,71 @@
       </table>
     </div>
 
-    <!-- 分頁控制 -->
-    <div class="px-6 py-4 flex items-center justify-between border-t">
+    <!-- 分頁區域 -->
+    <div class="px-6 py-4 mt-2 flex justify-between items-center border-t">
       <div class="text-sm text-gray-700">
         顯示第 {{ startIndex + 1 }} 至 {{ endIndex }} 筆，共 {{ totalItems }} 筆資料
       </div>
-      <div class="flex space-x-1">
-        <button @click="previousPage" 
+      <div class="flex items-center space-x-2">
+        <!-- 首頁按鈕 -->
+        <button @click="goToFirstPage"
                 :disabled="currentPage === 1"
-                class="px-3 py-1 rounded border"
-                :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-50'">
-          上一頁
+                :class="[
+                  'px-3 py-2 rounded-lg border',
+                  currentPage === 1 
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                ]">
+          <i class="fas fa-angle-double-left"></i>
         </button>
-        <button v-for="page in displayedPages" 
+        
+        <!-- 上一頁按鈕 -->
+        <button @click="previousPage"
+                :disabled="currentPage === 1"
+                :class="[
+                  'px-3 py-2 rounded-lg border',
+                  currentPage === 1 
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                ]">
+          <i class="fas fa-angle-left"></i>
+        </button>
+        
+        <!-- 頁碼按鈕 -->
+        <button v-for="page in displayedPages"
                 :key="page"
                 @click="goToPage(page)"
-                class="px-3 py-1 rounded"
-                :class="currentPage === page ? 'bg-indigo-600 text-white' : 'border hover:bg-gray-50'">
+                :class="[
+                  'px-4 py-2 rounded-lg border min-w-[40px]',
+                  currentPage === page 
+                    ? 'bg-blue-500 text-white border-blue-500'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                ]">
           {{ page }}
         </button>
+        
+        <!-- 下一頁按鈕 -->
         <button @click="nextPage"
                 :disabled="currentPage === totalPages"
-                class="px-3 py-1 rounded border"
-                :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-50'">
-          下一頁
+                :class="[
+                  'px-3 py-2 rounded-lg border',
+                  currentPage === totalPages 
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                ]">
+          <i class="fas fa-angle-right"></i>
+        </button>
+        
+        <!-- 末頁按鈕 -->
+        <button @click="goToLastPage"
+                :disabled="currentPage === totalPages"
+                :class="[
+                  'px-3 py-2 rounded-lg border',
+                  currentPage === totalPages 
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                ]">
+          <i class="fas fa-angle-double-right"></i>
         </button>
       </div>
     </div>
@@ -200,6 +241,20 @@ export default {
       this.$emit('batch-delete', this.selectedItems)
       this.selectedItems = []
       this.selectAll = false
+    },
+    // 跳轉到首頁
+    goToFirstPage() {
+      if (this.currentPage !== 1) {
+        this.currentPage = 1
+        this.$emit('page-change', this.currentPage)
+      }
+    },
+    // 跳轉到末頁
+    goToLastPage() {
+      if (this.currentPage !== this.totalPages) {
+        this.currentPage = this.totalPages
+        this.$emit('page-change', this.currentPage)
+      }
     }
   },
   watch: {

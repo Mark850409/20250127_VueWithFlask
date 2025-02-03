@@ -21,7 +21,7 @@ const getBaseURL = () => {
 // 創建 axios 實例
 const instance = axios.create({
   baseURL: getBaseURL(),
-  timeout: 5000,
+  timeout: 15000,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
@@ -32,7 +32,9 @@ const instance = axios.create({
         .map(key => `${key}=${params[key]}`)
         .join('&')
     }
-  }
+  },
+  maxContentLength: Infinity,
+  maxBodyLength: Infinity
 })
 
 // 請求攔截器
@@ -42,6 +44,10 @@ instance.interceptors.request.use(
     if (token) {
       // 確保使用正確的 Authorization 格式
       config.headers.Authorization = `Bearer ${token}`
+    }
+    // 如果是文件上傳，不要修改 Content-Type
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type']
     }
     // 添加時間戳防止緩存
     if (config.method === 'get') {

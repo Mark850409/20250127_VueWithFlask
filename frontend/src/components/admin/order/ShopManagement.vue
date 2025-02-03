@@ -3,13 +3,17 @@
     <DataTable
       :columns="columns"
       :data="shops"
-      @add="showAddModal = true"
+      @add="handleAdd"
       @edit="editShop"
       @delete="deleteShop"
       @batch-delete="batchDeleteShops">
       <!-- 自定義圖片列 -->
-      <template #image="{ item }">
-        <img :src="item.image" class="w-16 h-16 rounded-lg object-cover shadow-sm">
+      <template #hero_image="{ item }">
+        <div class="w-20 flex-shrink-0">
+          <img :src="item.hero_image" 
+               class="w-20 h-20 rounded-lg object-cover shadow-sm"
+               alt="店家圖片">
+        </div>
       </template>
       <!-- 自定義星級列 -->
       <template #rating="{ item }">
@@ -22,19 +26,19 @@
         </div>
       </template>
       <!-- 自定義狀態列 -->
-      <template #status="{ item }">
+      <template #is_new_until="{ item }">
         <span :class="[
           'px-2 py-1 text-xs rounded-full',
-          item.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          isNewStore(item.is_new_until) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
         ]">
-          {{ item.status === 'active' ? '營業中' : '已關閉' }}
+          {{ isNewStore(item.is_new_until) ? '新開幕' : '已開幕' }}
         </span>
       </template>
       <!-- 自定義瀏覽次數列 -->
-      <template #views="{ item }">
+      <template #review_number="{ item }">
         <div class="flex items-center text-gray-600">
           <i class="fas fa-eye mr-2"></i>
-          {{ item.views }}
+          {{ item.review_number }}
         </div>
       </template>
     </DataTable>
@@ -42,61 +46,213 @@
     <!-- 新增/編輯彈窗 -->
     <div v-if="showAddModal" 
          class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div class="bg-white rounded-xl p-8 w-full max-w-md">
+      <div class="bg-white rounded-xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <h2 class="text-xl font-bold mb-6">{{ editingShop ? '編輯店家' : '新增店家' }}</h2>
-        <div class="space-y-4">
-          <!-- 店家圖片上傳 -->
-          <div class="flex flex-col items-center">
-            <img :src="previewImage || shopForm.image" 
-                 class="w-32 h-32 rounded-lg object-cover mb-4 shadow-sm">
-            <label class="px-4 py-2 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200">
-              <input type="file" 
-                     class="hidden" 
-                     accept="image/*"
-                     @change="handleImageUpload">
-              <i class="fas fa-camera mr-2"></i>更換圖片
-            </label>
-          </div>
-          <!-- 基本資料 -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">店家名稱</label>
-            <input type="text" v-model="shopForm.name" 
-                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">城市</label>
-            <select v-model="shopForm.city" 
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-              <option value="台北市">台北市</option>
-              <option value="新北市">新北市</option>
-              <option value="桃園市">桃園市</option>
-              <!-- 更多城市選項 -->
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">地址</label>
-            <input type="text" v-model="shopForm.address" 
-                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">電話</label>
-            <input type="text" v-model="shopForm.phone" 
-                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">營業時間</label>
-            <input type="text" v-model="shopForm.businessHours" 
-                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">狀態</label>
-            <select v-model="shopForm.status" 
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-              <option value="active">營業中</option>
-              <option value="closed">已關閉</option>
-            </select>
+        
+        <!-- 分類標籤 -->
+        <div class="border-b mb-6">
+          <div class="flex space-x-4">
+            <button v-for="tab in tabs" 
+                    :key="tab.key"
+                    @click="currentTab = tab.key"
+                    :class="[
+                      'px-4 py-2 -mb-px',
+                      currentTab === tab.key 
+                        ? 'border-b-2 border-blue-500 text-blue-600'
+                        : 'text-gray-500 hover:text-gray-700'
+                    ]">
+              {{ tab.label }}
+            </button>
           </div>
         </div>
+
+        <!-- 基本資料 -->
+        <div v-show="currentTab === 'basic'" class="space-y-4">
+          <!-- 店家圖片上傳 -->
+          <div class="flex items-start space-x-6">
+            <div class="flex flex-col items-center">
+              <div class="relative w-32 h-32 mb-4">
+                <img :src="previewImage || shopForm.hero_image" 
+                     class="w-full h-full rounded-lg object-cover shadow-sm">
+                <!-- 未上傳圖片時顯示提示 -->
+                <div v-if="!previewImage && shopForm.hero_image === defaultImage.url"
+                     class="absolute inset-0 flex flex-col items-center justify-center 
+                            bg-black bg-opacity-50 rounded-lg text-white">
+                  <i class="fas fa-camera text-2xl mb-2"></i>
+                  <span class="text-xs text-center font-medium">點擊上傳<br>主要圖片</span>
+                </div>
+              </div>
+              <label class="px-4 py-2 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200">
+                <input type="file" class="hidden" accept="image/*" @change="handleImageUpload">
+                <i class="fas fa-camera mr-2"></i>主要圖片
+              </label>
+            </div>
+            <div class="flex flex-col items-center">
+              <div class="relative w-32 h-32 mb-4">
+                <img :src="previewListingImage || shopForm.hero_listing_image" 
+                     class="w-full h-full rounded-lg object-cover shadow-sm">
+                <!-- 未上傳圖片時顯示提示 -->
+                <div v-if="!previewListingImage && shopForm.hero_listing_image === defaultImage.url"
+                     class="absolute inset-0 flex flex-col items-center justify-center 
+                            bg-black bg-opacity-50 rounded-lg text-white">
+                  <i class="fas fa-camera text-2xl mb-2"></i>
+                  <span class="text-xs text-center font-medium">點擊上傳<br>列表圖片</span>
+                </div>
+              </div>
+              <label class="px-4 py-2 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200">
+                <input type="file" class="hidden" accept="image/*" @change="handleListingImageUpload">
+                <i class="fas fa-camera mr-2"></i>列表圖片
+              </label>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="required-field">店家名稱</label>
+              <input type="text" v-model="shopForm.name" 
+                     @input="handleNameInput"
+                     class="form-input">
+            </div>
+            <div>
+              <label>正規化名稱</label>
+              <input type="text" v-model="shopForm.normalized_name" 
+                     class="form-input" readonly>
+            </div>
+            <div>
+              <label class="required-field">城市</label>
+              <select v-model="shopForm.city_CN" 
+                      @change="handleCityChange"
+                      class="form-select">
+                <option v-for="city in cityOptions" 
+                        :key="city" 
+                        :value="city">{{ city }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="required-field">地址</label>
+              <input type="text" v-model="shopForm.address" class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- 營業資訊 -->
+        <div v-show="currentTab === 'business'" class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="required-field">預算</label>
+              <input type="number" 
+                     v-model="shopForm.budget" 
+                     min="1" 
+                     class="form-input"
+                     @input="validateBudget">
+            </div>
+            <div>
+              <label>電話</label>
+              <input type="text" v-model="shopForm.customer_phone" class="form-input">
+            </div>
+            <div>
+              <label>最低外送費</label>
+              <input type="number" v-model="shopForm.minimum_delivery_fee" class="form-input">
+            </div>
+            <div>
+              <label>最低訂單金額</label>
+              <input type="number" v-model="shopForm.minimum_order_amount" class="form-input">
+            </div>
+            <div>
+              <label>最短外送時間</label>
+              <input type="number" v-model="shopForm.minimum_delivery_time" class="form-input">
+            </div>
+            <div>
+              <label>最短自取時間</label>
+              <input type="number" v-model="shopForm.minimum_pickup_time" class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- 位置資訊 -->
+        <div v-show="currentTab === 'location'" class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="required-field">緯度</label>
+              <input type="number" 
+                     v-model="shopForm.latitude" 
+                     min="1" 
+                     step="any"
+                     class="form-input"
+                     @input="validateLatitude">
+            </div>
+            <div>
+              <label class="required-field">經度</label>
+              <input type="number" 
+                     v-model="shopForm.longitude" 
+                     min="1" 
+                     step="any"
+                     class="form-input"
+                     @input="validateLongitude">
+            </div>
+            <div>
+              <label>距離</label>
+              <input type="number" v-model="shopForm.distance" 
+                     min="1" class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- 評分資訊 -->
+        <div v-show="currentTab === 'rating'" class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="required-field">評分</label>
+              <div class="flex items-center space-x-2">
+                <template v-for="n in 5" :key="n">
+                  <i class="fas fa-star cursor-pointer"
+                     :class="n <= shopForm.rating ? 'text-yellow-400' : 'text-gray-300'"
+                     @click="shopForm.rating = n"></i>
+                </template>
+              </div>
+            </div>
+            <div>
+              <label class="required-field">瀏覽次數</label>
+              <input type="number" 
+                     v-model="shopForm.review_number" 
+                     min="1" 
+                     class="form-input"
+                     @input="validateReviewNumber">
+            </div>
+          </div>
+        </div>
+
+        <!-- 其他資訊 -->
+        <div v-show="currentTab === 'other'" class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label>開幕時間</label>
+              <input type="datetime-local" 
+                     v-model="shopForm.is_new_until" 
+                     class="form-input">
+            </div>
+            <div>
+              <label>料理類型ID</label>
+              <input type="text" v-model="shopForm.primary_cuisine_id" class="form-input">
+            </div>
+            <div>
+              <label>重定向URL</label>
+              <input type="text" v-model="shopForm.redirection_url" class="form-input">
+            </div>
+            <div>
+              <label>標籤</label>
+              <input type="text" v-model="shopForm.tag" class="form-input">
+            </div>
+            <div class="col-span-2">
+              <label>描述</label>
+              <textarea v-model="shopForm.description" 
+                       rows="3" 
+                       class="form-textarea w-full"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- 按鈕區 -->
         <div class="mt-8 flex justify-end space-x-4">
           <button @click="showAddModal = false" 
                   class="px-4 py-2 text-gray-700 border rounded-lg hover:bg-gray-50">
@@ -114,8 +270,10 @@
 </template>
 
 <script>
+import Swal from 'sweetalert2'
 import DataTable from '../common/DataTable.vue'
 import BackToHome from '../common/BackToHome.vue'
+import axios from '@/utils/axios'  // 使用配置好的 axios 實例，這樣就會自動帶上 token
 
 export default {
   name: 'ShopManagement',
@@ -126,124 +284,688 @@ export default {
   data() {
     return {
       columns: [
-        { key: 'image', label: '店家圖片' },
+        { 
+          key: 'hero_image', 
+          label: '店家圖片',
+          width: '100px',  // 固定寬度
+          className: 'whitespace-nowrap' // 防止換行
+        },
         { key: 'name', label: '店家名稱' },
         { key: 'city', label: '城市' },
-        { key: 'address', label: '地址' },
-        { key: 'rating', label: '星級' },
-        { key: 'views', label: '瀏覽次數' },
-        { key: 'status', label: '狀態' }
+        { key: 'address', label: '地址', className: 'w-full' }, // 地址欄位可以佔據剩餘空間
+        { key: 'rating', label: '星級', width: '100px' },
+        { key: 'review_number', label: '瀏覽次數', width: '120px' },
+        { key: 'is_new_until', label: '開幕狀態', width: '100px' }
       ],
-      shops: [
-        {
-          id: 1,
-          name: '春水堂',
-          city: '台北市',
-          address: '信義區信義路五段7號',
-          phone: '02-2345-6789',
-          businessHours: '10:00-22:00',
-          status: 'active',
-          rating: 4.5,
-          views: 1580,
-          image: 'https://via.placeholder.com/150'
-        },
-        {
-          id: 2,
-          name: '五桐號',
-          city: '台北市',
-          address: '大安區忠孝東路四段216號',
-          phone: '02-2345-6789',
-          businessHours: '11:00-21:30',
-          status: 'active',
-          rating: 4.6,
-          views: 2460,
-          image: 'https://via.placeholder.com/150'
-        },
-        {
-          id: 3,
-          name: '可不可熟成紅茶',
-          city: '台北市',
-          address: '中山區南京東路二段12號',
-          phone: '02-2345-6789',
-          businessHours: '10:30-21:00',
-          status: 'closed',
-          rating: 4.7,
-          views: 1890,
-          image: 'https://via.placeholder.com/150'
-        }
-      ],
+      shops: [],
       showAddModal: false,
       editingShop: null,
       previewImage: null,
+      previewListingImage: null,  // 添加列表圖片預覽
       shopForm: {
         name: '',
+        normalized_name: '',
         city: '台北市',
+        city_CN: '台北市',
         address: '',
-        phone: '',
-        businessHours: '',
-        status: 'active',
-        image: 'https://via.placeholder.com/150'
+        customer_phone: '',
+        description: '',
+        budget: 0,
+        hero_image: 'https://api.dicebear.com/7.x/initials/svg?seed=DrinkShop&backgroundColor=b7e4c7',
+        hero_listing_image: 'https://api.dicebear.com/7.x/initials/svg?seed=DrinkShop&backgroundColor=b7e4c7',
+        latitude: 0.0,
+        longitude: 0.0,
+        minimum_delivery_fee: null,
+        minimum_delivery_time: null,
+        minimum_order_amount: null,
+        minimum_pickup_time: null,
+        primary_cuisine_id: '',
+        tag: '',
+        is_new_until: null,
+        rating: 1,
+        review_number: 0
+      },
+      currentTab: 'basic',
+      tabs: [
+        { key: 'basic', label: '基本資料' },
+        { key: 'business', label: '營業資訊' },
+        { key: 'location', label: '位置資訊' },
+        { key: 'rating', label: '評分資訊' },
+        { key: 'other', label: '其他資訊' }
+      ],
+      // 所有縣市選項
+      cityOptions: [
+        '台北市', '新北市', '桃園市', '台中市', '台南市', 
+        '高雄市', '新竹縣', '新竹市', '苗栗縣', '彰化縣',
+        '南投縣', '雲林縣', '嘉義縣', '嘉義市', '屏東縣',
+        '宜蘭縣', '花蓮縣', '台東縣', '澎湖縣', '金門縣', '連江縣'
+      ],
+      // 城市中英文對照
+      cityTranslation: {
+        '台北市': 'Taipei City',
+        '新北市': 'New Taipei City',
+        '桃園市': 'Taoyuan City',
+        '台中市': 'Taichung City',
+        '台南市': 'Tainan City',
+        '高雄市': 'Kaohsiung City',
+        '新竹縣': 'Hsinchu County',
+        '新竹市': 'Hsinchu City',
+        '苗栗縣': 'Miaoli County',
+        '彰化縣': 'Changhua County',
+        '南投縣': 'Nantou County',
+        '雲林縣': 'Yunlin County',
+        '嘉義縣': 'Chiayi County',
+        '嘉義市': 'Chiayi City',
+        '屏東縣': 'Pingtung County',
+        '宜蘭縣': 'Yilan County',
+        '花蓮縣': 'Hualien County',
+        '台東縣': 'Taitung County',
+        '澎湖縣': 'Penghu County',
+        '金門縣': 'Kinmen County',
+        '連江縣': 'Lienchiang County'
+      },
+      // 預設圖片
+      defaultImage: {
+        url: 'https://api.dicebear.com/7.x/initials/svg?seed=DrinkShop&backgroundColor=b7e4c7',
+        isDefault: true
       }
     }
   },
+  async created() {
+    await this.fetchShops()
+  },
   methods: {
-    handleImageUpload(event) {
+    // 獲取所有店家
+    async fetchShops() {
+      try {
+        const response = await axios.get('/stores/')
+        this.shops = response.data.stores
+      } catch (error) {
+        console.error('獲取店家列表失敗:', error)
+        this.$message.error('獲取店家列表失敗')
+      }
+    },
+
+    // 處理圖片上傳
+    async handleImageUpload(event) {
       const file = event.target.files[0]
       if (file) {
+        console.log('準備上傳的文件:', file)  // 調試用
+        
+        // 檢查文件類型
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+        if (!allowedTypes.includes(file.type)) {
+          this.$message.error('不支援的圖片格式')
+          return
+        }
+        
+        // 檢查文件大小 (例如限制 5MB)
+        const maxSize = 5 * 1024 * 1024
+        if (file.size > maxSize) {
+          this.$message.error('圖片大小不能超過 5MB')
+          return
+        }
+        
         this.previewImage = URL.createObjectURL(file)
+        
+        const formData = new FormData()
+        formData.append('file', file)
+        
+        // 檢查 FormData 內容
+        for (let pair of formData.entries()) {
+          console.log('FormData 內容:', pair[0], pair[1])
+        }
+        
+        try {
+          const response = await axios.post('/stores/upload', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+            // 添加調試信息
+            onUploadProgress: progressEvent => {
+              console.log('上傳進度:', progressEvent.loaded, '/', progressEvent.total)
+            }
+          })
+          this.shopForm.hero_image = response.data.url
+        } catch (error) {
+          console.log('完整錯誤信息:', error.response || error)
+          if (error.response) {
+            this.$message.error(error.response.data.message || '圖片上傳失敗')
+          } else if (error.request) {
+            this.$message.error('無法連接到伺服器')
+          } else {
+            this.$message.error('圖片上傳過程發生錯誤')
+          }
+          console.error('圖片上傳失敗:', error)
+          this.shopForm.hero_image = this.defaultImage.url
+          this.previewImage = null
+        }
       }
     },
-    editShop(shop) {
-      this.editingShop = shop
-      this.shopForm = { ...shop }
-      this.previewImage = null
+
+    // 新增按鈕處理
+    handleAdd() {
+      this.resetForm()  // 先重置表單
       this.showAddModal = true
     },
-    deleteShop(shop) {
-      if(confirm('確定要刪除此店家嗎？')) {
-        this.shops = this.shops.filter(s => s.id !== shop.id)
+
+    // 編輯店家
+    async editShop(shop) {
+      try {
+        const response = await axios.get(`/stores/${shop.id}`)
+        this.editingShop = response.data
+        this.shopForm = { ...response.data }
+        this.previewImage = null
+        this.previewListingImage = null
+        this.showAddModal = true
+      } catch (error) {
+        console.error('獲取店家詳情失敗:', error)
+        this.$message.error('獲取店家詳情失敗')
       }
     },
-    batchDeleteShops(ids) {
-      if(confirm(`確定要刪除選中的 ${ids.length} 筆店家嗎？`)) {
-        this.shops = this.shops.filter(s => !ids.includes(s.id))
+
+    // 刪除店家
+    async deleteShop(shop) {
+      const result = await Swal.fire({
+        title: '確定要刪除嗎？',
+        text: `即將刪除店家：${shop.name}`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '確定刪除',
+        cancelButtonText: '取消',
+        background: '#1a1a1a',
+        customClass: {
+          popup: 'swal2-show',
+          title: 'text-white',
+          htmlContainer: 'text-white',
+          confirmButton: 'bg-red-500 hover:bg-red-600',
+          cancelButton: 'bg-gray-500 hover:bg-gray-600'
+        }
+      })
+      
+      if (result.isConfirmed) {
+        try {
+          await axios.delete(`/stores/${shop.id}`)
+          await this.fetchShops()
+          Swal.fire({
+            icon: 'success',
+            title: '刪除成功',
+            text: '店家已成功刪除',
+            timer: 1500,
+            showConfirmButton: false,
+            background: '#1a1a1a',
+            customClass: {
+              popup: 'swal2-show',
+              title: 'text-white',
+              htmlContainer: 'text-white'
+            }
+          })
+        } catch (error) {
+          console.error('刪除店家失敗:', error)
+          Swal.fire({
+            icon: 'error',
+            title: '刪除失敗',
+            text: '刪除店家時發生錯誤',
+            confirmButtonText: '確定',
+            background: '#1a1a1a',
+            customClass: {
+              popup: 'swal2-show',
+              title: 'text-white',
+              htmlContainer: 'text-white',
+              confirmButton: 'bg-blue-500 hover:bg-blue-600'
+            }
+          })
+        }
       }
     },
-    saveShop() {
-      if(!this.shopForm.name || !this.shopForm.address) {
-        alert('請填寫必要欄位')
+
+    // 批量刪除店家
+    async batchDeleteShops(ids) {
+      const result = await Swal.fire({
+        title: '確定要批量刪除嗎？',
+        text: `即將刪除 ${ids.length} 筆店家資料`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '確定刪除',
+        cancelButtonText: '取消',
+        background: '#1a1a1a',
+        customClass: {
+          popup: 'swal2-show',
+          title: 'text-white',
+          htmlContainer: 'text-white',
+          confirmButton: 'bg-red-500 hover:bg-red-600',
+          cancelButton: 'bg-gray-500 hover:bg-gray-600'
+        }
+      })
+      
+      if (result.isConfirmed) {
+        try {
+          await Promise.all(ids.map(id => axios.delete(`/stores/${id}`)))
+          await this.fetchShops()
+          Swal.fire({
+            icon: 'success',
+            title: '批量刪除成功',
+            text: `已成功刪除 ${ids.length} 筆店家資料`,
+            timer: 1500,
+            showConfirmButton: false,
+            background: '#1a1a1a',
+            customClass: {
+              popup: 'swal2-show',
+              title: 'text-white',
+              htmlContainer: 'text-white'
+            }
+          })
+        } catch (error) {
+          console.error('批量刪除失敗:', error)
+          Swal.fire({
+            icon: 'error',
+            title: '批量刪除失敗',
+            text: '刪除過程中發生錯誤',
+            confirmButtonText: '確定',
+            background: '#1a1a1a',
+            customClass: {
+              popup: 'swal2-show',
+              title: 'text-white',
+              htmlContainer: 'text-white',
+              confirmButton: 'bg-blue-500 hover:bg-blue-600'
+            }
+          })
+        }
+      }
+    },
+
+    // 保存店家（新增或更新）
+    async saveShop() {
+      if (!this.validateForm()) {
+        Swal.fire({
+          icon: 'warning',
+          title: '表單驗證失敗',
+          text: '請填寫所有必要欄位',
+          confirmButtonText: '確定',
+          background: '#1a1a1a',
+          customClass: {
+            popup: 'swal2-show',
+            title: 'text-white',
+            htmlContainer: 'text-white',
+            confirmButton: 'bg-blue-500 hover:bg-blue-600'
+          }
+        })
         return
       }
 
-      if(this.editingShop) {
-        const index = this.shops.findIndex(s => s.id === this.editingShop.id)
-        this.shops[index] = {
-          ...this.editingShop,
-          ...this.shopForm,
-          image: this.previewImage || this.shopForm.image
-        }
-      } else {
-        this.shops.push({
-          id: this.shops.length + 1,
-          ...this.shopForm,
-          image: this.previewImage || this.shopForm.image,
-          rating: 0,
-          views: 0
+      try {
+        // 準備要發送的數據
+        const formData = { ...this.shopForm }
+        
+        // 移除可能為空的欄位
+        Object.keys(formData).forEach(key => {
+          if (formData[key] === null || formData[key] === '') {
+            delete formData[key]
+          }
         })
+        
+        console.log('準備發送的數據:', formData)  // 調試用
+        
+        if(this.editingShop) {
+          // 更新店家
+          await axios.put(`/stores/${this.editingShop.id}`, formData)
+          Swal.fire({
+            icon: 'success',
+            title: '更新成功',
+            text: '店家資料已成功更新',
+            timer: 1500,
+            showConfirmButton: false,
+            background: '#1a1a1a',
+            customClass: {
+              popup: 'swal2-show',
+              title: 'text-white',
+              htmlContainer: 'text-white'
+            }
+          })
+        } else {
+          // 創建店家
+          await axios.post('/stores/', formData)
+          Swal.fire({
+            icon: 'success',
+            title: '創建成功',
+            text: '新店家已成功創建',
+            timer: 1500,
+            showConfirmButton: false,
+            background: '#1a1a1a',
+            customClass: {
+              popup: 'swal2-show',
+              title: 'text-white',
+              htmlContainer: 'text-white'
+            }
+          })
+        }
+        
+        await this.fetchShops()
+        this.showAddModal = false
+        this.resetForm()
+      } catch (error) {
+        console.error('保存店家失敗:', error.response || error)
+        if (error.response) {
+          // 服務器返回的錯誤
+          Swal.fire({
+            icon: 'error',
+            title: '保存失敗',
+            text: error.response.data.message || '保存店家失敗',
+            confirmButtonText: '確定',
+            background: '#1a1a1a',
+            customClass: {
+              popup: 'swal2-show',
+              title: 'text-white',
+              htmlContainer: 'text-white',
+              confirmButton: 'bg-blue-500 hover:bg-blue-600'
+            }
+          })
+        } else if (error.request) {
+          // 請求發出但沒有收到響應
+          Swal.fire({
+            icon: 'error',
+            title: '連接錯誤',
+            text: '無法連接到伺服器，請檢查網絡連接',
+            confirmButtonText: '確定',
+            background: '#1a1a1a',
+            customClass: {
+              popup: 'swal2-show',
+              title: 'text-white',
+              htmlContainer: 'text-white',
+              confirmButton: 'bg-blue-500 hover:bg-blue-600'
+            }
+          })
+        } else {
+          // 其他錯誤
+          Swal.fire({
+            icon: 'error',
+            title: '系統錯誤',
+            text: '保存過程發生錯誤',
+            confirmButtonText: '確定',
+            background: '#1a1a1a',
+            customClass: {
+              popup: 'swal2-show',
+              title: 'text-white',
+              htmlContainer: 'text-white',
+              confirmButton: 'bg-blue-500 hover:bg-blue-600'
+            }
+          })
+        }
       }
-      this.showAddModal = false
+    },
+
+    // 重置表單
+    resetForm() {
+      // 重置所有狀態
       this.editingShop = null
       this.previewImage = null
+      this.previewListingImage = null
+      this.currentTab = 'basic'  // 重置當前標籤頁
       this.shopForm = {
         name: '',
-        city: '台北市',
+        normalized_name: '',
+        city: '',
+        city_CN: '台北市',
         address: '',
-        phone: '',
-        businessHours: '',
-        status: 'active',
-        image: 'https://via.placeholder.com/150'
+        customer_phone: '',
+        description: '',
+        budget: 1,
+        hero_image: this.defaultImage.url,
+        hero_listing_image: this.defaultImage.url,
+        latitude: 1,
+        longitude: 1,
+        minimum_delivery_fee: null,
+        minimum_delivery_time: null,
+        minimum_order_amount: null,
+        minimum_pickup_time: null,
+        primary_cuisine_id: '',
+        tag: '',
+        is_new_until: null,
+        rating: 1,
+        review_number: 1
       }
-    }
+      // 自動設置城市英文名稱
+      this.handleCityChange({ target: { value: this.shopForm.city_CN } })
+    },
+
+    // 判斷是否為新店
+    isNewStore(isNewUntil) {
+      if (!isNewUntil) return false;
+      const untilDate = new Date(isNewUntil);
+      const now = new Date();
+      return untilDate > now;
+    },
+
+    handleNameInput(e) {
+      // 自動生成 normalized_name
+      this.shopForm.normalized_name = e.target.value.trim()
+    },
+
+    handleCityChange(e) {
+      // 自動轉換中英文城市名
+      this.shopForm.city = this.cityTranslation[e.target.value]
+    },
+
+    // 修改列表圖片上傳處理
+    async handleListingImageUpload(event) {
+      const file = event.target.files[0]
+      if (file) {
+        console.log('準備上傳的文件:', file)
+        
+        // 檢查文件類型
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+        if (!allowedTypes.includes(file.type)) {
+          this.$message.error('不支援的圖片格式')
+          return
+        }
+        
+        // 檢查文件大小 (例如限制 5MB)
+        const maxSize = 5 * 1024 * 1024
+        if (file.size > maxSize) {
+          this.$message.error('圖片大小不能超過 5MB')
+          return
+        }
+        
+        // 設置預覽圖片
+        this.previewListingImage = URL.createObjectURL(file)
+        
+        const formData = new FormData()
+        formData.append('file', file)
+        
+        try {
+          const response = await axios.post('/stores/upload', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            }
+          })
+          this.shopForm.hero_listing_image = response.data.url
+        } catch (error) {
+          console.log('完整錯誤信息:', error.response || error)
+          if (error.response) {
+            this.$message.error(error.response.data.message || '圖片上傳失敗')
+          } else if (error.request) {
+            this.$message.error('無法連接到伺服器')
+          } else {
+            this.$message.error('圖片上傳過程發生錯誤')
+          }
+          console.error('圖片上傳失敗:', error)
+          this.shopForm.hero_listing_image = this.defaultImage.url
+          this.previewListingImage = null  // 清除預覽
+        }
+      }
+    },
+
+    validateForm() {
+      const required = [
+        'name', 'address', 'budget', 'city_CN',
+        'latitude', 'longitude', 'review_number'
+      ]
+      
+      let isValid = true
+      const missingFields = []
+      
+      required.forEach(field => {
+        const value = this.shopForm[field]
+        if (value === null || value === undefined || value === '') {
+          isValid = false
+          missingFields.push(field)
+        }
+      })
+      
+      if (!isValid) {
+        Swal.fire({
+          icon: 'error',
+          title: '表單驗證失敗',
+          text: `請填寫以下必要欄位: ${missingFields.join(', ')}`,
+          confirmButtonText: '確定',
+          background: '#1a1a1a',
+          customClass: {
+            popup: 'swal2-show',
+            title: 'text-white',
+            htmlContainer: 'text-white',
+            confirmButton: 'bg-blue-500 hover:bg-blue-600'
+          }
+        })
+        return false
+      }
+      
+      // 檢查數值型欄位
+      if (parseFloat(this.shopForm.budget) < 1 || 
+          parseFloat(this.shopForm.latitude) < 1 || 
+          parseFloat(this.shopForm.longitude) < 1 ||
+          parseFloat(this.shopForm.review_number) < 1) {
+        Swal.fire({
+          icon: 'error',
+          title: '數值驗證失敗',
+          text: '緯度、經度、預算和瀏覽次數必須大於等於 1',
+          confirmButtonText: '確定',
+          background: '#1a1a1a',
+          customClass: {
+            popup: 'swal2-show',
+            title: 'text-white',
+            htmlContainer: 'text-white',
+            confirmButton: 'bg-blue-500 hover:bg-blue-600'
+          }
+        })
+        return false
+      }
+      
+      return true
+    },
+
+    validateBudget(event) {
+      const value = Number(event.target.value)
+      if (value < 1) {
+        Swal.fire({
+          icon: 'warning',
+          title: '數值驗證',
+          text: '預算必須大於等於 1',
+          confirmButtonText: '確定',
+          background: '#1a1a1a',
+          customClass: {
+            popup: 'swal2-show',
+            title: 'text-white',
+            htmlContainer: 'text-white',
+            confirmButton: 'bg-blue-500 hover:bg-blue-600'
+          }
+        })
+        this.shopForm.budget = 1
+      }
+    },
+
+    validateLatitude(event) {
+      const value = Number(event.target.value)
+      if (value < 1) {
+        Swal.fire({
+          icon: 'warning',
+          title: '數值驗證',
+          text: '緯度必須大於等於 1',
+          confirmButtonText: '確定',
+          background: '#1a1a1a',
+          customClass: {
+            popup: 'swal2-show',
+            title: 'text-white',
+            htmlContainer: 'text-white',
+            confirmButton: 'bg-blue-500 hover:bg-blue-600'
+          }
+        })
+        this.shopForm.latitude = 1
+      }
+    },
+
+    validateLongitude(event) {
+      const value = Number(event.target.value)
+      if (value < 1) {
+        Swal.fire({
+          icon: 'warning',
+          title: '數值驗證',
+          text: '經度必須大於等於 1',
+          confirmButtonText: '確定',
+          background: '#1a1a1a',
+          customClass: {
+            popup: 'swal2-show',
+            title: 'text-white',
+            htmlContainer: 'text-white',
+            confirmButton: 'bg-blue-500 hover:bg-blue-600'
+          }
+        })
+        this.shopForm.longitude = 1
+      }
+    },
+
+    validateReviewNumber(event) {
+      const value = Number(event.target.value)
+      if (value < 1) {
+        Swal.fire({
+          icon: 'warning',
+          title: '數值驗證',
+          text: '瀏覽次數必須大於等於 1',
+          confirmButtonText: '確定',
+          background: '#1a1a1a',
+          customClass: {
+            popup: 'swal2-show',
+            title: 'text-white',
+            htmlContainer: 'text-white',
+            confirmButton: 'bg-blue-500 hover:bg-blue-600'
+          }
+        })
+        this.shopForm.review_number = 1
+      }
+    },
   }
 }
-</script> 
+</script>
+
+<style scoped>
+/* 確保表格內容不會換行 */
+:deep(.table-cell-hero_image) {
+  white-space: nowrap;
+  width: 100px;
+  min-width: 100px;
+  padding: 0.5rem !important;
+}
+
+/* 讓地址欄位自適應寬度 */
+:deep(.table-cell-address) {
+  width: auto;
+  min-width: 200px;
+}
+
+/* 其他固定寬度欄位 */
+:deep(.table-cell-rating),
+:deep(.table-cell-review_number),
+:deep(.table-cell-is_new_until) {
+  white-space: nowrap;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  @apply w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500;
+}
+
+.required-field::after {
+  content: '*';
+  @apply text-red-500 ml-1;
+}
+</style> 

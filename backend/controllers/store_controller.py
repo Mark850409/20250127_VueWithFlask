@@ -1,7 +1,13 @@
 from flask_openapi3 import APIBlueprint, Tag
 from services.store_service import StoreService
+from services.store_crawler_service import StoreCrawlerService
+from flask_jwt_extended import jwt_required
 from schemas.store_schema import *
 from pydantic import BaseModel, Field
+import os
+from werkzeug.utils import secure_filename
+from flask import request, current_app
+from datetime import datetime
 
 store_bp = APIBlueprint('stores', __name__, url_prefix='/api/stores')
 store_tag = Tag(name='stores', description='店家管理')
@@ -172,4 +178,108 @@ def get_stores_by_city(path: CityPath):
         stores = service.get_stores_by_city(path.city)
         return {'stores': [store.to_dict() for store in stores]}
     except Exception as e:
-        return {'message': f'獲取店家列表失敗: {str(e)}'}, 500 
+        return {'message': f'獲取店家列表失敗: {str(e)}'}, 500
+
+@store_bp.get('/crawl', tags=[store_tag])
+@jwt_required()
+def crawl_stores():
+    """爬取 Foodpanda 餐廳資料
+    
+    此端點會爬取 Foodpanda 上的飲料店資料並立即存入資料庫
+    
+    Returns:
+        200 (StoreCrawlerResponse): 爬取成功
+            message (str): 成功信息
+            data (dict): 爬取統計數據
+                total_fetched (int): 總抓取筆數
+                fetched_by_city (dict): 各縣市抓取筆數
+                total_duration_seconds (int): 總耗時(秒)
+        500 (ErrorResponse): 服務器錯誤
+            message (str): 錯誤信息
+    
+    Response Example:
+        {
+            "message": "資料抓取完成",
+            "data": {
+                "total_fetched": 100,
+                "fetched_by_city": {
+                    "台北市": 30,
+                    "新北市": 25,
+                    "桃園市": 45
+                },
+                "total_duration_seconds": 300
+            }
+        }
+    
+    Error Example:
+        {
+            "message": "爬取資料失敗: 連接超時"
+        }
+    """
+    try:
+        service = StoreCrawlerService()
+        result = service.crawl_restaurants()
+        return result
+    except Exception as e:
+        error_response = ErrorResponse(message=f'爬取資料失敗: {str(e)}')
+        return error_response.dict(), 500
+
+@store_bp.post('/upload')
+@jwt_required()
+def upload_image():
+    """上傳店家圖片
+    
+    Returns:
+        200: 上傳成功
+            url (str): 圖片URL
+        400: 參數錯誤
+            message (str): 錯誤信息
+        500: 服務器錯誤
+            message (str): 錯誤信息
+    """
+    try:
+        print("接收到的文件:", request.files)  # 調試用
+        if 'file' not in request.files:
+            print("未找到文件字段，可用字段:", list(request.files.keys()))  # 調試用
+            return {'message': '未找到上傳的圖片'}, 400
+            
+        file = request.files['file']
+        if file.filename == '':
+            return {'message': '未選擇圖片'}, 400
+            
+        if not file or not allowed_file(file.filename):
+            return {'message': '不支援的圖片格式'}, 400
+        
+        # 生成安全的文件名
+        filename = secure_filename(file.filename)
+        # 添加時間戳避免重名
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"{timestamp}_{filename}"
+        
+        # 確保上傳目錄存在
+        upload_folder = os.path.join(current_app.root_path, 'uploads', 'stores')
+        os.makedirs(upload_folder, exist_ok=True)
+        
+        # 打印完整的文件路徑
+        file_path = os.path.join(upload_folder, filename)
+        print("準備保存文件到:", file_path)  # 調試用
+        
+        # 保存文件
+        file.save(file_path)
+        
+        # 返回可訪問的URL
+        url = f"/uploads/stores/{filename}"
+        print("返回的URL:", url)  # 調試用
+        return {'url': url}
+        
+    except Exception as e:
+        print(f"上傳過程中發生錯誤: {str(e)}")  # 調試用
+        import traceback
+        print("錯誤堆疊:", traceback.format_exc())  # 打印完整錯誤堆疊
+        return {'message': f'圖片上傳失敗: {str(e)}'}, 500
+
+def allowed_file(filename):
+    """檢查文件類型是否允許"""
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS 

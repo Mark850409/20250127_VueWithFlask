@@ -1,4 +1,4 @@
-from dao.restaurant_dao import RestaurantDAO
+from dao.store_dao import StoreDAO
 from utils.foodpandaAPI import FoodPandaSpider
 from datetime import datetime, timedelta
 import os
@@ -10,7 +10,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class RestaurantService:
+class StoreCrawlerService:
     def __init__(self):
         # 從環境變量讀取配置
         self.country_count = int(os.getenv('COUNTRY_COUNT', 100))
@@ -40,7 +40,7 @@ class RestaurantService:
             logger.error(f"解析 CITY_TRANSLATION 失敗: {str(e)}")
             self.city_translation = {}
 
-        self.dao = RestaurantDAO()
+        self.dao = StoreDAO()
 
     def generate_new_coordinates(self, county):
         """生成隨機經緯度"""
@@ -62,9 +62,6 @@ class RestaurantService:
             total_start_time = datetime.now()
             logger.info(f"開始爬取全台飲料店資料 - {total_start_time.strftime('%Y-%m-%d %H:%M:%S')}")
             
-            # 重置資料表
-            self.dao.reset_table()
-
             # 記錄每個縣市已抓取的筆數
             fetched_count = {county: 0 for county in self.coordinates}
             
@@ -95,7 +92,9 @@ class RestaurantService:
 
                     # 處理每個餐廳資料
                     for restaurant in restaurants['data']:
-                        if not self.dao.find_by_name(restaurant['name']):
+                        # 檢查店家是否已存在
+                        existing_stores = self.dao.get_stores_by_city(county)
+                        if not any(store.name == restaurant['name'] for store in existing_stores):
                             normalized_address, city_CN, normalized_name = self.normalize_address(
                                 restaurant['address'], 
                                 county,
@@ -121,7 +120,7 @@ class RestaurantService:
                                 is_new_until = None  # 如果是空值，直接設為 None
                             
                             # 準備資料
-                            restaurant_data = {
+                            store_data = {
                                 'name': restaurant['name'],
                                 'normalized_name': normalized_name,
                                 'address': normalized_address,
@@ -148,7 +147,7 @@ class RestaurantService:
                             }
                             
                             # 創建記錄
-                            self.dao.create_restaurant(restaurant_data)
+                            self.dao.create_store(store_data)
                             fetched_count[county] += 1
                             if fetched_count[county] % 10 == 0:  # 每10筆記錄一次進度
                                 logger.info(f"- {county} 已抓取: {fetched_count[county]} 筆")

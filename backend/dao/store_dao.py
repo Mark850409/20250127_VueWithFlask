@@ -1,12 +1,13 @@
 from typing import List, Optional
 from models.store import Store, db
 from sqlalchemy import desc
+from datetime import datetime
 
 class StoreDAO:
     @staticmethod
     def get_all_stores() -> List[Store]:
         """獲取所有店家"""
-        return Store.query.order_by(desc(Store.created_at)).all()
+        return Store.query.all()
     
     @staticmethod
     def get_store_by_id(store_id: int) -> Optional[Store]:
@@ -29,16 +30,26 @@ class StoreDAO:
     @staticmethod
     def update_store(store_id: int, store_data: dict) -> Optional[Store]:
         """更新店家"""
-        store = Store.query.get(store_id)
-        if store and store.status != 'deleted':
-            for key, value in store_data.items():
-                setattr(store, key, value)
-            db.session.commit()
-        return store
+        try:
+            store = Store.query.get(store_id)
+            if store:
+                # 更新每個提供的欄位
+                for key, value in store_data.items():
+                    if hasattr(store, key):  # 確保欄位存在
+                        setattr(store, key, value)
+                
+                store.updated_at = datetime.utcnow()
+                db.session.commit()
+                db.session.refresh(store)
+                return store
+            return None
+        except Exception as e:
+            db.session.rollback()
+            raise Exception(f'更新店家失敗: {str(e)}')
     
     @staticmethod
     def delete_store(store_id: int) -> bool:
-        """刪除店家（實體刪除）"""
+        """刪除店家"""
         store = Store.query.get(store_id)
         if store:
             db.session.delete(store)
@@ -49,9 +60,12 @@ class StoreDAO:
     @staticmethod
     def increment_views(store_id: int) -> bool:
         """增加瀏覽次數"""
-        store = Store.query.get(store_id)
-        if store and store.status != 'deleted':
-            store.views += 1
-            db.session.commit()
-            return True
-        return False 
+        try:
+            store = Store.query.get(store_id)
+            if store:
+                db.session.commit()
+                return True
+            return False
+        except Exception as e:
+            db.session.rollback()
+            raise Exception(f'更新瀏覽次數失敗: {str(e)}') 
