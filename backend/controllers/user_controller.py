@@ -2,10 +2,17 @@ from flask_openapi3 import APIBlueprint, Tag
 from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional
 from services.user_service import UserService
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 from schemas.user_schema import *
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
+from werkzeug.utils import secure_filename
+from flask import request, send_from_directory, send_file, jsonify
+import os
+from pathlib import Path
+from PIL import Image
+import io
+from flask_cors import cross_origin
 
 # 設定台灣時區
 tw_tz = pytz.timezone('Asia/Taipei')
@@ -65,7 +72,91 @@ class UserPath(BaseModel):
 class UserQuery(BaseModel):
     user_id: Optional[int] = None
 
+# 獲取當前文件的目錄
+CURRENT_DIR = Path(__file__).parent.parent
+UPLOAD_FOLDER = 'uploads/avatars'
+UPLOAD_PATH = CURRENT_DIR / UPLOAD_FOLDER
+
+# 設定頭像的最大尺寸
+MAX_SIZE = (200, 200)  # 寬度和高度的最大值
+
+# 添加允許的文件格式
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    """檢查文件擴展名是否允許"""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def resize_image(image_path):
+    """調整圖片大小"""
+    try:
+        with Image.open(image_path) as img:
+            # 保持原始比例
+            img.thumbnail(MAX_SIZE, Image.Resampling.LANCZOS)
+            
+            # 保存到內存
+            img_io = io.BytesIO()
+            
+            # 根據原始格式保存
+            if img.format == 'PNG':
+                # PNG 保持 RGBA 模式
+                img.save(img_io, format='PNG', optimize=True)
+            elif img.format == 'GIF':
+                # GIF 保持原始格式
+                img.save(img_io, format='GIF')
+            else:
+                # 其他格式轉換為 RGB 並保存為 JPEG
+                img = img.convert('RGB')
+                img.save(img_io, format='JPEG', quality=85, optimize=True)
+            
+            img_io.seek(0)
+            return img_io, img.format or 'JPEG'
+    except Exception as e:
+        print(f"Error resizing image: {str(e)}")
+        return None, None
+
+@user_bp.get('/avatar/<path:filename>', tags=[user_tag])
+def get_avatar(path: UserAvatarParamsSchema):
+    """獲取用戶頭像
+    
+    Args:
+        path (UserAvatarParamsSchema): 頭像文件名
+            
+    Returns:
+        200: 頭像文件
+        404: 文件不存在
+    """
+    try:
+        file_path = UPLOAD_PATH / path.filename
+        if not file_path.exists():
+            return {'message': '文件不存在'}, 404
+
+        # 調整圖片大小
+        img_io, img_format = resize_image(file_path)
+        if img_io is None:
+            return {'message': '圖片處理失敗'}, 500
+
+        # 設置正確的 MIME 類型
+        mime_types = {
+            'JPEG': 'image/jpeg',
+            'PNG': 'image/png',
+            'GIF': 'image/gif'
+        }
+        mimetype = mime_types.get(img_format, 'image/jpeg')
+
+        return send_file(
+            img_io,
+            mimetype=mimetype,
+            as_attachment=False,
+            download_name=path.filename
+        )
+    except Exception as e:
+        print(f"Error accessing file: {path.filename}")
+        print(f"Error details: {str(e)}")
+        return {'message': f'文件不存在: {str(e)}'}, 404
+
 @user_bp.get('/', tags=[user_tag])
+@jwt_required()
 def get_users():
     """獲取所有用戶
     
@@ -73,25 +164,70 @@ def get_users():
         200 (UserResponseSchema): 用戶列表
         500: 服務器錯誤
     """
-    service = UserService()
-    users = service.get_all_users()
-    return {'users': [user.to_dict() for user in users]}
+    try:
+        service = UserService()
+        users = service.get_all_users()
+        return {'users': [user.to_dict() for user in users]}
+    except Exception as e:
+        print(f"獲取用戶列表失敗: {str(e)}")
+        return {'message': f'獲取用戶列表失敗: {str(e)}'}, 500
 
 @user_bp.post('/register', tags=[user_tag])
-def register(body: UserRegisterSchema):
+def register():
     """用戶註冊
     
-    Args:
-        body (UserRegisterSchema): 註冊數據
-            
     Returns:
         201 (UserResponseSchema): 註冊成功
         400: 參數錯誤
         500: 服務器錯誤
     """
     try:
+        # 從表單數據中獲取值
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        # 驗證必填字段
+        if not all([username, email, password]):
+            return {'message': '請填寫所有必填欄位'}, 400
+
+        data = {
+            'username': username,
+            'email': email,
+            'password': password
+        }
+        
+        # 處理頭像上傳
+        avatar_file = request.files.get('avatar')
+        if avatar_file and allowed_file(avatar_file.filename):
+            # 確保上傳目錄存在
+            os.makedirs(UPLOAD_PATH, exist_ok=True)
+            # 生成安全的文件名（添加時間戳避免重名）
+            timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+            filename = secure_filename(f"{username}_{timestamp}_{avatar_file.filename}")
+            filepath = UPLOAD_PATH / filename
+            
+            # 保存原始文件
+            avatar_file.save(filepath)
+            
+            # 調整大小並保存
+            with Image.open(filepath) as img:
+                img.thumbnail(MAX_SIZE, Image.Resampling.LANCZOS)
+                # 根據原始格式保存
+                if img.format == 'PNG':
+                    img.save(filepath, format='PNG', optimize=True)
+                elif img.format == 'GIF':
+                    img.save(filepath, format='GIF')
+                else:
+                    img = img.convert('RGB')
+                    img.save(filepath, format='JPEG', quality=85, optimize=True)
+            
+            data['avatar'] = f'{UPLOAD_FOLDER}/{filename}'
+        else:
+            data['avatar'] = f'{UPLOAD_FOLDER}/default.png'
+        
         service = UserService()
-        user = service.register(body.dict())
+        user = service.register(data)
         return user.to_dict(), 201
     except ValueError as e:
         return {'message': str(e)}, 400
@@ -118,18 +254,22 @@ def login(body: UserLoginSchema):
         if not user:
             return {'message': '帳號或密碼錯誤'}, 401
             
-        # 確保使用正確的用戶ID
         user_id = str(user.id)
-        print(f"登入用戶ID: {user_id}")  # 添加調試日誌
-        
         access_token = create_access_token(
             identity=user_id,
             additional_claims={'type': 'access'}
         )
             
+        # 確保返回完整的用戶信息，包括頭像URL
         return {
             'token': access_token,
-            'user': user.to_dict()
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'avatar': user.avatar,  # 確保這個字段存在
+                'status': user.status
+            }
         }
     except Exception as e:
         return {'message': f'登入失敗: {str(e)}'}, 500
@@ -261,4 +401,38 @@ def logout():
         return {'message': '登出成功'}, 200
     except Exception as e:
         print(f"登出錯誤: {str(e)}")
-        return {'message': f'登出失敗: {str(e)}'}, 500 
+        return {'message': f'登出失敗: {str(e)}'}, 500
+
+@user_bp.get('/verify', tags=[user_tag])
+@jwt_required()
+def verify_token():
+    """驗證 token 是否有效
+    
+    Returns:
+        200: token 有效
+            message (str): 成功信息
+            user_id (int): 用戶ID
+        401: token 無效或過期
+        
+    Security:
+        Bearer: []
+        
+    Example:
+        GET /api/users/verify
+        
+    Response:
+        {
+            "message": "Token is valid",
+            "user_id": 1
+        }
+    """
+    try:
+        current_user = get_jwt_identity()
+        return jsonify({
+            'message': 'Token is valid',
+            'user_id': current_user
+        }), 200
+    except Exception as e:
+        print(f"Token 驗證錯誤: {str(e)}")
+        return {'message': f'Token 驗證失敗: {str(e)}'}, 401 
+

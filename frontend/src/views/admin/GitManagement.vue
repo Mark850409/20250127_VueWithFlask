@@ -827,16 +827,17 @@ export default {
     },
 
     // 查看提交詳情
-    viewCommitDetails(commit) {
+    async viewCommitDetails(commit) {
       Swal.fire({
         title: '提交詳情',
         html: `
-          <div class="text-left">
-            <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+          <div class="text-left space-y-4">
+            <!-- 基本信息卡片 -->
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
               <div class="grid grid-cols-1 gap-3">
                 <div class="flex items-center">
                   <span class="font-semibold w-24 text-gray-600">提交哈希：</span>
-                  <span class="font-mono bg-gray-100 px-2 py-1 rounded">${commit.hash}</span>
+                  <code class="font-mono bg-white px-3 py-1 rounded border border-gray-200 text-sm">${commit.hash}</code>
                 </div>
                 <div class="flex items-center">
                   <span class="font-semibold w-24 text-gray-600">作者：</span>
@@ -848,21 +849,31 @@ export default {
                 </div>
               </div>
             </div>
-            <div class="mb-2 font-semibold text-gray-600">提交信息：</div>
-            <pre class="whitespace-pre-line bg-blue-50 p-4 rounded-lg text-gray-800 border border-blue-100 text-sm leading-relaxed">${this.formatCommitMessage(commit.message)}</pre>
+            
+            <!-- 提交信息 -->
+            <div>
+              <div class="font-semibold text-white mb-2">提交信息：</div>
+              <pre class="whitespace-pre-wrap bg-white p-4 rounded-lg border border-gray-200 text-gray-800 text-base leading-relaxed font-mono max-h-[400px] overflow-y-auto">${this.formatCommitMessage(commit.message)}</pre>
+            </div>
           </div>
         `,
         confirmButtonText: '關閉',
         confirmButtonColor: '#3085d6',
+        background: '#1e293b', // 深色背景
         customClass: {
           container: 'commit-details-modal',
-          popup: 'rounded-lg shadow-xl',
-          header: 'border-b pb-3',
-          title: 'text-xl font-semibold text-gray-800',
-          content: 'pt-4',
-          confirmButton: 'px-6'
+          popup: 'rounded-lg shadow-xl max-w-2xl',
+          header: 'border-b border-gray-700 pb-3',
+          title: 'text-xl font-semibold text-white', // 標題文字改為白色
+          htmlContainer: 'p-0',
+          confirmButton: 'px-6 py-2',
         },
-        width: '600px'
+        showClass: {
+          popup: 'animate__animated animate__fadeIn'
+        },
+        hideClass: {
+          popup: 'animate__animated animate__fadeOut'
+        }
       })
     },
 
@@ -1024,18 +1035,19 @@ export default {
 <style>
 /* 提交詳情彈窗樣式 */
 .commit-details-modal .swal2-popup {
-  padding: 2rem;
+  padding: 1.5rem;
+  background: #1e293b; /* 深色背景 */
+  color: #fff; /* 默認文字顏色為白色 */
+}
+
+.commit-details-modal .swal2-title {
+  color: #fff !important; /* 強制標題文字為白色 */
 }
 
 .commit-details-modal .swal2-html-container {
   margin: 1rem 0 0 0;
   text-align: left;
-}
-
-.commit-details-modal pre {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.875rem;
-  line-height: 1.6;
+  color: #fff; /* 內容文字顏色為白色 */
 }
 
 /* 滾動條美化 */
@@ -1056,5 +1068,36 @@ export default {
 
 .commit-details-modal pre::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* 動畫效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+.animate__fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate__fadeOut {
+  animation: fadeOut 0.2s ease-in;
 }
 </style> 

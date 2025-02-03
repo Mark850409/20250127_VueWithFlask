@@ -20,12 +20,13 @@
       <!-- 使用者資訊 -->
       <div class="flex-shrink-0 p-4 border-b overflow-hidden">
         <div class="flex items-center space-x-3">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=admin" 
+          <img :src="userInfo.avatar || defaultAvatar"
                alt="User Avatar" 
-               class="w-10 h-10 rounded-full flex-shrink-0">
+               class="w-10 h-10 rounded-full flex-shrink-0"
+               @error="handleAvatarError">
           <div class="overflow-hidden">
-            <div class="font-medium text-gray-700 truncate">管理員</div>
-            <div class="text-sm text-gray-500 truncate">admin@example.com</div>
+            <div class="font-medium text-gray-700 truncate">{{ userInfo.username }}</div>
+            <div class="text-sm text-gray-500 truncate">{{ userInfo.email }}</div>
           </div>
         </div>
       </div>
@@ -244,7 +245,9 @@
       <!-- Navbar -->
       <AdminNavbar 
         :isSidebarCollapsed="isSidebarCollapsed"
-        @toggle-sidebar="toggleSidebar" 
+        @toggle-sidebar="toggleSidebar"
+        :remainingTime="remainingTime"
+        :formatTime="formatTime"
       />
 
       <!-- 內容區域 -->
@@ -277,12 +280,126 @@
 <script>
 import AdminNavbar from './common/AdminNavbar.vue'
 import AdminFooter from './common/AdminFooter.vue'
+import axios from '@/utils/axios'
+import Swal from 'sweetalert2'
+import { onBeforeMount, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 export default {
   name: 'AdminLayout',
   components: {
     AdminNavbar,
     AdminFooter
+  },
+  setup() {
+    const router = useRouter()
+    const tokenExpireTime = ref(null)
+    const remainingTime = ref(0)
+    let timerInterval = null
+
+    // 開始計時器
+    const startExpirationTimer = () => {
+      const expiresIn = parseInt(import.meta.env.VITE_JWT_EXPIRES_IN || '10') // 從環境變數讀取，預設10秒
+      tokenExpireTime.value = Date.now() + (expiresIn * 1000)
+      remainingTime.value = expiresIn
+
+      // 清除舊的計時器
+      if (timerInterval) clearInterval(timerInterval)
+
+      // 設置新的計時器
+      timerInterval = setInterval(() => {
+        const now = Date.now()
+        const timeLeft = Math.max(0, Math.ceil((tokenExpireTime.value - now) / 1000))
+        remainingTime.value = timeLeft
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval)
+          handleTokenExpiration()
+        }
+      }, 1000)
+    }
+
+    // 格式化時間
+    const formatTime = (seconds) => {
+      const hours = Math.floor(seconds / 3600)
+      const minutes = Math.floor((seconds % 3600) / 60)
+      const remainingSeconds = seconds % 60
+      
+      const parts = []
+      if (hours > 0) parts.push(`${hours}時`)
+      if (minutes > 0 || hours > 0) parts.push(`${minutes}分`)
+      parts.push(`${remainingSeconds}秒`)
+      
+      return parts.join('')
+    }
+
+    // 處理 token 過期
+    const handleTokenExpiration = async () => {
+      clearInterval(timerInterval)
+      await Swal.fire({
+        icon: 'warning',
+        title: '登入已過期',
+        text: '請重新登入',
+        confirmButtonText: '確定',
+        allowOutsideClick: false
+      })
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      router.push('/login')
+    }
+
+    // 檢查用戶是否已登入
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token')
+      const user = localStorage.getItem('user')
+
+      if (!token || !user) {
+        await Swal.fire({
+          icon: 'error',
+          title: '未授權訪問',
+          text: '請先登入後再訪問管理後台',
+          confirmButtonText: '確定',
+          allowOutsideClick: false
+        })
+        router.push('/login')
+        return false
+      }
+
+      try {
+        // 驗證 token 是否有效
+        await axios.get('/users/verify')
+        startExpirationTimer() // 驗證成功後開始計時
+        return true
+      } catch (error) {
+        console.error('Token 驗證失敗:', error)
+        await Swal.fire({
+          icon: 'error',
+          title: '登入已過期',
+          text: '請重新登入',
+          confirmButtonText: '確定',
+          allowOutsideClick: false
+        })
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        router.push('/login')
+        return false
+      }
+    }
+
+    onBeforeMount(async () => {
+      await checkAuth()
+    })
+
+    // 組件卸載時清理計時器
+    onMounted(() => {
+      if (timerInterval) clearInterval(timerInterval)
+    })
+
+    return {
+      remainingTime,
+      formatTime,
+      startExpirationTimer
+    }
   },
   data() {
     return {
@@ -292,7 +409,13 @@ export default {
         personal: false
       },
       isSidebarCollapsed: false,
-      isSidebarVisible: true
+      isSidebarVisible: true,
+      userInfo: {
+        username: '',
+        email: '',
+        avatar: ''
+      },
+      defaultAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
     }
   },
   computed: {
@@ -358,14 +481,80 @@ export default {
     toggleSidebar() {
       this.isSidebarCollapsed = !this.isSidebarCollapsed
     },
-    logout() {
-      // 實作登出邏輯
-      this.$router.push('/login')
+    async getUserInfo() {
+      try {
+        const storedUser = localStorage.getItem('user')
+        console.log('從 localStorage 獲取的數據:', storedUser)
+        
+        if (!storedUser) {
+          console.log('未找到用戶信息')
+          this.$router.push('/login')
+          return
+        }
+
+        const userData = JSON.parse(storedUser)
+        console.log('解析後的用戶數據:', userData)
+
+        const response = await axios.get(`/users/${userData.id}`)
+        console.log('API返回的用戶數據:', response.data)
+
+        this.userInfo = {
+          username: response.data.username,
+          email: response.data.email,
+          avatar: response.data.avatar ? `${import.meta.env.VITE_API_URL}/users/avatar/${response.data.avatar.split('/').pop()}` : this.defaultAvatar
+        }
+
+        console.log('最終設置的用戶信息:', this.userInfo)
+      } catch (error) {
+        console.error('獲取用戶信息失敗:', error)
+        if (error.response?.status === 401) {
+          this.$router.push('/login')
+        }
+      }
+    },
+    async logout() {
+      try {
+        const result = await Swal.fire({
+          title: '確定要登出嗎？',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: '確定',
+          cancelButtonText: '取消',
+          confirmButtonColor: '#dc2626',
+          cancelButtonColor: '#6b7280',
+        })
+
+        if (result.isConfirmed) {
+          await axios.post('/users/logout')
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+          this.$router.push('/login')
+          
+          Swal.fire({
+            icon: 'success',
+            title: '已成功登出',
+            timer: 1500,
+            showConfirmButton: false
+          })
+        }
+      } catch (error) {
+        console.error('登出失敗:', error)
+        Swal.fire({
+          icon: 'error',
+          title: '登出失敗',
+          text: '請稍後再試',
+          confirmButtonText: '確定'
+        })
+      }
     },
     handleResize() {
       if (window.innerWidth >= 1024) {
         this.isSidebarVisible = true
       }
+    },
+    handleAvatarError(e) {
+      console.error('頭像加載失敗，使用默認頭像')
+      e.target.src = this.defaultAvatar
     }
   },
   watch: {
@@ -377,6 +566,8 @@ export default {
   mounted() {
     // 初始化時設置選單狀態
     this.updateMenuState()
+    // 獲取用戶信息
+    this.getUserInfo()
     window.addEventListener('resize', this.handleResize)
     this.handleResize()
   },

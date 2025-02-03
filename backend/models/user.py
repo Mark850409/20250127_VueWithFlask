@@ -12,7 +12,7 @@ class User(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    avatar = db.Column(db.String(255))
+    avatar = db.Column(db.String(255), default='uploads/avatars/default.png')
     status = db.Column(db.String(20), default='Enabled')  # Enabled/Disabled
     register_time = db.Column(db.DateTime, default=datetime.utcnow)
     update_time = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

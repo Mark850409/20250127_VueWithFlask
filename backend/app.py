@@ -24,9 +24,11 @@ from dotenv import load_dotenv
 from services.googlemaps_service import GoogleMapsService
 from controllers.restaurant_controller import restaurant_bp
 from pathlib import Path
+from datetime import timedelta
+from flask import request
 
 # 獲取當前文件的目錄
-current_dir = Path(__file__).parent.parent
+current_dir = Path(__file__).parent
 
 # 1. 首先根據 FLASK_ENV 決定要載入哪個 .env 文件
 env = os.getenv('FLASK_ENV', 'development')
@@ -41,6 +43,29 @@ if env_path.exists():
     load_dotenv(env_path)
 else:
     print(f"Warning: Environment file not found: {env_path}")
+
+# 從環境變量獲取 API URL
+API_URL = os.getenv('API_URL', 'http://localhost:5000')
+FOODPANDA_RECOMMENDATION_URL = os.getenv('FOODPANDA_RECOMMENDATION_URL')
+FOODPANDA_SERVICE_URL = os.getenv('FOODPANDA_SERVICE_URL')
+
+
+# 獲取 Google Maps API Key
+GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY')
+if not GOOGLE_MAPS_API_KEY:
+    raise ValueError('Missing GOOGLE_MAPS_API_KEY in environment variables')
+
+# 設置數據庫 URI
+DB_HOST = os.getenv('DB_HOST', 'db')
+DB_PORT = os.getenv('DB_PORT', '3306')
+DB_USER = os.getenv('DB_USER', 'mark')
+DB_PASSWORD = os.getenv('DB_PASSWORD', 'mark850409')
+DB_NAME = os.getenv('DB_NAME', 'restaurant')
+
+# 構建數據庫 URI
+SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+os.environ['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
+
 
 # 檢查並打印關鍵環境變數
 required_env_vars = [
@@ -72,24 +97,8 @@ if not os.getenv('FOODPANDA_RECOMMENDATION_URL'):
 if not os.getenv('FOODPANDA_SERVICE_URL'):
     raise ValueError('Missing FOODPANDA_SERVICE_URL in environment variables')
 
-# 設置數據庫 URI
-DB_HOST = os.getenv('DB_HOST', 'db')
-DB_PORT = os.getenv('DB_PORT', '3306')
-DB_USER = os.getenv('DB_USER', 'mark')
-DB_PASSWORD = os.getenv('DB_PASSWORD', 'mark850409')
-DB_NAME = os.getenv('DB_NAME', 'restaurant')
-
-# 構建數據庫 URI
-SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-os.environ['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
-
 # API 信息配置
 info = Info(title='點餐推薦系統 API', version='1.0.0', description='點餐推薦系統系統的API文檔')
-
-# 從環境變量獲取 API URL
-API_URL = os.getenv('API_URL', 'http://localhost:5000')
-FOODPANDA_RECOMMENDATION_URL = os.getenv('FOODPANDA_RECOMMENDATION_URL')
-FOODPANDA_SERVICE_URL = os.getenv('FOODPANDA_SERVICE_URL')
 
 # 配置服務器
 servers = [
@@ -104,11 +113,6 @@ servers = [
     )
 ]
 
-# 獲取 Google Maps API Key
-GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY')
-if not GOOGLE_MAPS_API_KEY:
-    raise ValueError('Missing GOOGLE_MAPS_API_KEY in environment variables')
-
 # 創建應用實例
 app = OpenAPI(
     __name__, 
@@ -121,7 +125,6 @@ app.config.from_object(config[env])
 
 # JWT 配置
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key')
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 24 * 60 * 60
 app.config['JWT_TOKEN_LOCATION'] = ['headers']
 app.config['JWT_HEADER_NAME'] = 'Authorization'
 app.config['JWT_HEADER_TYPE'] = 'Bearer'
@@ -155,14 +158,29 @@ CORS(app,
         r"/*": {
             "origins": CORS_ORIGINS,  # 使用環境變數中的 origins
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With", "Origin"],
             "expose_headers": ["Content-Type", "Authorization"],
             "supports_credentials": True,
-            "max_age": 600,
-            "send_wildcard": False
+            "max_age": 3600
         }
     }
 )
+
+# 添加 CORS 預檢請求處理
+@app.after_request
+def after_request(response):
+    origin = request.headers.get('Origin')
+    
+    # 檢查 origin 是否在允許列表中
+    if origin and origin in CORS_ORIGINS:
+        response.headers.update({
+            'Access-Control-Allow-Origin': origin,
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Origin'
+        })
+    
+    return response
 
 # 配置 Google Maps Service
 googlemaps_service = GoogleMapsService(GOOGLE_MAPS_API_KEY)
@@ -222,6 +240,9 @@ app.api_doc['security'] = [
 with app.app_context():
     db.create_all()
     print("數據庫表已創建")
+
+# 確保上傳目錄存在
+os.makedirs('uploads/avatars', exist_ok=True)
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))

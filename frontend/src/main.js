@@ -10,4 +10,6 @@ const app = createApp(App)
 
 app.use(ElementPlus)
 app.use(router)
-app.mount('#app') 
+app.mount('#app')
+
+console.log('Environment Variables in main.js:', import.meta.env) 

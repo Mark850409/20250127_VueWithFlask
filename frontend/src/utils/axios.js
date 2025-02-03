@@ -4,50 +4,44 @@ import router from '@/router'
 
 // 根據環境設置基礎 URL
 const getBaseURL = () => {
-  switch (process.env.NODE_ENV) {
-    case 'development':
-      return 'http://localhost:5000/api'
-    case 'test':
-      return 'http://test-api.example.com/api'
-    case 'production':
-      return 'https://api.example.com/api'
-    default:
-      return '/'
+  // 調試信息
+  console.group('API Configuration')
+  console.log('Complete Environment:', import.meta.env)
+  console.log('VITE_API_URL:', import.meta.env.VITE_API_URL)
+  console.log('VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL)
+  console.log('MODE:', import.meta.env.MODE)
+  console.groupEnd()
+
+  if (!import.meta.env.VITE_API_URL) {
+    console.warn('VITE_API_URL is undefined!')
   }
+  return import.meta.env.VITE_API_URL
 }
 
 // 創建 axios 實例
 const instance = axios.create({
   baseURL: getBaseURL(),
-  timeout: 60000,  // 增加超時時間到 15 秒
-  withCredentials: true,  // 添加這行
+  timeout: 5000,
+  withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
-    'X-Requested-With': 'XMLHttpRequest'  // 標識 AJAX 請求
+    'Content-Type': 'application/json'
   }
 })
 
 // 請求攔截器
 instance.interceptors.request.use(
   config => {
-    // 添加 token
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
-
-    // 防止快取
+    // 添加時間戳防止緩存
     if (config.method === 'get') {
-      config.params = {
-        ...config.params,
-        _t: Date.now()
-      }
+      config.params = { ...config.params, _t: Date.now() }
     }
-
     return config
   },
   error => {
-    console.error('Request Error:', error)
     return Promise.reject(error)
   }
 )
@@ -58,152 +52,118 @@ instance.interceptors.response.use(
     return response
   },
   error => {
-    console.error('Response Error:', error)
+    console.group('API Error Details')
+    console.error('Error:', error)
+    console.error('Error Response:', error.response)
+    console.error('Error Data:', error.response?.data)
+    console.groupEnd()
 
-    // 如果請求被取消
-    if (axios.isCancel(error)) {
-      console.log('Request canceled:', error.message)
-      return Promise.reject(error)
-    }
-
-    // 獲取錯誤狀態碼
+    // 獲取錯誤信息
     const status = error.response?.status
-    const message = error.response?.data?.message || '請求失敗'
+    let title = '錯誤'
+    let message = ''
+
+    // 解析錯誤信息
+    if (error.response?.data?.message) {
+      message = error.response.data.message
+    } else if (typeof error.response?.data === 'string') {
+      message = error.response.data
+    } else if (error.message) {
+      message = error.message
+    }
 
     // 根據不同狀態碼處理錯誤
     switch (status) {
       case 400:
+        title = '請求錯誤'
+        // 處理業務邏輯錯誤（如：郵箱已存在）
         Swal.fire({
           icon: 'error',
-          title: '請求錯誤',
-          text: message,
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000
+          title: title,
+          html: `<div class="text-center">
+                  <p class="text-lg font-semibold text-red-500">${message}</p>
+                </div>`,
+          confirmButtonText: '確定',
+          background: '#1a1a1a',
+          customClass: {
+            popup: 'swal2-show',
+            title: 'text-white',
+            htmlContainer: 'text-white',
+            confirmButton: 'bg-blue-500 hover:bg-blue-600'
+          }
+        })
+        break
+
+      case 422:
+        title = '驗證錯誤'
+        // 處理表單驗證錯誤
+        let validationErrors = []
+        if (error.response?.data?.detail) {
+          validationErrors = Array.isArray(error.response.data.detail) 
+            ? error.response.data.detail 
+            : [error.response.data.detail]
+        }
+        
+        Swal.fire({
+          icon: 'error',
+          title: title,
+          html: `<div class="text-center">
+                  <p class="text-lg font-semibold text-red-500">${message}</p>
+                  ${validationErrors.map(err => 
+                    `<p class="text-sm text-gray-300 mt-2">${err.msg || err}</p>`
+                  ).join('')}
+                </div>`,
+          confirmButtonText: '確定',
+          background: '#1a1a1a',
+          customClass: {
+            popup: 'swal2-show',
+            title: 'text-white',
+            htmlContainer: 'text-white',
+            confirmButton: 'bg-blue-500 hover:bg-blue-600'
+          }
         })
         break
 
       case 401:
+        title = '認證失敗'
         Swal.fire({
           icon: 'warning',
-          title: '未授權',
-          text: '請重新登入',
-          confirmButtonText: '確定'
+          title: title,
+          html: `<div class="text-center">
+                  <p class="text-lg font-semibold text-yellow-500">${message || '請重新登入'}</p>
+                </div>`,
+          confirmButtonText: '確定',
+          background: '#1a1a1a',
+          customClass: {
+            popup: 'swal2-show',
+            title: 'text-white',
+            htmlContainer: 'text-white',
+            confirmButton: 'bg-blue-500 hover:bg-blue-600'
+          }
         }).then(() => {
           localStorage.removeItem('token')
           router.push('/login')
         })
         break
 
-      case 403:
-        Swal.fire({
-          icon: 'error',
-          title: '拒絕訪問',
-          text: '您沒有權限執行此操作',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000
-        })
-        break
-
-      case 404:
-        Swal.fire({
-          icon: 'error',
-          title: '資源不存在',
-          text: message,
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000
-        })
-        break
-
-      case 409:
-        Swal.fire({
-          icon: 'warning',
-          title: '資源衝突',
-          text: message,
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000
-        })
-        break
-
-      case 422:
-        Swal.fire({
-          icon: 'error',
-          title: '驗證錯誤',
-          text: message,
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000
-        })
-        break
-
-      case 500:
-        Swal.fire({
-          icon: 'error',
-          title: '伺服器錯誤',
-          text: '請稍後再試或聯繫管理員',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000
-        })
-        break
-
-      case 502:
-        Swal.fire({
-          icon: 'error',
-          title: '網關錯誤',
-          text: '伺服器可能正在維護中，請稍後再試',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000
-        })
-        break
-
-      case 503:
-        Swal.fire({
-          icon: 'error',
-          title: '服務不可用',
-          text: '系統可能正在維護中，請稍後再試',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000
-        })
-        break
-
       default:
-        if (!window.navigator.onLine) {
-          // 處理離線情況
-          Swal.fire({
-            icon: 'error',
-            title: '網路連接失敗',
-            text: '請檢查您的網路連接',
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000
-          })
-        } else {
-          // 其他未知錯誤
-          Swal.fire({
-            icon: 'error',
-            title: '發生錯誤',
-            text: message,
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000
-          })
-        }
+        // 處理其他錯誤
+        Swal.fire({
+          icon: 'error',
+          title: title,
+          html: `<div class="text-center">
+                  <p class="text-lg font-semibold text-red-500">${message || '發生錯誤，請稍後再試'}</p>
+                  <p class="text-sm text-gray-300 mt-2">錯誤代碼: ${status || '未知'}</p>
+                </div>`,
+          confirmButtonText: '確定',
+          background: '#1a1a1a',
+          customClass: {
+            popup: 'swal2-show',
+            title: 'text-white',
+            htmlContainer: 'text-white',
+            confirmButton: 'bg-blue-500 hover:bg-blue-600'
+          }
+        })
     }
 
     return Promise.reject(error)

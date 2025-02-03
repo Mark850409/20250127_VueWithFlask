@@ -65,11 +65,18 @@
 
 <script>
 import DataTable from '../common/DataTable.vue'
+import axios from '@/utils/axios'
+import Swal from 'sweetalert2'
+import { useRouter } from 'vue-router'
 
 export default {
   name: 'AccountManagement',
   components: {
     DataTable
+  },
+  setup() {
+    const router = useRouter()
+    return { router }
   },
   data() {
     return {
@@ -81,143 +88,7 @@ export default {
         { key: 'updateTime', label: '更新時間' },
         { key: 'status', label: '狀態' }
       ],
-      accounts: [
-        {
-          id: 1,
-          username: '王小明',
-          email: 'wang@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=1',
-          registerTime: '2023-01-06 17:04:43',
-          updateTime: '2023-01-08 17:04:43',
-          status: 'Enabled'
-        },
-        {
-          id: 2,
-          username: '李小華',
-          email: 'lee@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=2',
-          registerTime: '2023-01-06 17:05:45',
-          updateTime: '2023-01-10 17:04:43',
-          status: 'Disabled'
-        },
-        {
-          id: 3,
-          username: '張小美',
-          email: 'chang@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=3',
-          registerTime: '2023-02-15 09:30:22',
-          updateTime: '2023-02-15 09:30:22',
-          status: 'Enabled'
-        },
-        {
-          id: 4,
-          username: '劉大華',
-          email: 'liu@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=4',
-          registerTime: '2023-02-20 14:22:15',
-          updateTime: '2023-02-22 11:15:30',
-          status: 'Enabled'
-        },
-        {
-          id: 5,
-          username: '陳小玲',
-          email: 'chen@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=5',
-          registerTime: '2023-03-01 10:45:33',
-          updateTime: '2023-03-05 16:20:18',
-          status: 'Disabled'
-        },
-        {
-          id: 6,
-          username: '林小豪',
-          email: 'lin@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=6',
-          registerTime: '2023-03-10 08:15:42',
-          updateTime: '2023-03-12 09:30:25',
-          status: 'Enabled'
-        },
-        {
-          id: 7,
-          username: '吳小菁',
-          email: 'wu@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=7',
-          registerTime: '2023-03-15 13:25:16',
-          updateTime: '2023-03-18 14:40:33',
-          status: 'Enabled'
-        },
-        {
-          id: 8,
-          username: '黃小明',
-          email: 'huang@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=8',
-          registerTime: '2023-03-20 11:35:28',
-          updateTime: '2023-03-22 15:50:42',
-          status: 'Disabled'
-        },
-        {
-          id: 9,
-          username: '趙小雯',
-          email: 'zhao@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=9',
-          registerTime: '2023-04-01 09:20:17',
-          updateTime: '2023-04-03 10:15:31',
-          status: 'Enabled'
-        },
-        {
-          id: 10,
-          username: '周小倫',
-          email: 'zhou@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=10',
-          registerTime: '2023-04-05 16:45:23',
-          updateTime: '2023-04-08 17:30:44',
-          status: 'Enabled'
-        },
-        {
-          id: 11,
-          username: '楊小光',
-          email: 'yang@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=11',
-          registerTime: '2023-04-10 14:30:19',
-          updateTime: '2023-04-12 11:25:37',
-          status: 'Disabled'
-        },
-        {
-          id: 12,
-          username: '謝小婷',
-          email: 'xie@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=12',
-          registerTime: '2023-04-15 10:15:28',
-          updateTime: '2023-04-18 09:40:22',
-          status: 'Enabled'
-        },
-        {
-          id: 13,
-          username: '郭小峰',
-          email: 'guo@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=13',
-          registerTime: '2023-04-20 15:50:33',
-          updateTime: '2023-04-22 16:35:48',
-          status: 'Enabled'
-        },
-        {
-          id: 14,
-          username: '許小靜',
-          email: 'xu@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=14',
-          registerTime: '2023-04-25 11:40:26',
-          updateTime: '2023-04-28 13:20:35',
-          status: 'Disabled'
-        },
-        {
-          id: 15,
-          username: '蔡小德',
-          email: 'cai@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=15',
-          registerTime: '2023-04-30 08:25:14',
-          updateTime: '2023-05-02 10:45:29',
-          status: 'Enabled'
-        }
-      ],
+      accounts: [],
       showAddModal: false,
       editingAccount: null,
       accountForm: {
@@ -227,41 +98,154 @@ export default {
       }
     }
   },
+  async created() {
+    await this.fetchAccounts()
+  },
   methods: {
+    async fetchAccounts() {
+      try {
+        const token = localStorage.getItem('token')
+        if (!token) {
+          Swal.fire({
+            icon: 'warning',
+            title: '請先登入',
+            text: '您需要登入才能查看用戶列表',
+            confirmButtonText: '確定'
+          })
+          this.router.push('/login')
+          return
+        }
+
+        const response = await axios.get('/users')
+        
+        this.accounts = response.data.users.map(user => ({
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          avatar: user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default',
+          registerTime: user.register_time,
+          updateTime: user.update_time,
+          status: user.status
+        }))
+      } catch (error) {
+        // 如果是 401 錯誤，表示 token 無效或過期
+        if (error.response?.status === 401) {
+          localStorage.removeItem('token')
+          Swal.fire({
+            icon: 'warning',
+            title: '登入已過期',
+            text: '請重新登入',
+            confirmButtonText: '確定'
+          }).then(() => {
+            this.router.push('/login')
+          })
+          return
+        }
+        
+        console.error('獲取用戶列表失敗:', error)
+        Swal.fire({
+          icon: 'error',
+          title: '獲取用戶列表失敗',
+          text: error.response?.data?.message || '請稍後再試',
+          confirmButtonText: '確定'
+        })
+      }
+    },
     editAccount(account) {
       this.editingAccount = account
       this.accountForm = { ...account }
       this.showAddModal = true
     },
-    deleteAccount(account) {
-      if(confirm('確定要刪除此帳號嗎？')) {
-        this.accounts = this.accounts.filter(a => a.id !== account.id)
+    async deleteAccount(account) {
+      const result = await Swal.fire({
+        title: '確定要刪除此帳號嗎？',
+        text: '此操作無法復原',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '確定刪除',
+        cancelButtonText: '取消',
+        confirmButtonColor: '#dc2626'
+      })
+
+      if (result.isConfirmed) {
+        try {
+          await axios.delete(`/users/${account.id}`)
+          await this.fetchAccounts()
+          Swal.fire({
+            icon: 'success',
+            title: '刪除成功',
+            timer: 1500,
+            showConfirmButton: false
+          })
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: '刪除失敗',
+            text: error.response?.data?.message || '請稍後再試',
+            confirmButtonText: '確定'
+          })
+        }
       }
     },
-    batchDeleteAccounts(ids) {
-      if(confirm(`確定要刪除選中的 ${ids.length} 個帳號嗎？`)) {
-        this.accounts = this.accounts.filter(a => !ids.includes(a.id))
+    async batchDeleteAccounts(ids) {
+      const result = await Swal.fire({
+        title: `確定要刪除選中的 ${ids.length} 個帳號嗎？`,
+        text: '此操作無法復原',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '確定刪除',
+        cancelButtonText: '取消',
+        confirmButtonColor: '#dc2626'
+      })
+
+      if (result.isConfirmed) {
+        try {
+          await Promise.all(ids.map(id => axios.delete(`/users/${id}`)))
+          await this.fetchAccounts()
+          Swal.fire({
+            icon: 'success',
+            title: '批量刪除成功',
+            timer: 1500,
+            showConfirmButton: false
+          })
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: '批量刪除失敗',
+            text: error.response?.data?.message || '請稍後再試',
+            confirmButtonText: '確定'
+          })
+        }
       }
     },
-    saveAccount() {
-      if(this.editingAccount) {
-        const index = this.accounts.findIndex(a => a.id === this.editingAccount.id)
-        this.accounts[index] = { ...this.editingAccount, ...this.accountForm }
-      } else {
-        this.accounts.push({
-          id: this.accounts.length + 1,
-          ...this.accountForm,
-          registerTime: new Date().toISOString().slice(0, 19).replace('T', ' '),
-          updateTime: new Date().toISOString().slice(0, 19).replace('T', ' '),
-          avatar: 'https://via.placeholder.com/40'
+    async saveAccount() {
+      try {
+        if (this.editingAccount) {
+          await axios.put(`/users/${this.editingAccount.id}`, this.accountForm)
+        } else {
+          await axios.post('/users/register', this.accountForm)
+        }
+        await this.fetchAccounts()
+        this.showAddModal = false
+        this.editingAccount = null
+        this.accountForm = {
+          username: '',
+          email: '',
+          status: 'Enabled'
+        }
+        Swal.fire({
+          icon: 'success',
+          title: this.editingAccount ? '更新成功' : '新增成功',
+          timer: 1500,
+          showConfirmButton: false
         })
-      }
-      this.showAddModal = false
-      this.editingAccount = null
-      this.accountForm = {
-        username: '',
-        email: '',
-        status: 'Enabled'
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: this.editingAccount ? '更新失敗' : '新增失敗',
+          text: error.response?.data?.message || '請稍後再試',
+          confirmButtonText: '確定'
+        })
       }
     }
   }

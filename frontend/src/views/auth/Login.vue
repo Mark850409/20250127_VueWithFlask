@@ -15,40 +15,88 @@
       <!-- 表單 -->
       <form class="mt-8 space-y-6" @submit.prevent="handleSubmit">
         <div class="rounded-md shadow-sm space-y-4">
+          <div v-if="!isLogin" class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">頭像</label>
+            <div class="flex items-center space-x-4">
+              <img :src="avatarPreview || defaultAvatar" 
+                   class="h-20 w-20 rounded-full object-cover border-2 border-gray-200"
+                   alt="頭像預覽">
+              <div class="flex flex-col space-y-2">
+                <label class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500">
+                  <span>上傳頭像</span>
+                  <input type="file" 
+                         class="sr-only" 
+                         accept="image/*"
+                         @change="handleAvatarChange">
+                </label>
+                <p class="text-xs text-gray-500">PNG, JPG 格式 (最大 2MB)</p>
+              </div>
+            </div>
+          </div>
+
           <div v-if="!isLogin">
-            <label for="name" class="block text-sm font-medium text-gray-700">名稱</label>
-            <input id="name" v-model="form.name" type="text" required 
+            <label for="username" class="block text-sm font-medium text-gray-700">
+              名稱 <span class="text-red-500">*</span>
+            </label>
+            <input id="username" 
+                   v-model="form.username"
+                   type="text"
+                   required
+                   :class="{'border-red-500': errors.username}"
                    class="appearance-none relative block w-full px-3 py-2 border border-gray-300 
                           placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
                           focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                    placeholder="請輸入您的名稱">
+            <p v-if="errors.username" class="mt-1 text-xs text-red-500">{{ errors.username }}</p>
           </div>
 
           <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-            <input id="email" v-model="form.email" type="email" required
+            <label for="email" class="block text-sm font-medium text-gray-700">
+              Email <span class="text-red-500">*</span>
+            </label>
+            <input id="email" 
+                   v-model="form.email" 
+                   type="email" 
+                   required
+                   :class="{'border-red-500': errors.email}"
                    class="appearance-none relative block w-full px-3 py-2 border border-gray-300 
                           placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
                           focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                    placeholder="請輸入Email">
+            <p v-if="errors.email" class="mt-1 text-xs text-red-500">{{ errors.email }}</p>
           </div>
 
           <div>
-            <label for="password" class="block text-sm font-medium text-gray-700">密碼</label>
-            <input id="password" v-model="form.password" type="password" required
+            <label for="password" class="block text-sm font-medium text-gray-700">
+              密碼 <span class="text-red-500">*</span>
+            </label>
+            <input id="password" 
+                   v-model="form.password" 
+                   type="password" 
+                   required
+                   :class="{'border-red-500': errors.password}"
                    class="appearance-none relative block w-full px-3 py-2 border border-gray-300 
                           placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
                           focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                    placeholder="請輸入密碼">
+            <p v-if="errors.password" class="mt-1 text-xs text-red-500">{{ errors.password }}</p>
+            <p class="mt-1 text-xs text-gray-500">密碼需要6-12碼，包含大小寫字母、數字及特殊符號</p>
           </div>
 
           <div v-if="!isLogin">
-            <label for="confirmPassword" class="block text-sm font-medium text-gray-700">確認密碼</label>
-            <input id="confirmPassword" v-model="form.confirmPassword" type="password" required
+            <label for="confirmPassword" class="block text-sm font-medium text-gray-700">
+              確認密碼 <span class="text-red-500">*</span>
+            </label>
+            <input id="confirmPassword" 
+                   v-model="form.confirmPassword" 
+                   type="password" 
+                   required
+                   :class="{'border-red-500': errors.confirmPassword}"
                    class="appearance-none relative block w-full px-3 py-2 border border-gray-300 
                           placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
                           focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                    placeholder="請再次輸入密碼">
+            <p v-if="errors.confirmPassword" class="mt-1 text-xs text-red-500">{{ errors.confirmPassword }}</p>
           </div>
         </div>
 
@@ -123,35 +171,203 @@
 <script>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from '@/utils/axios'
+import Swal from 'sweetalert2'
 
 export default {
   name: 'Login',
   setup() {
     const router = useRouter()
     const isLogin = ref(true)
+    const defaultAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=default'
+    const avatarPreview = ref('')
+    const avatarFile = ref(null)
+    
     const form = reactive({
-      name: '',
+      username: '',
       email: '',
       password: '',
       confirmPassword: '',
       remember: false
     })
 
-    const handleSubmit = async () => {
-      try {
-        if (!isLogin.value && form.password !== form.confirmPassword) {
-          alert('兩次輸入的密碼不一致')
+    const errors = reactive({
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      avatar: ''
+    })
+
+    const validatePassword = (password) => {
+      // 密碼驗證規則
+      const rules = {
+        length: password.length >= 6 && password.length <= 12,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+      }
+
+      const errors = []
+      if (!rules.length) errors.push('密碼長度需要在6-12碼之間')
+      if (!rules.uppercase) errors.push('需要包含大寫字母')
+      if (!rules.lowercase) errors.push('需要包含小寫字母')
+      if (!rules.number) errors.push('需要包含數字')
+      if (!rules.special) errors.push('需要包含特殊符號')
+
+      return {
+        isValid: Object.values(rules).every(rule => rule),
+        errors: errors
+      }
+    }
+
+    const validateForm = () => {
+      let isValid = true
+      errors.username = ''
+      errors.email = ''
+      errors.password = ''
+      errors.confirmPassword = ''
+      errors.avatar = ''
+
+      if (!isLogin.value) {
+        if (!form.username) {
+          errors.username = '請輸入名稱'
+          isValid = false
+        } else if (form.username.length < 2) {
+          errors.username = '名稱至少需要2個字符'
+          isValid = false
+        }
+      }
+
+      if (!form.email) {
+        errors.email = '請輸入Email'
+        isValid = false
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+        errors.email = '請輸入有效的Email格式'
+        isValid = false
+      }
+
+      // 加強密碼驗證
+      const passwordValidation = validatePassword(form.password)
+      if (!passwordValidation.isValid) {
+        errors.password = passwordValidation.errors.join('、')
+        isValid = false
+      }
+
+      if (!isLogin.value && form.password !== form.confirmPassword) {
+        errors.confirmPassword = '兩次輸入的密碼不一致'
+        isValid = false
+      }
+
+      return isValid
+    }
+
+    const handleAvatarChange = (event) => {
+      const file = event.target.files[0]
+      if (file) {
+        // 驗證文件大小
+        if (file.size > 2 * 1024 * 1024) {
+          Swal.fire({
+            icon: 'error',
+            title: '檔案太大',
+            text: '圖片大小不能超過2MB',
+            confirmButtonText: '確定'
+          })
+          event.target.value = ''  // 清空選擇
           return
         }
 
-        // TODO: 實作登入/註冊邏輯
-        console.log('Form submitted:', form)
-        
-        // 模擬登入成功
-        router.push('/admin/dashboard')
+        // 驗證文件類型
+        const fileType = file.type.toLowerCase()
+        if (!['image/jpeg', 'image/jpg', 'image/png', 'image/gif'].includes(fileType)) {
+          Swal.fire({
+            icon: 'error',
+            title: '檔案格式錯誤',
+            text: '只支援 JPG、PNG 和 GIF 格式',
+            confirmButtonText: '確定'
+          })
+          event.target.value = ''  // 清空選擇
+          return
+        }
+
+        // 設置預覽
+        avatarFile.value = file
+        avatarPreview.value = URL.createObjectURL(file)
+      }
+    }
+
+    const handleSubmit = async () => {
+      try {
+        if (!validateForm()) {
+          const errorMessages = Object.values(errors)
+            .filter(msg => msg)
+            .join('\n')
+          
+          if (errorMessages) {
+            await Swal.fire({
+              icon: 'error',
+              title: '表單驗證失敗',
+              text: errorMessages,
+              confirmButtonText: '確定'
+            })
+          }
+          return
+        }
+
+        if (!isLogin.value) {
+          // 處理註冊
+          const formData = new FormData()
+          formData.append('username', form.username)
+          formData.append('email', form.email)
+          formData.append('password', form.password)
+          
+          // 如果有選擇頭像，添加到表單數據中
+          if (avatarFile.value) {
+            formData.append('avatar', avatarFile.value)
+          }
+
+          const response = await axios.post('/users/register', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          })
+
+          // 註冊成功
+          await Swal.fire({
+            icon: 'success',
+            title: '註冊成功',
+            text: '請使用新帳號登入',
+            confirmButtonText: '確定'
+          })
+          isLogin.value = true
+          form.password = ''
+          form.confirmPassword = ''
+          localStorage.setItem('user', JSON.stringify(response.data.user))
+        } else {
+          // 處理登入
+          const response = await axios.post('/users/login', {
+            email: form.email,
+            password: form.password
+          })
+
+          if (response.data.token) {
+            localStorage.setItem('token', response.data.token)
+            localStorage.setItem('user', JSON.stringify(response.data.user))
+            console.log('保存的用戶信息:', response.data.user)
+            
+            await Swal.fire({
+              icon: 'success',
+              title: '登入成功',
+              text: '歡迎回來',
+              timer: 1500,
+              showConfirmButton: false
+            })
+            router.push('/admin')
+          }
+        }
       } catch (error) {
-        console.error('Error:', error)
-        alert('發生錯誤，請稍後再試')
+        console.error('Login Error:', error)
       }
     }
 
@@ -160,14 +376,25 @@ export default {
         // TODO: 實作社群登入邏輯
         console.log('Social login with:', provider)
       } catch (error) {
-        console.error('Error:', error)
-        alert('社群登入失敗，請稍後再試')
+        console.error('Social Login Error:', error)
+        // 特殊的社群登入錯誤處理
+        await Swal.fire({
+          icon: 'error',
+          title: '社群登入失敗',
+          text: '請稍後再試',
+          confirmButtonText: '確定'
+        })
       }
     }
 
     return {
       isLogin,
       form,
+      errors,
+      defaultAvatar,
+      avatarPreview,
+      avatarFile,
+      handleAvatarChange,
       handleSubmit,
       socialLogin
     }
