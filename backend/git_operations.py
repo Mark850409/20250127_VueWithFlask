@@ -1,6 +1,7 @@
 import git
 import os
 from models.git import GitStatus
+from datetime import datetime, timezone, timedelta
 
 class GitOperations:
     def __init__(self, repo_path):
@@ -170,11 +171,13 @@ class GitOperations:
         
         commits = []
         for commit in self.repo.iter_commits():
+            # 將時間調整為 GMT+8
+            commit_time = commit.committed_datetime.astimezone(timezone(timedelta(hours=8)))
             commits.append({
                 'hash': commit.hexsha[:7],
                 'message': commit.message.replace('\n', '\n'),  # 保留原始換行
                 'author': f"{commit.author.name} <{commit.author.email}>",
-                'date': commit.committed_datetime.strftime('%Y-%m-%d %H:%M:%S')
+                'date': commit_time.strftime('%Y-%m-%d %H:%M:%S')
             })
         return commits
 
