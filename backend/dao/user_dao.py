@@ -1,5 +1,6 @@
 from typing import List, Optional
 from models.user import User, db
+from datetime import datetime
 
 class UserDAO:
     @staticmethod
@@ -33,12 +34,19 @@ class UserDAO:
     @staticmethod
     def update_user(user_id: int, user_data: dict) -> Optional[User]:
         """更新用戶"""
-        user = User.query.get(user_id)
-        if user:
-            for key, value in user_data.items():
-                setattr(user, key, value)
-            db.session.commit()
-        return user
+        try:
+            user = User.query.get(user_id)
+            if user:
+                for key, value in user_data.items():
+                    setattr(user, key, value)
+                user.update_time = datetime.utcnow()
+                db.session.commit()
+                db.session.refresh(user)
+                return user
+            return None
+        except Exception as e:
+            db.session.rollback()
+            raise Exception(f'更新用戶失敗: {str(e)}')
     
     @staticmethod
     def delete_user(user_id: int) -> bool:

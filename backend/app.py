@@ -158,7 +158,7 @@ CORS(app,
         r"/*": {
             "origins": CORS_ORIGINS,  # 使用環境變數中的 origins
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With", "Origin"],
+            "allow_headers": "*",
             "expose_headers": ["Content-Type", "Authorization"],
             "supports_credentials": True,
             "max_age": 3600
@@ -172,8 +172,7 @@ def after_request(response):
     origin = request.headers.get('Origin')
     
     # 檢查 origin 是否在允許列表中
-    if origin and origin in CORS_ORIGINS:
-        response.headers.update({
+    response.headers.update({
             'Access-Control-Allow-Origin': origin,
             'Access-Control-Allow-Credentials': 'true',
             'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',

@@ -30,11 +30,17 @@ class UserService:
             user_data['password'] = hash_password(user_data['password'])
         return self.dao.create_user(user_data)
     
-    def update_user(self, user_id: int, user_data: dict) -> Optional[User]:
-        """更新用戶"""
-        if 'password' in user_data:
-            user_data['password'] = hash_password(user_data['password'])
-        return self.dao.update_user(user_id, user_data)
+    def update_user(self, user_id: int, data: dict):
+        """更新用戶信息"""
+        try:
+            user = self.dao.get_user_by_id(user_id)
+            if not user:
+                raise ValueError('用戶不存在')
+            
+            # 直接傳遞 user_id 和 data 到 dao 層
+            return self.dao.update_user(user_id, data)
+        except Exception as e:
+            raise Exception(f'更新用戶失敗: {str(e)}')
     
     def delete_user(self, user_id: int) -> bool:
         """刪除用戶"""

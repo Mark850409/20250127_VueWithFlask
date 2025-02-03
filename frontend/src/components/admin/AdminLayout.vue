@@ -20,7 +20,7 @@
       <!-- 使用者資訊 -->
       <div class="flex-shrink-0 p-4 border-b overflow-hidden">
         <div class="flex items-center space-x-3">
-          <img :src="userInfo.avatar || defaultAvatar"
+          <img :src="getAvatarUrl"
                alt="User Avatar" 
                class="w-10 h-10 rounded-full flex-shrink-0"
                @error="handleAvatarError">
@@ -419,6 +419,12 @@ export default {
     }
   },
   computed: {
+    getAvatarUrl() {
+      if (this.userInfo.avatar) {
+        return `${import.meta.env.VITE_BACKEND_URL}/api/users/avatar/${this.userInfo.avatar.split('/').pop()}`
+      }
+      return this.defaultAvatar
+    },
     getBannerTitle() {
       const route = this.$route.name
       const titles = {
@@ -483,33 +489,23 @@ export default {
     },
     async getUserInfo() {
       try {
-        const storedUser = localStorage.getItem('user')
-        console.log('從 localStorage 獲取的數據:', storedUser)
-        
-        if (!storedUser) {
-          console.log('未找到用戶信息')
-          this.$router.push('/login')
+        const token = localStorage.getItem('token')
+        console.log('從 AdminLayout 獲取的 token:', token)
+        if (!token) {
+          console.warn('No token found')
+          this.router.push('/login')
           return
         }
 
-        const userData = JSON.parse(storedUser)
-        console.log('解析後的用戶數據:', userData)
-
-        const response = await axios.get(`/users/${userData.id}`)
-        console.log('API返回的用戶數據:', response.data)
-
-        this.userInfo = {
-          username: response.data.username,
-          email: response.data.email,
-          avatar: response.data.avatar ? `${import.meta.env.VITE_API_URL}/users/avatar/${response.data.avatar.split('/').pop()}` : this.defaultAvatar
+        const response = await axios.get('/users/verify')
+        if (response.data && response.data.user_id) {
+          const userResponse = await axios.get(`/users/${response.data.user_id}`)
+          this.userInfo = userResponse.data
         }
-
-        console.log('最終設置的用戶信息:', this.userInfo)
       } catch (error) {
         console.error('獲取用戶信息失敗:', error)
-        if (error.response?.status === 401) {
-          this.$router.push('/login')
-        }
+        localStorage.removeItem('token')
+        this.router.push('/login')
       }
     },
     async logout() {

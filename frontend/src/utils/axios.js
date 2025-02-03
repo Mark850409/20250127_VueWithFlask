@@ -25,6 +25,13 @@ const instance = axios.create({
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
+  },
+  paramsSerializer: {
+    serialize: params => {
+      return Object.keys(params)
+        .map(key => `${key}=${params[key]}`)
+        .join('&')
+    }
   }
 })
 
@@ -33,6 +40,7 @@ instance.interceptors.request.use(
   config => {
     const token = localStorage.getItem('token')
     if (token) {
+      // 確保使用正確的 Authorization 格式
       config.headers.Authorization = `Bearer ${token}`
     }
     // 添加時間戳防止緩存

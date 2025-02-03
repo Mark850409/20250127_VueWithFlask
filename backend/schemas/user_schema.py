@@ -11,13 +11,15 @@ class UserBaseSchema(BaseModel):
 class UserRegisterSchema(UserBaseSchema):
     """用戶註冊請求參數"""
     password: str = Field(..., description='密碼', min_length=6)
+    status: str = Field('Enabled', description='帳號狀態')
 
     class Config:
         schema_extra = {
             'example': {
                 'username': 'test_user',
                 'email': 'test@example.com',
-                'password': 'password123'
+                'password': 'password123',
+                'status': 'Enabled'
             }
         }
 
@@ -39,13 +41,15 @@ class UserUpdateSchema(BaseModel):
     username: Optional[str] = Field(None, description='用戶名稱', min_length=2, max_length=50)
     email: Optional[EmailStr] = Field(None, description='電子郵件')
     password: Optional[str] = Field(None, description='密碼', min_length=6)
+    status: Optional[str] = Field(None, description='帳號狀態')
 
     class Config:
         schema_extra = {
             'example': {
                 'username': 'new_username',
                 'email': 'new_email@example.com',
-                'password': 'new_password123'
+                'password': 'new_password123',
+                'status': 'Disabled'
             }
         }
 
@@ -72,6 +76,7 @@ class UserRegisterFormSchema(BaseModel):
     username: str = Field(..., description='用戶名稱', min_length=2, max_length=50)
     email: EmailStr = Field(..., description='電子郵件')
     password: str = Field(..., description='密碼', min_length=6, max_length=12)
+    status: str = Field('Enabled', description='帳號狀態')
     avatar: Optional[str] = Field(None, description='用戶頭像文件')
 
     class Config:
@@ -80,6 +85,7 @@ class UserRegisterFormSchema(BaseModel):
                 'username': 'test_user',
                 'email': 'test@example.com',
                 'password': 'Password123!',
+                'status': 'Enabled',
                 'avatar': 'file'  # 這裡會在 Swagger UI 中顯示文件上傳欄位
             }
         }
@@ -109,8 +115,8 @@ class UserRegisterResponse:
         }
     }
 
-class UserRegisterRequestBody:
-    """註冊請求體"""
+class UserRegisterMultipartSchema:
+    """註冊請求體 (multipart/form-data)"""
     description = '用戶註冊表單'
     content = {
         'multipart/form-data': {
@@ -134,13 +140,20 @@ class UserRegisterRequestBody:
                         'minLength': 6,
                         'maxLength': 12
                     },
+                    'status': {
+                        'type': 'string',
+                        'description': '帳號狀態',
+                        'enum': ['Enabled', 'Disabled'],
+                        'default': 'Enabled'
+                    },
                     'avatar': {
                         'type': 'string',
                         'format': 'binary',
                         'description': '用戶頭像 (PNG, JPG, JPEG, GIF格式，最大2MB)'
                     }
                 },
-                'required': ['username', 'email', 'password']
+                'required': ['username', 'email', 'password', 'status']
             }
         }
     } 
+

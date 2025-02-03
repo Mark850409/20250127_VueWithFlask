@@ -21,57 +21,6 @@ tw_tz = pytz.timezone('Asia/Taipei')
 user_bp = APIBlueprint('users', __name__, url_prefix='/api/users')
 user_tag = Tag(name='users', description='用戶管理')
 
-# 請求和響應模型
-class UserBase(BaseModel):
-    username: str
-    email: EmailStr
-    avatar: Optional[str]
-    status: str = 'Enabled'
-
-class UserCreate(UserBase):
-    password: str
-
-class UserUpdate(BaseModel):
-    username: Optional[str]
-    email: Optional[EmailStr]
-    password: Optional[str]
-    avatar: Optional[str]
-    status: Optional[str]
-
-class UserResponse(UserBase):
-    id: int
-    register_time: datetime
-    update_time: datetime
-
-    @classmethod
-    def from_orm(cls, obj):
-        # 將時間轉換為台灣時區
-        if obj.register_time:
-            obj.register_time = obj.register_time.replace(tzinfo=pytz.UTC).astimezone(tw_tz)
-        if obj.update_time:
-            obj.update_time = obj.update_time.replace(tzinfo=pytz.UTC).astimezone(tw_tz)
-        return super().from_orm(obj)
-
-    class Config:
-        orm_mode = True
-        json_encoders = {
-            datetime: lambda dt: dt.strftime('%Y-%m-%d %H:%M:%S')
-        }
-
-class UserList(BaseModel):
-    users: List[UserResponse]
-
-class ErrorResponse(BaseModel):
-    message: str
-
-# 添加請求參數模型
-class UserPath(BaseModel):
-    """用戶路徑參數"""
-    user_id: int = Field(..., description='用戶ID')
-
-class UserQuery(BaseModel):
-    user_id: Optional[int] = None
-
 # 獲取當前文件的目錄
 CURRENT_DIR = Path(__file__).parent.parent
 UPLOAD_FOLDER = 'uploads/avatars'
@@ -173,9 +122,11 @@ def get_users():
         return {'message': f'獲取用戶列表失敗: {str(e)}'}, 500
 
 @user_bp.post('/register', tags=[user_tag])
-def register():
+def register(body: UserRegisterSchema):
     """用戶註冊
-    
+    Args:
+        body (UserRegisterSchema): 註冊數據
+            
     Returns:
         201 (UserResponseSchema): 註冊成功
         400: 參數錯誤
@@ -183,18 +134,20 @@ def register():
     """
     try:
         # 從表單數據中獲取值
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
+        username = body.username
+        email = body.email
+        password = body.password
+        status = body.status or 'Enabled'
 
         # 驗證必填字段
-        if not all([username, email, password]):
+        if not all([username, email, password, status]):
             return {'message': '請填寫所有必填欄位'}, 400
 
         data = {
             'username': username,
             'email': email,
-            'password': password
+            'password': password,
+            'status': status
         }
         
         # 處理頭像上傳
@@ -224,7 +177,7 @@ def register():
             
             data['avatar'] = f'{UPLOAD_FOLDER}/{filename}'
         else:
-            data['avatar'] = f'{UPLOAD_FOLDER}/default.png'
+            data['avatar'] = ''
         
         service = UserService()
         user = service.register(data)
@@ -297,51 +250,31 @@ def get_user(path: UserPath):
         return {'message': f'獲取用戶失敗: {str(e)}'}, 500
 
 @user_bp.put('/<int:user_id>', tags=[user_tag])
+@jwt_required()
 def update_user(path: UserPath, body: UserUpdateSchema):
     """更新用戶
     
     Args:
         path (UserPath): 路徑參數
-            user_id (int): 要更新的用戶ID
         body (UserUpdateSchema): 更新數據
             
-    Example:
-        PUT /api/users/1
-        {
-            "username": "mark_new",
-            "email": "mark_new@example.com"
-        }
-        
     Returns:
         200 (UserResponseSchema): 更新成功
-        400: 用戶名或郵箱已存在
         404: 用戶不存在
         500: 服務器錯誤
     """
-    service = UserService()
-    user_id = path.user_id
-    
-    # 檢查用戶是否存在
-    existing_user = service.get_user(user_id)
-    if not existing_user:
-        return {'message': '用戶不存在'}, 404
-    
-    update_data = body.dict(exclude_unset=True)
-    
-    # 如果要更新用戶名，檢查是否已存在
-    if 'username' in update_data:
-        user = service.get_user_by_username(update_data['username'])
-        if user and user.id != user_id:
-            return {'message': '用戶名已存在'}, 400
-    
-    # 如果要更新郵箱，檢查是否已存在
-    if 'email' in update_data:
-        user = service.get_user_by_email(update_data['email'])
-        if user and user.id != user_id:
-            return {'message': '郵箱已存在'}, 400
-    
-    user = service.update_user(user_id, update_data)
-    return user.to_dict()
+    try:
+        service = UserService()
+        # 將請求數據轉換為字典，並過濾掉 None 值
+        update_data = {k: v for k, v in body.dict().items() if v is not None}
+        user = service.update_user(path.user_id, update_data)
+        
+        if not user:
+            return {'message': '用戶不存在'}, 404
+            
+        return user.to_dict()
+    except Exception as e:
+        return {'message': f'更新用戶失敗: {str(e)}'}, 500
 
 @user_bp.delete('/<int:user_id>', tags=[user_tag])
 def delete_user(path: UserPath):
