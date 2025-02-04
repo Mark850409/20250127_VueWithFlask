@@ -69,21 +69,14 @@ services:
       timeout: 5s
       retries: 5
   
-  phpmyadmin:
-    depends_on:
-      - db
-    image: phpmyadmin
+  bytebase:
+    image: bytebase/bytebase:latest
+    init: true
+    container_name: bytebase
     restart: always
     ports:
-      - "${PMA_PORT}:80"
-    environment:
-      PMA_HOST: ${DB_HOST}
-      PMA_ABSOLUTE_URI: ${PMA_ABSOLUTE_URI}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-    networks:
-      - api_bridge
+      - "${BYTEBASE_PORT}:${BYTEBASE_PORT}"
+    command: ["--data", "/var/opt/bytebase", "--port", "${BYTEBASE_PORT}", "--external-url", "${BYTEBASE_ABSOLUTE_URI}"]
       
 networks:
   api_bridge:

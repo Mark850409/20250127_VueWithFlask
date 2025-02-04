@@ -2,15 +2,16 @@ from typing import List, Optional
 from models.rating import Rating
 from dao.rating_dao import RatingDAO
 from dao.store_dao import StoreDAO
+from models.database import db
 
 class RatingService:
     def __init__(self):
         self.dao = RatingDAO()
         self.store_dao = StoreDAO()
     
-    def get_store_ratings(self, store_id: int) -> List[Rating]:
+    def get_store_ratings(self, place_id: str) -> List[Rating]:
         """獲取店家的所有評分"""
-        return self.dao.get_store_ratings(store_id)
+        return Rating.query.filter_by(place_id=place_id).all()
     
     def get_user_ratings(self, user_id: int) -> List[Rating]:
         """獲取用戶的所有評分"""
@@ -18,44 +19,63 @@ class RatingService:
     
     def get_rating(self, rating_id: int) -> Optional[Rating]:
         """獲取指定評分"""
-        return self.dao.get_rating(rating_id)
+        return Rating.query.get(rating_id)
     
-    def create_rating(self, user_id: int, rating_data: dict) -> Rating:
-        """創建評分"""
-        # 檢查店家是否存在
-        store = self.store_dao.get_store_by_id(rating_data['store_id'])
-        if not store:
-            raise ValueError(f'店家不存在 (ID: {rating_data["store_id"]})')
+    def create_rating(self, rating_data: dict) -> Rating:
+        """創建新評分
         
-        # 檢查用戶是否已經評分過此店家
-        existing_rating = self.dao.get_user_store_rating(user_id, rating_data['store_id'])
-        if existing_rating:
-            raise ValueError('您已經評分過此店家')
+        Args:
+            rating_data (dict): 評分數據，包含以下字段：
+                place_id: str
+                restaurant_name: str
+                user: str
+                rating: float
+                text: Optional[str]
+                english_texts: Optional[str]
+                time: Optional[str]
+                positive_prob: Optional[float]
+                negative_prob: Optional[float]
+                composite_score: Optional[float]
+                confidence: Optional[float]
+                keywords_scores: Optional[float]
+                sentiment: Optional[str]
+                hash: str
         
-        # 添加用戶ID和其他必要欄位
-        rating_data['user_id'] = user_id
-        rating_data['status'] = 'active'  # 如果需要的話
-        
-        return self.dao.create_rating(rating_data)
+        Returns:
+            Rating: 創建的評分對象
+        """
+        try:
+            rating = Rating(**rating_data)
+            db.session.add(rating)
+            db.session.commit()
+            return rating
+        except Exception as e:
+            db.session.rollback()
+            raise ValueError(f"創建評分失敗: {str(e)}")
     
-    def update_rating(self, user_id: int, rating_id: int, rating_data: dict) -> Optional[Rating]:
+    def update_rating(self, rating_id: int, rating_data: dict) -> Optional[Rating]:
         """更新評分"""
-        # 檢查評分是否存在且屬於該用戶
-        rating = self.dao.get_rating(rating_id)
-        if not rating:
-            raise ValueError('評分不存在或已被刪除')
-        if rating.user_id != user_id:
-            raise ValueError('只能修改自己的評分')
-
-        return self.dao.update_rating(rating_id, rating_data)
+        rating = Rating.query.get(rating_id)
+        if rating:
+            try:
+                for key, value in rating_data.items():
+                    setattr(rating, key, value)
+                db.session.commit()
+                return rating
+            except Exception as e:
+                db.session.rollback()
+                raise ValueError(f"更新評分失敗: {str(e)}")
+        return None
     
-    def delete_rating(self, user_id: int, rating_id: int) -> bool:
+    def delete_rating(self, rating_id: int) -> bool:
         """刪除評分"""
-        # 檢查評分是否存在且屬於該用戶
-        rating = self.dao.get_rating(rating_id)
-        if not rating:
-            raise ValueError('評分不存在或已被刪除')
-        if rating.user_id != user_id:
-            raise ValueError('只能刪除自己的評分')
-
-        return self.dao.delete_rating(rating_id) 
+        rating = Rating.query.get(rating_id)
+        if rating:
+            try:
+                db.session.delete(rating)
+                db.session.commit()
+                return True
+            except Exception as e:
+                db.session.rollback()
+                raise ValueError(f"刪除評分失敗: {str(e)}")
+        return False 

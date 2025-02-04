@@ -31,15 +31,6 @@ class Store(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # 關聯定義
-    ratings = db.relationship(
-        'Rating',
-        backref='store',
-        lazy=True,
-        cascade="all, delete-orphan",
-        primaryjoin="and_(Store.id==Rating.store_id, Rating.status!='deleted')"
-    )
-    
     comments = db.relationship(
         'Comment',
         backref='store',
