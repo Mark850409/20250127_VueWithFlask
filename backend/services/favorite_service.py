@@ -1,6 +1,7 @@
 from typing import List, Optional
 from models.favorite import Favorite
 from models.store import Store
+from models.user import User
 from dao.favorite_dao import FavoriteDAO
 import logging
 
@@ -16,24 +17,41 @@ class FavoriteService:
     
     def get_user_favorites(self, user_id: int) -> List[Favorite]:
         """獲取用戶的所有最愛"""
-        return self.dao.get_user_favorites(user_id)
+        try:
+            return self.dao.get_user_favorites(user_id)
+        except Exception as e:
+            logger.error(f"獲取用戶最愛列表錯誤: {str(e)}", exc_info=True)
+            raise
     
     def create_favorite(self, user_id: int, store_id: int) -> Favorite:
         """創建最愛"""
-        # 檢查店家是否存在
-        store = Store.query.get(store_id)
-        if not store:
-            raise ValueError('店家不存在')
+        try:
+            # 檢查店家是否存在
+            store = Store.query.get(store_id)
+            if not store:
+                raise ValueError('店家不存在')
+                
+            # 檢查是否已收藏
+            if self.dao.check_exists(user_id, store_id):
+                raise ValueError('已收藏此店家')
+                
+            # 獲取用戶資訊
+            user = User.query.get(user_id)
+            if not user:
+                raise ValueError('用戶不存在')
             
-        # 檢查是否已收藏
-        if self.dao.check_exists(user_id, store_id):
-            raise ValueError('已收藏此店家')
+            favorite_data = {
+                'user_id': user_id,
+                'store_id': store_id,
+                'store_name': store.name,
+                'store_image': store.hero_image,
+                'username': user.username
+            }
             
-        favorite_data = {
-            'user_id': user_id,
-            'store_id': store_id
-        }
-        return self.dao.create_favorite(favorite_data)
+            return self.dao.create_favorite(favorite_data)
+        except Exception as e:
+            logger.error(f"創建收藏錯誤: {str(e)}", exc_info=True)
+            raise
     
     def delete_favorite(self, favorite_id: int, user_id: int) -> bool:
         """刪除最愛"""

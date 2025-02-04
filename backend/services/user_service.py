@@ -3,6 +3,9 @@ from models.user import User
 from dao.user_dao import UserDAO
 from utils.password_util import hash_password
 import bcrypt
+import logging
+
+logger = logging.getLogger(__name__)
 
 class UserService:
     def __init__(self):
@@ -74,4 +77,23 @@ class UserService:
         password = login_data['password'].encode('utf-8')
         if bcrypt.checkpw(password, user.password.encode('utf-8')):
             return user
-        return None 
+        return None
+
+    def update_avatar(self, user_id: int, avatar_file) -> str:
+        """更新用戶頭像"""
+        try:
+            # 驗證文件類型
+            if not avatar_file.filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+                raise ValueError('只支援 PNG、JPG 格式的圖片')
+            
+            # 驗證文件大小 (2MB)
+            if len(avatar_file.read()) > 2 * 1024 * 1024:
+                avatar_file.seek(0)  # 重置文件指針
+                raise ValueError('圖片大小不能超過 2MB')
+            
+            avatar_file.seek(0)  # 重置文件指針
+            return self.dao.update_avatar(user_id, avatar_file)
+            
+        except Exception as e:
+            logger.error(f"更新頭像服務錯誤: {str(e)}", exc_info=True)
+            raise 

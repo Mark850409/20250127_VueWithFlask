@@ -188,7 +188,8 @@ export default {
       email: '',
       password: '',
       confirmPassword: '',
-      remember: false
+      remember: false,
+      status: 'Enabled'
     })
 
     const errors = reactive({
@@ -260,13 +261,26 @@ export default {
         isValid = false
       }
 
+      // 頭像驗證
+      if (avatarFile.value) {
+        if (avatarFile.value.size > 2 * 1024 * 1024) {
+          errors.avatar = '圖片大小不能超過2MB'
+          isValid = false
+        }
+        const fileType = avatarFile.value.type.toLowerCase()
+        if (!['image/jpeg', 'image/jpg', 'image/png'].includes(fileType)) {
+          errors.avatar = '只支援 JPG 和 PNG 格式'
+          isValid = false
+        }
+      }
+
       return isValid
     }
 
     const handleAvatarChange = (event) => {
       const file = event.target.files[0]
       if (file) {
-        // 驗證文件大小
+        // 驗證文件大小（2MB）
         if (file.size > 2 * 1024 * 1024) {
           Swal.fire({
             icon: 'error',
@@ -280,20 +294,29 @@ export default {
 
         // 驗證文件類型
         const fileType = file.type.toLowerCase()
-        if (!['image/jpeg', 'image/jpg', 'image/png', 'image/gif'].includes(fileType)) {
+        if (!['image/jpeg', 'image/jpg', 'image/png'].includes(fileType)) {
           Swal.fire({
             icon: 'error',
             title: '檔案格式錯誤',
-            text: '只支援 JPG、PNG 和 GIF 格式',
+            text: '只支援 JPG 和 PNG 格式',
             confirmButtonText: '確定'
           })
           event.target.value = ''  // 清空選擇
           return
         }
 
-        // 設置預覽
+        // 儲存文件對象
         avatarFile.value = file
-        avatarPreview.value = URL.createObjectURL(file)
+        
+        // 預覽頭像
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          avatarPreview.value = e.target.result
+        }
+        reader.readAsDataURL(file)
+      } else {
+        avatarFile.value = null
+        avatarPreview.value = defaultAvatar
       }
     }
 
@@ -316,23 +339,36 @@ export default {
         }
 
         if (!isLogin.value) {
-          // 處理註冊
-          const formData = new FormData()
-          formData.append('username', form.username)
-          formData.append('email', form.email)
-          formData.append('password', form.password)
-          
-          // 如果有選擇頭像，添加到表單數據中
-          if (avatarFile.value) {
-            formData.append('avatar', avatarFile.value)
-          }
-
-          const response = await axios.post('/users/register', formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
+          // 先進行用戶註冊
+          const registerResponse = await axios.post('/users/register', {
+            username: form.username,
+            email: form.email,
+            password: form.password,
+            status: form.status
           })
-
+          
+          // 保存 token 和用戶信息
+          if (registerResponse.data.token) {
+            localStorage.setItem('token', registerResponse.data.token)
+            localStorage.setItem('user', JSON.stringify(registerResponse.data.user))
+          }
+          
+          // 如果註冊成功且有上傳頭像，則更新頭像
+          if (registerResponse.status === 201 && avatarFile.value) {
+            const formData = new FormData()
+            formData.append('file', avatarFile.value)
+            
+            const token = localStorage.getItem('token')
+            console.log('從 Login 獲取的 token:', token)
+            
+            await axios.post('/users/avatar', formData, {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': `Bearer ${token}`
+              }
+            })
+          }
+          
           // 註冊成功
           await Swal.fire({
             icon: 'success',
@@ -343,7 +379,6 @@ export default {
           isLogin.value = true
           form.password = ''
           form.confirmPassword = ''
-          localStorage.setItem('user', JSON.stringify(response.data.user))
         } else {
           // 處理登入
           const response = await axios.post('/users/login', {

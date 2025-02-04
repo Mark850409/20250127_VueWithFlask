@@ -363,7 +363,12 @@ export default {
             showConfirmButton: false
           })
         } else {
-          await axios.post('/users/register', data)
+          await axios.post('/users/register', {
+            username: this.accountForm.username,
+            email: this.accountForm.email,
+            password: this.accountForm.password,
+            confirm_password: this.accountForm.password
+          })
           await this.fetchAccounts()
           
           Swal.fire({

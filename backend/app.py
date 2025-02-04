@@ -25,6 +25,7 @@ from services.googlemaps_service import GoogleMapsService
 from pathlib import Path
 from datetime import timedelta
 from flask import request, send_from_directory
+from flask import Flask
 
 # 獲取當前文件的目錄
 current_dir = Path(__file__).parent
@@ -252,6 +253,17 @@ def uploaded_file(filename):
     full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     print(f"完整文件路徑: {full_path}")  # 調試用
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=False)
+
+# 配置靜態文件路徑
+app.config['UPLOAD_FOLDER'] = os.path.join('static', 'avatars')
+
+# 確保上傳目錄存在
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
+
+# 註冊靜態文件路由
+app.static_folder = 'static'
+app.static_url_path = '/static'
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))

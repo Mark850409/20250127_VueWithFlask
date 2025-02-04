@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
 from datetime import datetime
 from dataclasses import dataclass
+from flask_openapi3 import FileStorage
 
 class UserBaseSchema(BaseModel):
     """用戶基礎數據"""
@@ -10,7 +11,9 @@ class UserBaseSchema(BaseModel):
 
 class UserRegisterSchema(UserBaseSchema):
     """用戶註冊請求參數"""
-    password: str = Field(..., description='密碼', min_length=6)
+    username: str = Field(..., min_length=2, max_length=50, description='用戶名')
+    email: EmailStr = Field(..., description='郵箱')
+    password: str = Field(..., min_length=6, description='密碼')
     status: str = Field('Enabled', description='帳號狀態')
 
     class Config:
@@ -19,6 +22,7 @@ class UserRegisterSchema(UserBaseSchema):
                 'username': 'test_user',
                 'email': 'test@example.com',
                 'password': 'password123',
+                'confirmPassword': 'password123',
                 'status': 'Enabled'
             }
         }
@@ -94,17 +98,21 @@ class UserAvatarParamsSchema(BaseModel):
     """頭像路徑參數"""
     filename: str = Field(..., description='頭像文件名')
 
-class UserAvatarResponse:
-    """頭像響應"""
-    description = '頭像文件'
-    content = {
-        'image/*': {
-            'schema': {
-                'type': 'string',
-                'format': 'binary'
+class UserAvatarSchema(BaseModel):
+    """用戶頭像上傳請求參數"""
+    file: str = Field(..., description='頭像文件', format='binary')
+
+    class Config:
+        schema_extra = {
+            'example': {
+                'file': 'binary_file'
             }
         }
-    }
+
+class FileUploadResponse(BaseModel):
+    """圖片上傳響應"""
+    url: str = Field(..., description='圖片URL')
+    message: Optional[str] = Field(None, description='響應信息')
 
 class UserRegisterResponse:
     """註冊響應"""
@@ -140,6 +148,12 @@ class UserRegisterMultipartSchema:
                         'minLength': 6,
                         'maxLength': 12
                     },
+                    'confirmPassword': {
+                        'type': 'string',
+                        'description': '確認密碼',
+                        'minLength': 6,
+                        'maxLength': 12
+                    },
                     'status': {
                         'type': 'string',
                         'description': '帳號狀態',
@@ -152,8 +166,16 @@ class UserRegisterMultipartSchema:
                         'description': '用戶頭像 (PNG, JPG, JPEG, GIF格式，最大2MB)'
                     }
                 },
-                'required': ['username', 'email', 'password', 'status']
+                'required': ['username', 'email', 'password', 'confirmPassword', 'status']
             }
         }
-    } 
+    }
+
+class UploadFileForm(BaseModel):
+    """文件上傳請求"""
+    file: FileStorage = Field(
+        ...,
+        description='圖片文件 (支援 jpg、png、gif、webp 格式，最大 5MB)',
+    )
+
 

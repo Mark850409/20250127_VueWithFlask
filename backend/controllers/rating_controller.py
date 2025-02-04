@@ -321,4 +321,33 @@ def process_all_restaurants(body: ProcessAllRequest):
             'total_restaurants': 0,
             'total_reviews': 0,
             'failed_restaurants': []
+        }, 500
+
+@rating_bp.get('/', tags=[rating_tag])
+@jwt_required()
+def get_all_ratings():
+    """獲取所有評分
+    
+    Returns:
+        200 (RatingListResponse): 評分列表
+            - ratings: 評分列表
+                - id: 評分ID
+                - user_id: 用戶ID
+                - store_id: 店家ID
+                - score: 評分分數
+                - comment: 評論內容
+                - created_at: 創建時間
+                - updated_at: 更新時間
+        500: 服務器錯誤
+            - message: 錯誤信息
+    """
+    try:
+        service = RatingService()
+        ratings = service.get_all_ratings()
+        return {
+            'ratings': [rating.to_dict() for rating in ratings]
+        }
+    except Exception as e:
+        return {
+            'message': f'獲取評分列表失敗: {str(e)}'
         }, 500 

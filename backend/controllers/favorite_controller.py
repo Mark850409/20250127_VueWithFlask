@@ -24,7 +24,20 @@ def get_favorites():
         user_id = get_jwt_identity()
         service = FavoriteService()
         favorites = service.get_user_favorites(user_id)
-        return {'favorites': [favorite.to_dict() for favorite in favorites]}
+        return {
+            'favorites': [
+                {
+                    'id': favorite.id,
+                    'user_id': favorite.user_id,
+                    'store_id': favorite.store_id,
+                    'store_name': favorite.store_name,
+                    'store_image': favorite.store_image,
+                    'username': favorite.username,
+                    'created_at': favorite.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                    'updated_at': favorite.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+                } for favorite in favorites
+            ]
+        }
     except Exception as e:
         logger.error(f"獲取最愛列表錯誤: {str(e)}", exc_info=True)
         return {'message': f'獲取最愛列表失敗: {str(e)}'}, 500
@@ -46,7 +59,10 @@ def create_favorite(body: FavoriteCreateSchema):
     try:
         user_id = get_jwt_identity()
         service = FavoriteService()
-        favorite = service.create_favorite(user_id, body.store_id)
+        favorite = service.create_favorite(
+            user_id=user_id,
+            store_id=body.store_id
+        )
         return favorite.to_dict(), 201
     except ValueError as e:
         return {'message': str(e)}, 400

@@ -13,24 +13,28 @@
         </select>
         <span class="text-sm">筆資料</span>
       </div>
-      <div class="flex items-center space-x-4">
-        <button v-if="selectedItems.length" 
-                @click="batchDelete"
-                class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm">
-          <i class="fas fa-trash-alt mr-2"></i>批次刪除
-        </button>
-        <button @click="$emit('add')" 
-                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
-          <i class="fas fa-plus mr-2"></i>新增
-        </button>
-        <div class="relative">
-          <input type="text" 
-                 v-model="searchQuery" 
-                 placeholder="搜尋使用者..." 
-                 class="bg-gray-800 border-gray-700 text-white pl-8 pr-4 py-1 rounded w-64 focus:ring-1 focus:ring-blue-500">
-          <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+      <!-- 使用具名插槽來自定義工具欄 -->
+      <slot name="toolbar">
+        <div class="flex items-center space-x-4">
+          <button v-if="selectedItems.length" 
+                  @click="batchDelete"
+                  class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm">
+            <i class="fas fa-trash-alt mr-2"></i>批次刪除
+          </button>
+          <button v-if="showAddButton" 
+                  @click="$emit('add')"
+                  class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
+            <i class="fas fa-plus mr-2"></i>新增
+          </button>
+          <div class="relative">
+            <input type="text" 
+                   v-model="searchQuery" 
+                   placeholder="搜尋使用者..." 
+                   class="bg-gray-800 border-gray-700 text-white pl-8 pr-4 py-1 rounded w-64 focus:ring-1 focus:ring-blue-500">
+            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+          </div>
         </div>
-      </div>
+      </slot>
     </div>
 
     <!-- 表格內容 -->
@@ -166,6 +170,10 @@ export default {
     data: {
       type: Array,
       required: true
+    },
+    showAddButton: {
+      type: Boolean,
+      default: true
     }
   },
   data() {

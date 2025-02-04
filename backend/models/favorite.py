@@ -11,6 +11,9 @@ class Favorite(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     store_id = db.Column(db.Integer, db.ForeignKey('stores.id'), nullable=False)
+    store_name = db.Column(db.String(100), nullable=False)
+    store_image = db.Column(db.String(255), nullable=True)
+    username = db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(tw_tz))
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(tw_tz), onupdate=lambda: datetime.now(tw_tz))
 
@@ -20,20 +23,26 @@ class Favorite(db.Model):
 
     def to_dict(self):
         """轉換為字典"""
+        # 檢查是否為 Row 對象（來自 with_entities 查詢）
+        if hasattr(self, '_fields'):
+            return {
+                'id': self.id,
+                'user_id': self.user_id,
+                'store_id': self.store_id,
+                'store_name': self.store_name,
+                'store_image': self.store_image,
+                'username': self.username,
+                'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+            }
+        # 一般對象
         return {
             'id': self.id,
             'user_id': self.user_id,
             'store_id': self.store_id,
-            'user': {
-                'id': self.user.id,
-                'username': self.user.username,
-                'email': self.user.email
-            },
-            'store': {
-                'id': self.store.id,
-                'name': self.store.name,
-                'image_url': self.store.image_url
-            },
-            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
-            'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S') if self.updated_at else None
+            'store_name': self.store.name,
+            'store_image': self.store.hero_image,
+            'username': self.user.username,
+            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
         } 

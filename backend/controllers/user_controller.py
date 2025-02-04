@@ -7,12 +7,15 @@ import pytz
 from schemas.user_schema import *
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 from werkzeug.utils import secure_filename
-from flask import request, send_from_directory, send_file, jsonify
+from flask import request, send_from_directory, send_file, jsonify, current_app
 import os
 from pathlib import Path
 from PIL import Image
 import io
 from flask_cors import cross_origin
+import logging
+
+logger = logging.getLogger(__name__)
 
 # 設定台灣時區
 tw_tz = pytz.timezone('Asia/Taipei')
@@ -181,7 +184,20 @@ def register(body: UserRegisterSchema):
         
         service = UserService()
         user = service.register(data)
-        return user.to_dict(), 201
+        
+        # 生成 token
+        user_id = str(user.id)
+        access_token = create_access_token(
+            identity=user_id,
+            additional_claims={'type': 'access'}
+        )
+        
+        # 返回用戶信息和 token
+        user_data = user.to_dict()
+        return {
+            'token': access_token,
+            'user': user_data
+        }, 201
     except ValueError as e:
         return {'message': str(e)}, 400
     except Exception as e:
@@ -368,4 +384,50 @@ def verify_token():
     except Exception as e:
         print(f"Token 驗證錯誤: {str(e)}")
         return {'message': f'Token 驗證失敗: {str(e)}'}, 401 
+
+@user_bp.post(
+    '/avatar',
+    tags=[user_tag],
+    responses={
+        "200": FileUploadResponse,
+        "400": {"description": "參數錯誤"},
+        "401": {"description": "未登入"},
+        "500": {"description": "服務器錯誤"}
+    }
+)
+@jwt_required()
+def update_avatar(form: UploadFileForm):
+    """更新用戶頭像
+    
+    Returns:
+        200: 
+            message (str): 成功訊息
+            avatar_url (str): 頭像URL
+        400: 參數錯誤
+        401: 未登入
+        500: 服務器錯誤
+    """
+    try:
+        user_id = get_jwt_identity()
+        
+        if 'file' not in request.files:
+            return {'message': '未上傳文件'}, 400
+            
+        avatar_file = request.files['file']
+        if not avatar_file.filename:
+            return {'message': '未選擇文件'}, 400
+            
+        service = UserService()
+        avatar_url = service.update_avatar(user_id, avatar_file)
+        
+        return {
+            'message': '頭像上傳成功',
+            'avatar_url': avatar_url
+        }
+        
+    except ValueError as e:
+        return {'message': str(e)}, 400
+    except Exception as e:
+        logger.error(f"更新頭像錯誤: {str(e)}", exc_info=True)
+        return {'message': '更新頭像失敗'}, 500 
 

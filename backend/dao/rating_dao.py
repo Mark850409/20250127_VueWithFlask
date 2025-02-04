@@ -55,4 +55,8 @@ class RatingDAO:
             db.session.delete(rating)  # 實際從數據庫中刪除
             db.session.commit()
             return True
-        return False 
+        return False
+
+    def get_all_ratings(self):
+        """獲取所有評分"""
+        return Rating.query.filter_by().all() 

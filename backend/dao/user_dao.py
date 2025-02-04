@@ -1,6 +1,16 @@
 from typing import List, Optional
 from models.user import User, db
 from datetime import datetime
+import os
+from werkzeug.utils import secure_filename
+from pathlib import Path
+import logging
+logger = logging.getLogger(__name__)
+
+# 獲取當前文件的目錄
+CURRENT_DIR = Path(__file__).parent.parent
+UPLOAD_FOLDER = 'uploads/avatars'
+UPLOAD_PATH = CURRENT_DIR / UPLOAD_FOLDER
 
 class UserDAO:
     @staticmethod
@@ -56,4 +66,47 @@ class UserDAO:
             db.session.delete(user)
             db.session.commit()
             return True
-        return False 
+        return False
+
+    @staticmethod
+    def update_avatar(user_id: int, avatar_file) -> str:
+        """更新用戶頭像
+        
+        Args:
+            user_id: 用戶ID
+            avatar_file: 上傳的文件對象
+        
+        Returns:
+            str: 頭像URL
+        """
+        try:
+            # 獲取用戶
+            user = User.query.get(user_id)
+            if not user:
+                raise ValueError('用戶不存在')
+
+            # 生成安全的文件名
+            filename = secure_filename(avatar_file.filename)
+            # 添加時間戳避免重名
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = f"{user_id}_{timestamp}_{filename}"
+            
+            # 確保上傳目錄存在
+            if not UPLOAD_PATH.exists():
+                UPLOAD_PATH.mkdir(parents=True, exist_ok=True)
+            
+            # 保存文件
+            file_path = UPLOAD_PATH / filename
+            avatar_file.save(file_path)
+            
+            # 更新用戶頭像URL
+            avatar_url = f'/uploads/avatars/{filename}'
+            user.avatar = avatar_url
+            db.session.commit()
+            
+            return avatar_url
+            
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"更新頭像錯誤: {str(e)}", exc_info=True)
+            raise 

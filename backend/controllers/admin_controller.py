@@ -107,4 +107,28 @@ def delete_admin(path: AdminPath):
         return {'message': str(e)}, 400
     except Exception as e:
         print(f"刪除管理員錯誤: {str(e)}")
-        return {'message': '刪除管理員失敗'}, 500 
+        return {'message': '刪除管理員失敗'}, 500
+
+@admin_bp.get('/<int:admin_id>', tags=[admin_tag])
+@jwt_required()
+def get_admin(path: AdminPath):
+    """獲取指定管理員
+    
+    Args:
+        path (AdminPath): 路徑參數
+    
+    Returns:
+        200 (AdminResponseSchema): 管理員資料
+        401: 未登入
+        404: 管理員不存在
+        500: 服務器錯誤
+    """
+    try:
+        service = AdminService()
+        admin = service.get_admin(path.admin_id)
+        if not admin:
+            return {'message': '管理員不存在'}, 404
+        return admin.to_dict()
+    except Exception as e:
+        logger.error(f"獲取管理員資料錯誤: {str(e)}", exc_info=True)
+        return {'message': '獲取管理員資料失敗'}, 500 

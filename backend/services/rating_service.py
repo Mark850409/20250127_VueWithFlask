@@ -78,4 +78,8 @@ class RatingService:
             except Exception as e:
                 db.session.rollback()
                 raise ValueError(f"刪除評分失敗: {str(e)}")
-        return False 
+        return False
+    
+    def get_all_ratings(self):
+        """獲取所有評分"""
+        return self.dao.get_all_ratings() 

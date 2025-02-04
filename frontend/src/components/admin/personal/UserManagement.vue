@@ -42,7 +42,7 @@
       </div>
     </div>
 
-    <!-- 管理員列表 - 使用 transition-group 實現動畫 -->
+    <!-- 管理員列表 -->
     <transition-group 
       :name="viewMode === 'card' ? 'card-list' : 'list'"
       tag="div"
@@ -52,8 +52,13 @@
           : 'space-y-4'
       ]"
     >
+      <!-- 調試信息 -->
+      <div v-if="!admins || admins.length === 0" class="col-span-full text-center py-8 text-gray-500">
+        {{ admins === null ? '載入中...' : '沒有管理員數據' }}
+      </div>
+
       <!-- 卡片/列表項目 -->
-      <div v-for="admin in filteredAdmins" 
+      <div v-for="admin in admins" 
            :key="admin.id" 
            :class="[
              'bg-white rounded-xl shadow-lg transition-all duration-300',
@@ -78,7 +83,7 @@
             </span>
           </div>
           <p class="text-sm text-gray-500 mb-4">
-            最後登入：{{ admin.lastLoginTime }}
+            最後更新：{{ formatDateTime(admin.updated_at) || '-' }}
           </p>
           <div class="flex space-x-2">
             <button @click="editAdmin(admin)"
@@ -112,7 +117,7 @@
               {{ admin.status === 'active' ? '啟用' : '停用' }}
             </span>
             <span class="text-sm text-gray-500">
-              最後登入：{{ admin.lastLoginTime }}
+              最後更新：{{ formatDateTime(admin.updated_at) || '-' }}
             </span>
             <div class="flex space-x-2">
               <button @click="editAdmin(admin)"
@@ -133,76 +138,121 @@
     <!-- 新增/編輯管理員彈窗 -->
     <div v-if="showAddModal" 
          class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-xl p-8 w-full max-w-md">
-        <h2 class="text-xl font-bold mb-6">{{ editingAdmin ? '編輯管理員' : '新增管理員' }}</h2>
-        <div class="space-y-6">
-          <!-- 頭像上傳 -->
-          <div class="flex flex-col items-center">
-            <img :src="previewAvatar || adminForm.avatar" 
-                 class="w-24 h-24 rounded-full mb-4"
-                 alt="預覽頭像">
-            <label class="px-4 py-2 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200">
-              <input type="file" 
-                     class="hidden" 
-                     accept="image/*"
-                     @change="handleAvatarUpload">
-              <i class="fas fa-camera mr-2"></i>更換頭像
-            </label>
+      <div class="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-bold">{{ editingAdmin ? '編輯管理員' : '新增管理員' }}</h2>
+          <button @click="showAddModal = false" class="text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- 左側：頭像和基本信息 -->
+          <div class="space-y-6">
+            <!-- 頭像上傳 -->
+            <div class="flex flex-col items-center p-6 bg-gray-50 rounded-lg">
+              <img :src="previewAvatar || adminForm.avatar" 
+                   class="w-32 h-32 rounded-full mb-4 border-4 border-white shadow-lg"
+                   alt="預覽頭像">
+              <label class="px-4 py-2 bg-white rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+                <input type="file" 
+                       class="hidden" 
+                       accept="image/*"
+                       @change="handleAvatarUpload">
+                <i class="fas fa-camera mr-2"></i>更換頭像
+              </label>
+            </div>
+
+            <!-- 基本信息 -->
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  管理員名稱 <span class="text-red-500">*</span>
+                </label>
+                <input type="text" 
+                       v-model="adminForm.username" 
+                       :class="{'border-red-500': errors.username}"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <span v-if="errors.username" class="text-red-500 text-xs mt-1">{{ errors.username }}</span>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Email <span class="text-red-500">*</span>
+                </label>
+                <input type="email" 
+                       v-model="adminForm.email" 
+                       :class="{'border-red-500': errors.email}"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <span v-if="errors.email" class="text-red-500 text-xs mt-1">{{ errors.email }}</span>
+              </div>
+            </div>
           </div>
 
-          <!-- 基本資料表單 -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">管理員名稱</label>
-            <input type="text" 
-                   v-model="adminForm.username" 
-                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-            <input type="email" 
-                   v-model="adminForm.email" 
-                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">密碼</label>
-            <input type="password" 
-                   v-model="adminForm.password" 
-                   :placeholder="editingAdmin ? '不修改請留空' : '請輸入密碼'"
-                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">確認密碼</label>
-            <input type="password" 
-                   v-model="adminForm.confirmPassword" 
-                   :placeholder="editingAdmin ? '不修改請留空' : '請再次輸入密碼'"
-                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">權限等級</label>
-            <select v-model="adminForm.role" 
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-              <option value="admin">一般管理員</option>
-              <option value="super_admin">超級管理員</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">狀態</label>
-            <select v-model="adminForm.status" 
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-              <option value="active">啟用</option>
-              <option value="inactive">停用</option>
-            </select>
+          <!-- 右側：密碼和權限設置 -->
+          <div class="space-y-6">
+            <!-- 密碼設置 -->
+            <div class="p-6 bg-gray-50 rounded-lg space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  密碼 <span v-if="!editingAdmin" class="text-red-500">*</span>
+                </label>
+                <input type="password" 
+                       v-model="adminForm.password" 
+                       :class="{'border-red-500': errors.password}"
+                       :placeholder="editingAdmin ? '不修改請留空' : '請輸入密碼'"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <span v-if="errors.password" class="text-red-500 text-xs mt-1">{{ errors.password }}</span>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  確認密碼 <span v-if="!editingAdmin" class="text-red-500">*</span>
+                </label>
+                <input type="password" 
+                       v-model="adminForm.confirmPassword" 
+                       :class="{'border-red-500': errors.confirmPassword}"
+                       :placeholder="editingAdmin ? '不修改請留空' : '請再次輸入密碼'"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <span v-if="errors.confirmPassword" class="text-red-500 text-xs mt-1">{{ errors.confirmPassword }}</span>
+              </div>
+            </div>
+
+            <!-- 權限設置 -->
+            <div class="p-6 bg-gray-50 rounded-lg space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  權限等級 <span class="text-red-500">*</span>
+                </label>
+                <select v-model="adminForm.role" 
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                  <option value="admin">一般管理員</option>
+                  <option value="super_admin">超級管理員</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  狀態 <span class="text-red-500">*</span>
+                </label>
+                <select v-model="adminForm.status" 
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                  <option value="active">啟用</option>
+                  <option value="inactive">停用</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- 操作按鈕 -->
-        <div class="mt-8 flex justify-end space-x-4">
+        <div class="mt-6 pt-4 border-t flex justify-end space-x-4">
           <button @click="showAddModal = false" 
-                  class="px-4 py-2 text-gray-700 border rounded-lg hover:bg-gray-50">
+                  class="px-6 py-2 text-gray-700 border rounded-lg hover:bg-gray-50">
             取消
           </button>
           <button @click="saveAdmin" 
-                  class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                  class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
             確認
           </button>
         </div>
@@ -212,126 +262,295 @@
 </template>
 
 <script>
+import { ref, reactive, watch, onMounted, computed } from 'vue'
+import axios from '@/utils/axios'
+import Swal from 'sweetalert2'
+
 export default {
   name: 'UserManagement',
-  data() {
-    return {
-      viewMode: 'card',
-      searchQuery: '',
-      showAddModal: false,
-      editingAdmin: null,
-      previewAvatar: null,
-      adminForm: {
-        username: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        role: 'admin',
-        status: 'active',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
-      },
-      admins: [
-        {
-          id: 1,
-          username: '系統管理員',
-          email: 'admin@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin1',
-          role: 'super_admin',
-          lastLoginTime: '2024-01-15 15:30:22',
-          status: 'active'
-        },
-        {
-          id: 2,
-          username: '商品管理員',
-          email: 'product@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin2',
-          role: 'admin',
-          lastLoginTime: '2024-01-15 14:25:18',
-          status: 'active'
-        }
-      ]
-    }
-  },
-  computed: {
-    filteredAdmins() {
-      return this.admins.filter(admin => 
-        admin.username.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        admin.email.toLowerCase().includes(this.searchQuery.toLowerCase())
+  setup() {
+    const viewMode = ref('card')
+    const searchQuery = ref('')
+    const showAddModal = ref(false)
+    const editingAdmin = ref(null)
+    const previewAvatar = ref(null)
+    const admins = ref([])
+    const errors = ref({})
+
+    // 過濾後的管理員列表
+    const filteredAdmins = computed(() => {
+      if (!admins.value || !Array.isArray(admins.value)) {
+        console.log('Current admins value:', admins.value)
+        return []
+      }
+      // 直接使用 admins.value 進行過濾
+      return admins.value.filter(admin => 
+        admin.username.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        admin.email.toLowerCase().includes(searchQuery.value.toLowerCase())
       )
+    })
+
+    // 初始表單狀態
+    const initialFormState = {
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      role: 'admin',
+      status: 'active',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
     }
-  },
-  methods: {
-    handleAvatarUpload(event) {
-      const file = event.target.files[0]
-      if (file) {
-        this.previewAvatar = URL.createObjectURL(file)
-      }
-    },
-    editAdmin(admin) {
-      this.editingAdmin = admin
-      this.adminForm = {
-        ...admin,
-        password: '',
-        confirmPassword: ''
-      }
-      this.previewAvatar = null
-      this.showAddModal = true
-    },
-    deleteAdmin(admin) {
-      if(admin.role === 'super_admin') {
-        alert('無法刪除超級管理員')
-        return
-      }
-      if(confirm('確定要刪除此管理員嗎？')) {
-        this.admins = this.admins.filter(a => a.id !== admin.id)
-      }
-    },
-    saveAdmin() {
-      // 表單驗證
-      if(!this.adminForm.username || !this.adminForm.email) {
-        alert('請填寫必要欄位')
-        return
-      }
-      if(!this.editingAdmin && !this.adminForm.password) {
-        alert('請設置密碼')
-        return
-      }
-      if(this.adminForm.password !== this.adminForm.confirmPassword) {
-        alert('兩次密碼輸入不一致')
-        return
+
+    const adminForm = reactive({...initialFormState})
+
+    // 表單驗證規則
+    const validateForm = () => {
+      const newErrors = {}
+      
+      // 用戶名驗證
+      if (!adminForm.username?.trim()) {
+        newErrors.username = '請輸入管理員名稱'
       }
 
-      if(this.editingAdmin) {
-        // 更新現有管理員
-        const index = this.admins.findIndex(a => a.id === this.editingAdmin.id)
-        this.admins[index] = {
-          ...this.editingAdmin,
-          ...this.adminForm,
-          avatar: this.previewAvatar || this.adminForm.avatar
+      // Email驗證
+      if (!adminForm.email?.trim()) {
+        newErrors.email = '請輸入Email'
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminForm.email)) {
+        newErrors.email = '請輸入有效的Email格式'
+      }
+
+      // 密碼驗證
+      if (!editingAdmin.value) {
+        if (!adminForm.password) {
+          newErrors.password = '請輸入密碼'
+        } else if (adminForm.password.length < 6) {
+          newErrors.password = '密碼長度至少6個字符'
         }
-      } else {
-        // 新增管理員
-        this.admins.push({
-          id: this.admins.length + 1,
-          ...this.adminForm,
-          avatar: this.previewAvatar || this.adminForm.avatar,
-          lastLoginTime: '-'
+
+        if (!adminForm.confirmPassword) {
+          newErrors.confirmPassword = '請確認密碼'
+        } else if (adminForm.password !== adminForm.confirmPassword) {
+          newErrors.confirmPassword = '兩次密碼輸入不一致'
+        }
+      } else if (adminForm.password && adminForm.password.length < 6) {
+        newErrors.password = '密碼長度至少6個字符'
+      } else if (adminForm.password !== adminForm.confirmPassword) {
+        newErrors.confirmPassword = '兩次密碼輸入不一致'
+      }
+
+      errors.value = newErrors
+      return Object.keys(newErrors).length === 0
+    }
+
+    // 重置表單
+    const resetForm = () => {
+      Object.assign(adminForm, initialFormState)
+      editingAdmin.value = null
+      previewAvatar.value = null
+      errors.value = {}
+    }
+
+    // 獲取管理員列表
+    const fetchAdmins = async () => {
+      try {
+        const response = await axios.get('/admins/')
+        // 確保我們獲取到正確的數據結構
+        if (response.data && Array.isArray(response.data)) {
+          admins.value = response.data
+        } else if (response.data && Array.isArray(response.data.admins)) {
+          admins.value = response.data.admins
+        } else {
+          console.error('Unexpected API response structure:', response.data)
+          admins.value = []
+        }
+        console.log('Fetched admins:', admins.value)
+      } catch (error) {
+        console.error('Error fetching admins:', error)
+        Swal.fire({
+          icon: 'error',
+          title: '錯誤',
+          text: '獲取管理員列表失敗',
+          confirmButtonText: '確定'
         })
       }
+    }
 
-      // 重置表單
-      this.showAddModal = false
-      this.editingAdmin = null
-      this.previewAvatar = null
-      this.adminForm = {
-        username: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        role: 'admin',
-        status: 'active',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
+    // 處理頭像上傳
+    const handleAvatarUpload = (event) => {
+      const file = event.target.files[0]
+      if (file) {
+        if (file.size > 2 * 1024 * 1024) {
+          Swal.fire({
+            icon: 'error',
+            title: '錯誤',
+            text: '圖片大小不能超過2MB',
+            confirmButtonText: '確定'
+          })
+          return
+        }
+        previewAvatar.value = URL.createObjectURL(file)
+        adminForm.avatar = file
       }
+    }
+
+    // 編輯管理員
+    const editAdmin = async (admin) => {
+      try {
+        // 獲取最新的管理員資料
+        const response = await axios.get(`/admins/${admin.id}`)
+        const adminData = response.data
+
+        // 更新編輯狀態
+        editingAdmin.value = adminData
+        Object.assign(adminForm, {
+          ...adminData,
+          password: '',
+          confirmPassword: ''
+        })
+
+        previewAvatar.value = null
+        showAddModal.value = true
+
+      } catch (error) {
+        console.error('Error fetching admin details:', error)
+        Swal.fire({
+          icon: 'error',
+          title: '錯誤',
+          text: '獲取管理員資料失敗',
+          confirmButtonText: '確定'
+        })
+      }
+    }
+
+    // 刪除管理員
+    const deleteAdmin = async (admin) => {
+      if (admin.role === 'super_admin') {
+        Swal.fire({
+          icon: 'error',
+          title: '錯誤',
+          text: '無法刪除超級管理員',
+          confirmButtonText: '確定'
+        })
+        return
+      }
+
+      const result = await Swal.fire({
+        title: '確定要刪除嗎？',
+        text: '此操作無法復原',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '確定刪除',
+        cancelButtonText: '取消'
+      })
+
+      if (result.isConfirmed) {
+        try {
+          await axios.delete(`/admins/${admin.id}`)
+          Swal.fire({
+            icon: 'success',
+            title: '成功',
+            text: '管理員已刪除',
+            timer: 1500,
+            showConfirmButton: false
+          })
+          fetchAdmins()
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: '錯誤',
+            text: '刪除失敗',
+            confirmButtonText: '確定'
+          })
+          console.error(error)
+        }
+      }
+    }
+
+    // 保存管理員
+    const saveAdmin = async () => {
+      if (!validateForm()) {
+        return
+      }
+
+      try {
+        const formData = new FormData()
+        Object.keys(adminForm).forEach(key => {
+          if (key !== 'confirmPassword' && (key !== 'password' || adminForm[key])) {
+            formData.append(key, adminForm[key])
+          }
+        })
+
+        if (editingAdmin.value) {
+          await axios.put(`/admins/${editingAdmin.value.id}`, formData)
+        } else {
+          await axios.post('/admins', formData)
+        }
+
+        Swal.fire({
+          icon: 'success',
+          title: '成功',
+          text: `${editingAdmin.value ? '編輯' : '新增'}管理員成功`,
+          timer: 1500,
+          showConfirmButton: false
+        })
+
+        showAddModal.value = false
+        resetForm()
+        fetchAdmins()
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: '錯誤',
+          text: `${editingAdmin.value ? '編輯' : '新增'}失敗`,
+          confirmButtonText: '確定'
+        })
+        console.error(error)
+      }
+    }
+
+    // 監聽 modal 關閉
+    watch(showAddModal, (newVal) => {
+      if (!newVal) {
+        resetForm()
+      }
+    })
+
+    // 時間格式化函數
+    const formatDateTime = (dateString) => {
+      if (!dateString) return '-'
+      const date = new Date(dateString)
+      return date.toLocaleString('zh-TW', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      })
+    }
+
+    onMounted(() => {
+      fetchAdmins()
+    })
+
+    return {
+      viewMode,
+      searchQuery,
+      showAddModal,
+      editingAdmin,
+      previewAvatar,
+      adminForm,
+      admins: computed(() => filteredAdmins.value),  // 確保返回響應式數據
+      errors,
+      handleAvatarUpload,
+      editAdmin,
+      deleteAdmin,
+      saveAdmin,
+      resetForm,
+      formatDateTime
     }
   }
 }
