@@ -441,7 +441,6 @@ export default {
         
         // 如果有選擇頭像，先上傳
         if (this.avatarFile) {
-          // 檢查 token
           const token = localStorage.getItem('token')
           if (!token) {
             Swal.fire({
@@ -454,9 +453,6 @@ export default {
             return
           }
           
-          const formData = new FormData()
-          formData.append('avatar', this.avatarFile)
-          
           try {
             console.log('準備上傳的檔案:', this.avatarFile)
             const formData = new FormData()
@@ -468,14 +464,17 @@ export default {
               }
             })
             console.log('上傳回應:', response.data)
-            avatarPath = response.data.avatar_path
+            if (response.data && response.data.avatar_url) {
+              avatarPath = response.data.avatar_url
+            } else if (response.data && response.data.avatar_path) {
+              avatarPath = response.data.avatar_path
+            } else {
+              throw new Error('上傳回應中缺少頭像路徑')
+            }
             console.log('取得的頭像路徑:', avatarPath)
           } catch (error) {
-            console.error('上傳錯誤詳情:', {
-              status: error.response?.status,
-              data: error.response?.data,
-              message: error.message
-            })
+            console.error('上傳錯誤:', error)
+            console.error('上傳回應:', error.response?.data)
             // 如果是 401 錯誤，表示 token 無效或過期
             if (error.response?.status === 401) {
               localStorage.removeItem('token')
@@ -524,14 +523,45 @@ export default {
             showConfirmButton: false
           })
         } else {
-          await axios.post('/users/register', {
+          const registerData = {
             username: this.accountForm.username,
             email: this.accountForm.email,
             password: this.accountForm.password,
             confirm_password: this.accountForm.password,
-            avatar: avatarPath || '',  // 添加頭像路徑
             status: this.accountForm.status
-          })
+          }
+          
+          // 1. 先進行註冊
+          const registerResponse = await axios.post('/users/register', registerData)
+          console.log('註冊回應:', registerResponse.data)
+          
+          // 2. 如果有頭像且註冊成功，再上傳頭像
+          if (registerResponse.status === 201 && this.avatarFile) {
+            // 儲存註冊返回的 token
+            localStorage.setItem('token', registerResponse.data.token)
+
+            try {
+              const formData = new FormData()
+              formData.append('file', this.avatarFile)
+              
+              const avatarResponse = await axios.post('/users/avatar', formData, {
+                headers: {
+                  'Content-Type': 'multipart/form-data',
+                  'Authorization': `Bearer ${registerResponse.data.token}`
+                }
+              })
+              console.log('頭像上傳回應:', avatarResponse.data)
+            } catch (error) {
+              console.error('頭像上傳失敗:', error)
+              Swal.fire({
+                icon: 'warning',
+                title: '頭像上傳失敗',
+                text: '帳號已創建，但頭像上傳失敗',
+                confirmButtonText: '確定'
+              })
+            }
+          }
+
           await this.fetchAccounts()
           await this.logOperation(`【帳號管理】新增帳號 ${this.accountForm.username}`, '新增')
           
