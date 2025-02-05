@@ -10,6 +10,7 @@ class MenuBaseSchema(BaseModel):
     category: Optional[str] = Field(None, description='選單類別')
     description: Optional[str] = Field(None, description='選單描述')
     sort_order: Optional[int] = Field(0, description='排序順序，數字越小越靠前')
+    section_order: Optional[int] = Field(None, description='主功能區塊排序')
     status: Optional[str] = Field('active', description='狀態：active-啟用，disabled-禁用')
 
 class MenuCreateSchema(MenuBaseSchema):
@@ -37,6 +38,7 @@ class MenuUpdateSchema(BaseModel):
     category: Optional[str] = Field(None, description='選單類別')
     description: Optional[str] = Field(None, description='選單描述')
     sort_order: Optional[int] = Field(None, description='排序順序，數字越小越靠前')
+    section_order: Optional[int] = Field(None, description='主功能區塊排序')
     status: Optional[str] = Field(None, description='狀態：active-啟用，disabled-禁用')
 
     class Config:
@@ -79,12 +81,15 @@ class MenuResponseSchema(MenuBaseSchema):
 
 class MenuOrderItem(BaseModel):
     id: int = Field(..., description='選單ID')
-    sort_order: int = Field(..., description='排序順序')
+    sort_order: Optional[int] = Field(None, description='排序順序')
     parent_id: Optional[int] = Field(None, description='父選單ID')
     category: Optional[str] = Field(None, description='選單類別')
+    section_order: Optional[int] = Field(None, description='主功能區塊排序')
 
     class Config:
         from_attributes = True
+        arbitrary_types_allowed = True
+        allow_population_by_field_name = True
 
 class MenuOrderUpdate(BaseModel):
     menus: List[MenuOrderItem] = Field(..., description='選單排序列表')

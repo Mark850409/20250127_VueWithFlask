@@ -17,6 +17,7 @@ class Menu(db.Model):
     category = db.Column(db.String(50), nullable=True, comment='選單類別')
     description = db.Column(db.String(200), nullable=True, comment='選單描述')
     sort_order = db.Column(db.Integer, default=0, comment='排序順序')
+    section_order = db.Column(db.Integer, default=0, comment='主功能區塊排序')
     status = db.Column(db.String(20), default='active', comment='狀態')
     created_at = db.Column(db.DateTime, default=datetime.now, comment='創建時間')
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now, comment='更新時間')
@@ -36,6 +37,7 @@ class Menu(db.Model):
             'category': self.category,
             'description': self.description,
             'sort_order': self.sort_order,
+            'section_order': self.section_order,
             'status': self.status,
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
             'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')

@@ -1,12 +1,45 @@
 <template>
-  <div>
-    <!-- 移除視圖切換按鈕 -->
-    
-    <!-- 動態選單列表 -->
+  <div class="container mx-auto px-4">
+    <!-- 主功能區塊排序 -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold">主功能區塊排序</h2>
+        <div class="text-sm text-gray-500">拖曳調整順序</div>
+      </div>
+      <draggable
+        v-model="menuSections"
+        @change="onSectionDragChange"
+        item-key="category"
+        handle=".section-handle"
+        :animation="200"
+        ghost-class="ghost-section"
+        class="space-y-3">
+        <template #item="{ element: section }">
+          <div class="flex items-center bg-white p-4 rounded-lg shadow-sm hover:shadow transition-shadow duration-200">
+            <div class="section-handle cursor-move mr-4 text-gray-400 hover:text-gray-600">
+              <i class="fas fa-grip-vertical"></i>
+            </div>
+            <div class="flex items-center space-x-3">
+              <i :class="[getSectionIcon(section.category), 'text-lg text-gray-600']"></i>
+              <span class="font-medium text-gray-700">{{ section.category }}</span>
+            </div>
+            <div class="ml-auto text-sm text-gray-500">
+              {{ getMenuCountByCategory(section.category) }} 個選單項目
+            </div>
+          </div>
+        </template>
+      </draggable>
+    </div>
+
+    <!-- 次功能區塊排序 -->
     <div class="space-y-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold">次功能區塊排序</h2>
+        <div class="text-sm text-gray-500">拖曳調整順序</div>
+      </div>
       <!-- 按類別分組顯示選單 -->
-      <div v-for="category in uniqueCategories" :key="category" class="bg-white rounded-lg p-6">
-        <h2 class="text-lg font-medium mb-4">{{ category }}</h2>
+      <div v-for="category in uniqueCategories" :key="category" class="space-y-3 bg-white rounded-lg p-6">
+        <h3 class="text-lg font-medium text-gray-700 px-2 mb-4">{{ category }}</h3>
         <draggable 
           v-model="menusByCategory[category]"
           :component-data="{
@@ -19,22 +52,23 @@
           @start="drag=true" 
           @end="drag=false"
           @change="onDragChange"
+          class="space-y-3 px-2"
           handle=".handle">
           <template #item="{ element: menu }">
-            <div class="bg-white rounded-lg p-4">
-              <!-- 主選單 -->
-              <div class="flex justify-between items-start mb-4">
+            <div>
+              <div class="flex items-center bg-gray-50 p-4 rounded-lg hover:shadow transition-shadow duration-200">
+                <div class="handle cursor-move mr-4 text-gray-400 hover:text-gray-600">
+                  <i class="fas fa-grip-vertical"></i>
+                </div>
+                <!-- 主選單 -->
                 <div class="flex items-center space-x-3">
-                  <div class="handle cursor-move text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-grip-vertical"></i>
-                  </div>
                   <i :class="['text-xl', menu.icon]"></i>
                   <div>
                     <h3 class="font-medium text-gray-900">{{ menu.name }}</h3>
                     <p class="text-sm text-gray-500">{{ menu.path }}</p>
                   </div>
                 </div>
-                <div class="flex items-center space-x-2">
+                <div class="ml-auto flex items-center space-x-2">
                   <button @click="addSubmenu(menu)" 
                           class="p-1.5 text-gray-600 hover:text-green-600 rounded-full hover:bg-green-50">
                     <i class="fas fa-plus"></i>
@@ -52,10 +86,10 @@
               
               <!-- 子選單列表 -->
               <div v-if="menu.children && menu.children.length" 
-                   class="mt-4 pl-8 space-y-3">
+                   class="mt-3 ml-12 space-y-3">
                 <div v-for="submenu in menu.children" 
                      :key="submenu.id" 
-                     class="flex justify-between items-center bg-gray-50 rounded-lg p-3">
+                     class="flex justify-between items-center bg-white rounded-lg p-4">
                   <div class="flex items-center space-x-3">
                     <i :class="['text-lg', submenu.icon]"></i>
                     <div>
@@ -221,6 +255,16 @@ export default defineComponent({
       categories: [],
       newCategory: '',
       menus: [],
+      menuSections: [],
+      isUpdatingOrder: false,
+      menuForm: {
+        name: '',
+        path: '',
+        icon: '',
+        description: '',
+        status: 'active',
+        category: ''
+      },
       commonIcons: [
         // 導航和基礎圖示
         'fas fa-home', 'fas fa-dashboard', 'fas fa-compass', 'fas fa-map',
@@ -268,14 +312,6 @@ export default defineComponent({
         '點餐管理': '/admin/order',
         '個人設定管理': '/admin/personal'
       },
-      menuForm: {
-        name: '',
-        path: '',
-        icon: '',
-        description: '',
-        status: 'active',
-        category: ''
-      }
     }
   },
   computed: {
@@ -290,8 +326,14 @@ export default defineComponent({
     },
     // 獲取所有唯一的類別
     uniqueCategories() {
-      const categories = this.menus.map(menu => menu.category)
-      return [...new Set(categories)].filter(Boolean)
+      // 使用 Set 來確保類別唯一性，並按照 section_order 排序
+      const categoryMap = new Map()
+      this.menus.forEach(menu => {
+        if (menu.category && (!categoryMap.has(menu.category) || menu.section_order < categoryMap.get(menu.category).section_order)) {
+          categoryMap.set(menu.category, menu)
+        }
+      })
+      return Array.from(categoryMap.keys())
     },
     // 按類別分組的選單，並保持父子關係
     menusByCategory() {
@@ -531,31 +573,66 @@ export default defineComponent({
       this.resetForm()
     },
     async onDragChange(evt) {
+      if (!evt.moved && !evt.added && !evt.removed) return
+      
       // 如果是移動操作
       if (evt.moved || evt.added || evt.removed) {
         try {
           // 獲取所有選單的最新順序
-          const allMenus = Object.values(this.menusByCategory).flat();
-          const menuUpdates = allMenus.map((menu, index) => ({
-            id: menu.id,
-            sort_order: index,
-            parent_id: menu.parent_id || null,
-            category: menu.category
-          }));
+          const allMenus = []
+          
+          // 先處理主功能區塊排序
+          this.menuSections.forEach((section, index) => {
+            const sectionMenus = this.menus.filter(menu => 
+              menu.category === section.category && !menu.parent_id
+            )
+            
+            if (sectionMenus.length > 0) {
+              sectionMenus.forEach(menu => {
+                allMenus.push({
+                  id: menu.id,
+                  category: section.category,
+                  section_order: index + 1,  // 使用 1-based 索引
+                  sort_order: menu.sort_order || 0,
+                  parent_id: menu.parent_id || null
+                })
+              })
+            }
+          })
+          
+          // 然後處理每個類別內的排序
+          Object.entries(this.menusByCategory).forEach(([category, menus]) => {
+            menus.forEach((menu, index) => {
+              const existingMenu = allMenus.find(m => m.id === menu.id)
+              if (existingMenu) {
+                existingMenu.sort_order = index
+              } else {
+                allMenus.push({
+                  id: menu.id,
+                  category: menu.category,
+                  section_order: this.menuSections.findIndex(s => s.category === category) + 1,
+                  sort_order: index,
+                  parent_id: menu.parent_id || null
+                })
+              }
+            })
+          })
           
           // 更新後端排序
-          await menuAPI.updateMenuOrder({ menus: menuUpdates });
+          console.log('Updating menu order:', allMenus)
+          await menuAPI.updateMenuOrder({ menus: allMenus })
           
           // 重新獲取選單列表以確保順序正確
-          await this.fetchMenus();
+          await this.fetchMenus()
+          await this.fetchMenuSections()
         } catch (error) {
-          console.error('更新排序失敗:', error);
+          console.error('更新排序失敗:', error)
           await Swal.fire({
             icon: 'error',
             title: '錯誤',
             text: '更新排序失敗',
             confirmButtonText: '確定'
-          });
+          })
         }
       }
     },
@@ -569,11 +646,105 @@ export default defineComponent({
         }
       }
     },
+    // 獲取主功能區塊列表
+    async fetchMenuSections() {
+      try {
+        const response = await menuAPI.getMenuSections()
+        console.log('Fetched sections:', response.data)
+        // 按照 section_order 排序
+        const sortedSections = response.data.sections.sort((a, b) => a.section_order - b.section_order)
+        // 確保每個類別只出現一次
+        const uniqueSections = []
+        const seenCategories = new Set()
+        sortedSections.forEach(section => {
+          if (!seenCategories.has(section.category)) {
+            uniqueSections.push(section)
+            seenCategories.add(section.category)
+          }
+        })
+        this.menuSections = uniqueSections
+      } catch (error) {
+        console.error('獲取主功能區塊失敗:', error)
+        await Swal.fire({
+          icon: 'error',
+          title: '錯誤',
+          text: '獲取主功能區塊列表失敗'
+        })
+      }
+    },
+    // 處理主功能區塊拖曳結束
+    async onSectionDragChange(evt) {
+      if (!evt.moved && !evt.added && !evt.removed) return
+      if (this.isUpdatingOrder) return
+      
+      try {
+        this.isUpdatingOrder = true
+        console.log('Drag event:', evt)
+        
+        // 獲取所有選單
+        const allMenus = []
+        
+        // 確保按照當前顯示順序更新
+        this.menuSections.forEach((section, index) => {
+          // 獲取該類別下的所有頂層選單（沒有父選單的）
+          const sectionMenus = this.menus.filter(menu => 
+            menu.category === section.category && !menu.parent_id
+          )
+          
+          // 更新該類別的所有選單
+          if (sectionMenus.length > 0) {
+            sectionMenus.forEach(menu => {
+              allMenus.push({
+                id: menu.id,
+                category: section.category,
+                section_order: index + 1,  // 使用 1-based 索引確保不會有 0
+                sort_order: menu.sort_order || 0,
+                parent_id: menu.parent_id || null
+              })
+            })
+          }
+        })
+        
+        console.log('Updating menu order:', allMenus)
+        try {
+          await menuAPI.updateMenuOrder({ menus: allMenus })
+          
+          // 重新獲取數據
+          await this.fetchMenus()
+          await this.fetchMenuSections()
+          await this.logOperation('【選單管理】更新主功能區塊排序', '修改')
+        } catch (error) {
+          console.error('API Error:', error.response?.data || error)
+          throw new Error(error.response?.data?.message || '更新排序失敗')
+        }
+      } catch (error) {
+        console.error('更新主功能區塊排序失敗:', error)
+        await Swal.fire({
+          icon: 'error',
+          title: '錯誤',
+          text: error.message || '更新排序失敗'
+        })
+        // 還原順序
+        await this.fetchMenuSections()
+      } finally {
+        this.isUpdatingOrder = false
+      }
+    },
+    // 獲取主功能區塊圖標
+    getSectionIcon(category) {
+      const menu = this.menus.find(m => m.category === category)
+      return menu?.icon || 'fas fa-folder'
+    },
+    // 獲取該類別下的選單數量
+    getMenuCountByCategory(category) {
+      return this.menus.filter(menu => menu.category === category).length
+    },
   },
   async mounted() {
     console.log('MenuManagement mounted')
     await this.fetchMenus()
     this.initializeCategories()
+    await this.fetchMenuSections()
     await this.logOperation('【選單管理】訪問選單管理頁面', '查看')
   }
 })
@@ -596,5 +767,24 @@ export default defineComponent({
 /* 保留列表視圖樣式 */
 .list-view {
   @apply space-y-2;
+}
+
+.ghost-section {
+  opacity: 0.5;
+  background: #eef2ff;
+}
+
+.section-handle {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.section-handle:hover {
+  opacity: 1;
+}
+
+/* 當父元素hover時也顯示拖曳圖標 */
+div:hover .section-handle {
+  opacity: 1;
 }
 </style> 

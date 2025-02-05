@@ -75,25 +75,84 @@ class MenuService:
         
         return build_tree()
     
+    def get_menu_sections(self) -> List[dict]:
+        """獲取主功能區塊列表"""
+        # 獲取每個類別的選單，按照 section_order 排序
+        sections = db.session.query(
+            Menu.category,
+            db.func.coalesce(Menu.section_order, 0).label('section_order')  # 使用 coalesce 處理 null 值
+        ).filter(
+            Menu.parent_id.is_(None)  # 只獲取頂層選單
+        ).group_by(
+            Menu.category,
+            db.func.coalesce(Menu.section_order, 0)
+        ).order_by(
+            db.func.coalesce(Menu.section_order, 0).asc()  # 使用 coalesce 處理排序
+        ).all()
+        
+        print("Database query result:", sections)  # 添加日誌
+        result = []
+        seen_categories = set()
+        for section in sections:
+            # 確保每個類別只出現一次，並保留最小的 section_order
+            if section.category and section.category not in seen_categories:
+                result.append({
+                    'category': section.category,
+                    'section_order': section.section_order or 0  # 確保返回 0 而不是 None
+                })
+                seen_categories.add(section.category)
+        
+        print("Processed result:", result)  # 添加日誌
+        return result
+    
     def update_menu_order(self, menus: List[dict]) -> None:
         """更新選單排序"""
         try:
-            # 開始資料庫事務
-            db.session.begin()
+            print("Received menus data for update:", menus)
+            with db.session.begin():
+                for menu_data in menus:
+                    menu = self.get_menu(menu_data['id'])
+                    print(f"Processing menu update - ID: {menu_data['id']}")
+                    print(f"Menu data: {menu_data}")
+                    if menu:
+                        print(f"Current menu state - ID: {menu.id}, Category: {menu.category}")
+                        print(f"Current section_order: {menu.section_order}, New section_order: {menu_data.get('section_order')}")
+                        # 如果是更新主功能區塊排序
+                        if menu_data.get('section_order') is not None:
+                            new_section_order = int(menu_data['section_order'])
+                            print(f"Updating section_order for category {menu_data['category']} to {new_section_order}")
+                            # 找出同類別的所有選單並更新
+                            same_category_menus = db.session.query(Menu).filter(
+                                Menu.category == menu_data['category']
+                            ).all()
+                            print(f"Found {len(same_category_menus)} menus in category {menu_data['category']}")
+                            for same_cat_menu in same_category_menus:
+                                same_cat_menu.section_order = new_section_order
+                                db.session.add(same_cat_menu)
+                                print(f"Updated menu - ID: {same_cat_menu.id}, Category: {same_cat_menu.category}, New section_order: {new_section_order}")
+                        
+                        # 如果是更新一般選單排序
+                        if menu_data.get('sort_order') is not None:
+                            print(f"Updating sort_order for menu {menu.id} to {menu_data['sort_order']}")
+                            menu.sort_order = int(menu_data.get('sort_order', menu.sort_order))
+                        
+                        if menu_data.get('parent_id') is not None:
+                            print("更新父選單ID")
+                            menu.parent_id = menu_data['parent_id']
+                        if menu_data.get('category') is not None:
+                            print("更新選單類別")
+                            menu.category = menu_data['category']
+                        
+                        db.session.add(menu)
             
-            for menu_data in menus:
-                menu = self.get_menu(menu_data.id)
-                if menu:
-                    menu.sort_order = menu_data.sort_order
-                    if menu_data.parent_id is not None:
-                        menu.parent_id = menu_data.parent_id
-                    if menu_data.category is not None:
-                        menu.category = menu_data.category
-                    db.session.add(menu)
-            
-            # 提交事務
             db.session.commit()
+            print("Menu order update completed - Verifying changes...")
+            # 驗證更新
+            for menu_data in menus:
+                updated_menu = self.get_menu(menu_data['id'])
+                print(f"Verified menu - ID: {updated_menu.id}, Category: {updated_menu.category}")
+                print(f"New section_order: {updated_menu.section_order}, New sort_order: {updated_menu.sort_order}")
         except Exception as e:
-            # 發生錯誤時回滾事務
             db.session.rollback()
+            print(f"Error in update_menu_order: {str(e)}")
             raise ValueError(f'更新排序失敗: {str(e)}') 

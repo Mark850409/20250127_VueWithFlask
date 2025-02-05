@@ -15,6 +15,7 @@ class MenuPath(BaseModel):
 class MenuOrderItem(BaseModel):
     id: int
     sort_order: int
+    section_order: int
     parent_id: Optional[int]
     category: Optional[str]
 
@@ -167,7 +168,21 @@ def update_menu_order(body: MenuOrderUpdate):
     """
     service = MenuService()
     try:
-        service.update_menu_order(body.menus)
+        # 將 Pydantic 模型轉換為字典列表
+        menu_list = [menu.dict() for menu in body.menus]
+        print(f"Received menu list for update: {menu_list}")
+        service.update_menu_order(menu_list)
         return {'message': '更新成功'}
     except Exception as e:
-        return {'message': str(e)}, 500 
+        return {'message': str(e)}, 500
+
+@menu_bp.get('/sections', tags=[menu_tag])
+def get_menu_sections():
+    """獲取主功能區塊列表
+    
+    Returns:
+        200: 主功能區塊列表
+    """
+    service = MenuService()
+    sections = service.get_menu_sections()
+    return {'sections': sections} 

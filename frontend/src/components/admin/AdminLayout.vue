@@ -66,13 +66,13 @@
               <!-- 主選單 -->
               <div class="flex items-center px-4 py-3 text-sm font-medium rounded-lg cursor-pointer"
                    :class="[
-                     getMenusByCategory(category).some(menu => $route.path.includes(menu.path)) || openMenus[category]
+                     sortedMenus(category).some(menu => $route.path.includes(menu.path)) || openMenus[category]
                        ? 'text-blue-600 bg-blue-50' 
                        : 'text-gray-700 hover:bg-gray-100'
                    ]"
                    @click="toggleMenu(category)">
                 <div class="flex-shrink-0 w-6">
-                  <i :class="[getMenusByCategory(category)[0]?.icon || 'fas fa-folder', 'text-lg']"></i>
+                  <i :class="[sortedMenus(category)[0]?.icon || 'fas fa-folder', 'text-lg']"></i>
                 </div>
                 <div class="ml-3 flex-1" v-if="!isSidebarCollapsed">
                   <div>{{ category }}</div>
@@ -85,7 +85,7 @@
               <!-- 子選單 -->
               <div v-show="openMenus[category] && !isSidebarCollapsed" 
                    class="pl-4 ml-4 space-y-2 border-l border-gray-200 py-2">
-                <router-link v-for="menu in getMenusByCategory(category)"
+                <router-link v-for="menu in sortedMenus(category)"
                             :key="menu.id"
                             :to="menu.path"
                             class="flex items-center px-4 py-2.5 text-sm rounded-lg transition-colors duration-150"
@@ -335,8 +335,21 @@ export default {
       return descriptions[route] || '歡迎使用後台管理系統'
     },
     menuCategories() {
-      const categories = new Set(this.menus.map(menu => menu.category))
-      return Array.from(categories)
+      // 根據 section_order 排序類別
+      const categories = [...new Set(this.menus.map(menu => menu.category))]
+      return categories.sort((a, b) => {
+        const menuA = this.menus.find(m => m.category === a)
+        const menuB = this.menus.find(m => m.category === b)
+        return (menuA?.section_order || 0) - (menuB?.section_order || 0)
+      })
+    },
+    sortedMenus() {
+      return (category) => {
+        // 根據 sort_order 排序該類別下的選單
+        return this.menus
+          .filter(menu => menu.category === category)
+          .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+      }
     }
   },
   methods: {
@@ -444,9 +457,6 @@ export default {
       console.error('頭像加載失敗，使用默認頭像')
       e.target.src = this.defaultAvatar
     },
-    getMenusByCategory(category) {
-      return this.menus.filter(menu => menu.category === category)
-    },
     isCurrentRoute(path) {
       return this.$route.path === path
     },
@@ -455,6 +465,14 @@ export default {
         this.loading = true
         const response = await menuAPI.getMenus()
         this.menus = response.data.menus || []
+        // 初始化選單狀態
+        const initialOpenMenus = {}
+        this.menuCategories.forEach(category => {
+          initialOpenMenus[category] = false
+        })
+        this.openMenus = initialOpenMenus
+        // 根據當前路由設置選單狀態
+        this.updateMenuState()
       } catch (error) {
         console.error('獲取選單失敗:', error)
       } finally {
