@@ -26,6 +26,7 @@ from pathlib import Path
 from datetime import timedelta
 from flask import request, send_from_directory
 from flask import Flask
+from controllers.system_controller import system_bp
 
 # 獲取當前文件的目錄
 current_dir = Path(__file__).parent
@@ -199,6 +200,7 @@ app.register_api(foodpanda_vendors_bp)
 app.register_api(foodpanda_menu_bp)
 app.register_api(foodpanda_feed_bp)
 app.register_api(googlemaps_bp)
+app.register_api(system_bp)
 
 # JWT 安全配置
 security_scheme = {
@@ -239,31 +241,27 @@ with app.app_context():
     db.create_all()
     print("數據庫表已創建")
 
-# 確保上傳目錄存在
-os.makedirs(os.path.join(app.root_path, 'uploads', 'avatars'), exist_ok=True)
-os.makedirs(os.path.join(app.root_path, 'uploads', 'stores'), exist_ok=True)
+# 配置靜態文件路徑
+app.config['UPLOAD_FOLDER'] = 'uploads'  # 根上傳目錄
+app.config['AVATAR_FOLDER'] = os.path.join('uploads', 'avatars')  # 頭像目錄
+app.config['STORE_FOLDER'] = os.path.join('uploads', 'stores')   # 店家圖片目錄
 
-# 配置上傳文件夾
-app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
+# 確保上傳目錄存在
+os.makedirs(app.config['AVATAR_FOLDER'], exist_ok=True)
+os.makedirs(app.config['STORE_FOLDER'], exist_ok=True)
 
 # 添加靜態文件路由
-@app.route('/uploads/<path:filename>')
-def uploaded_file(filename):
-    print(f"請求訪問文件: {filename}")  # 調試用
-    full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    print(f"完整文件路徑: {full_path}")  # 調試用
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=False)
+@app.route('/api/users/avatar/<path:filename>')
+def get_avatar(filename):
+    return send_from_directory(app.config['AVATAR_FOLDER'], filename)
 
-# 配置靜態文件路徑
-app.config['UPLOAD_FOLDER'] = os.path.join('static', 'avatars')
-
-# 確保上傳目錄存在
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
+@app.route('/api/stores/uploads/stores/<path:filename>')
+def get_store_image(filename):
+    return send_from_directory(app.config['STORE_FOLDER'], filename)
 
 # 註冊靜態文件路由
-app.static_folder = 'static'
-app.static_url_path = '/static'
+app.static_folder = 'uploads'
+app.static_url_path = '/uploads'
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))

@@ -1,47 +1,69 @@
 <template>
   <div>
-    <DataTable
-      :columns="columns"
-      :data="shops"
-      @add="handleAdd"
-      @edit="editShop"
-      @delete="deleteShop"
-      @batch-delete="batchDeleteShops">
-      <!-- 自定義圖片列 -->
-      <template #hero_image="{ item }">
-        <div class="w-20 flex-shrink-0">
-          <img :src="item.hero_image" 
-               class="w-20 h-20 rounded-lg object-cover shadow-sm"
-               alt="店家圖片">
-        </div>
-      </template>
-      <!-- 自定義星級列 -->
-      <template #rating="{ item }">
-        <div class="flex items-center">
-          <div class="flex text-yellow-400">
-            <i v-for="n in 5" :key="n" 
-               :class="['fas', n <= Math.floor(item.rating) ? 'fa-star' : 'fa-star-o']"></i>
+    <!-- 無資料時顯示 -->
+    <div v-if="!shops || shops.length === 0" 
+         class="bg-white rounded-lg shadow-sm p-8 text-center">
+      <div class="text-gray-500 mb-4">
+        <i class="fas fa-store text-4xl"></i>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">
+        尚無飲料店資料
+      </h3>
+      <p class="text-gray-500 mb-4">
+        目前還沒有任何飲料店資訊，點擊下方按鈕新增飲料店。
+      </p>
+      <button @click="showAddModal = true"
+              class="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors duration-200">
+        <i class="fas fa-plus mr-2"></i>
+        新增飲料店
+      </button>
+    </div>
+
+    <!-- 有資料時顯示表格 -->
+    <div v-else>
+      <DataTable
+        :columns="columns"
+        :data="shops"
+        @add="handleAdd"
+        @edit="editShop"
+        @delete="deleteShop"
+        @batch-delete="batchDeleteShops">
+        <!-- 自定義圖片列 -->
+        <template #hero_image="{ item }">
+          <div class="w-20 flex-shrink-0">
+            <img :src="getShopImage(item)" 
+                 class="w-20 h-20 rounded-lg object-cover shadow-sm"
+                 alt="店家圖片">
           </div>
-          <span class="ml-2 text-gray-600">{{ item.rating }}</span>
-        </div>
-      </template>
-      <!-- 自定義狀態列 -->
-      <template #is_new_until="{ item }">
-        <span :class="[
-          'px-2 py-1 text-xs rounded-full',
-          isNewStore(item.is_new_until) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-        ]">
-          {{ isNewStore(item.is_new_until) ? '新開幕' : '已開幕' }}
-        </span>
-      </template>
-      <!-- 自定義瀏覽次數列 -->
-      <template #review_number="{ item }">
-        <div class="flex items-center text-gray-600">
-          <i class="fas fa-eye mr-2"></i>
-          {{ item.review_number }}
-        </div>
-      </template>
-    </DataTable>
+        </template>
+        <!-- 自定義星級列 -->
+        <template #rating="{ item }">
+          <div class="flex items-center">
+            <div class="flex text-yellow-400">
+              <i v-for="n in 5" :key="n" 
+                 :class="['fas', n <= Math.floor(item.rating) ? 'fa-star' : 'fa-star-o']"></i>
+            </div>
+            <span class="ml-2 text-gray-600">{{ item.rating }}</span>
+          </div>
+        </template>
+        <!-- 自定義狀態列 -->
+        <template #is_new_until="{ item }">
+          <span :class="[
+            'px-2 py-1 text-xs rounded-full',
+            isNewStore(item.is_new_until) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+          ]">
+            {{ isNewStore(item.is_new_until) ? '新開幕' : '已開幕' }}
+          </span>
+        </template>
+        <!-- 自定義瀏覽次數列 -->
+        <template #review_number="{ item }">
+          <div class="flex items-center text-gray-600">
+            <i class="fas fa-eye mr-2"></i>
+            {{ item.review_number }}
+          </div>
+        </template>
+      </DataTable>
+    </div>
 
     <!-- 新增/編輯彈窗 -->
     <div v-if="showAddModal" 
@@ -270,10 +292,12 @@
 </template>
 
 <script>
+import { ref, onMounted } from 'vue'
 import Swal from 'sweetalert2'
 import DataTable from '../common/DataTable.vue'
 import BackToHome from '../common/BackToHome.vue'
 import axios from '@/utils/axios'  // 使用配置好的 axios 實例，這樣就會自動帶上 token
+import { useLogger } from '@/composables/useLogger'
 
 export default {
   name: 'ShopManagement',
@@ -281,8 +305,21 @@ export default {
     DataTable,
     BackToHome
   },
+  setup() {
+    const shops = ref([])
+    const showAddModal = ref(false)
+    const { logOperation } = useLogger()
+
+    return { shops, showAddModal, logOperation }
+  },
+  async created() {
+    await this.fetchShops()
+    // 記錄訪問飲料店管理頁面
+    await this.logOperation('【飲料店管理】訪問飲料店管理頁面', '查看')
+  },
   data() {
     return {
+      defaultImage: 'https://placehold.co/600x400/png?text=No+Image',  // 預設假圖
       columns: [
         { 
           key: 'hero_image', 
@@ -297,8 +334,6 @@ export default {
         { key: 'review_number', label: '瀏覽次數', width: '120px' },
         { key: 'is_new_until', label: '開幕狀態', width: '100px' }
       ],
-      shops: [],
-      showAddModal: false,
       editingShop: null,
       previewImage: null,
       previewListingImage: null,  // 添加列表圖片預覽
@@ -364,15 +399,7 @@ export default {
         '金門縣': 'Kinmen County',
         '連江縣': 'Lienchiang County'
       },
-      // 預設圖片
-      defaultImage: {
-        url: 'https://api.dicebear.com/7.x/initials/svg?seed=DrinkShop&backgroundColor=b7e4c7',
-        isDefault: true
-      }
     }
-  },
-  async created() {
-    await this.fetchShops()
   },
   methods: {
     // 獲取所有店家
@@ -380,6 +407,7 @@ export default {
       try {
         const response = await axios.get('/stores/')
         this.shops = response.data.stores
+        console.log('店家列表:', this.shops)
       } catch (error) {
         console.error('獲取店家列表失敗:', error)
         this.$message.error('獲取店家列表失敗')
@@ -487,6 +515,7 @@ export default {
         try {
           await axios.delete(`/stores/${shop.id}`)
           await this.fetchShops()
+          await this.logOperation(`【飲料店管理】刪除飲料店 ${shop.name}`, '刪除')
           Swal.fire({
             icon: 'success',
             title: '刪除成功',
@@ -542,6 +571,7 @@ export default {
         try {
           await Promise.all(ids.map(id => axios.delete(`/stores/${id}`)))
           await this.fetchShops()
+          await this.logOperation(`【飲料店管理】批量刪除飲料店 (${ids.length} 筆)`, '刪除')
           Swal.fire({
             icon: 'success',
             title: '批量刪除成功',
@@ -609,6 +639,7 @@ export default {
         if(this.editingShop) {
           // 更新店家
           await axios.put(`/stores/${this.editingShop.id}`, formData)
+          await this.logOperation(`【飲料店管理】編輯飲料店 ${this.shopForm.name}`, '修改')
           Swal.fire({
             icon: 'success',
             title: '更新成功',
@@ -625,6 +656,7 @@ export default {
         } else {
           // 創建店家
           await axios.post('/stores/', formData)
+          await this.logOperation(`【飲料店管理】新增飲料店 ${this.shopForm.name}`, '新增')
           Swal.fire({
             icon: 'success',
             title: '創建成功',
@@ -931,6 +963,33 @@ export default {
         })
         this.shopForm.review_number = 1
       }
+    },
+
+    getShopImage(shop) {
+      console.log('處理的店家圖片:', {
+        hero_image: shop.hero_image,
+        isUpload: shop.hero_image?.includes('/uploads/stores/'),
+        backend_url: import.meta.env.VITE_BACKEND_URL
+      })
+      
+      // 如果有上傳的圖片，使用完整的 URL
+      if (shop.hero_image?.includes('/uploads/stores/')) {
+        // 從完整路徑中提取文件名
+        const filename = shop.hero_image.split('/').pop()
+        console.log('構建的圖片URL:', 
+          `${import.meta.env.VITE_BACKEND_URL}/api/stores/uploads/stores/${filename}`)
+        return `${import.meta.env.VITE_BACKEND_URL}/api/stores/uploads/stores/${filename}`
+      }
+      
+      // 如果有外部圖片連結，直接使用
+      if (shop.hero_image && (shop.hero_image.startsWith('http://') || shop.hero_image.startsWith('https://'))) {
+        console.log('使用外部圖片連結:', shop.hero_image)
+        return shop.hero_image
+      }
+      
+      // 都沒有則使用預設假圖
+      console.log('使用預設圖片:', this.defaultImage)
+      return this.defaultImage
     },
   }
 }

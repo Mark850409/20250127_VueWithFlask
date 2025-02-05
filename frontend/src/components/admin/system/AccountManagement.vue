@@ -1,28 +1,52 @@
 <template>
   <div>
-    <DataTable
+    <!-- 無資料時顯示 -->
+    <div v-if="!accounts || accounts.length === 0" 
+         class="bg-white rounded-lg shadow-sm p-8 text-center">
+      <div class="text-gray-500 mb-4">
+        <i class="fas fa-users text-4xl"></i>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">
+        尚無帳號資料
+      </h3>
+      <p class="text-gray-500 mb-4">
+        目前還沒有任何使用者帳號，點擊下方按鈕新增帳號。
+      </p>
+      <button @click="showAddModal = true"
+              class="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors duration-200">
+        <i class="fas fa-plus mr-2"></i>
+        新增帳號
+      </button>
+    </div>
+
+    <!-- 有資料時顯示表格 -->
+    <div v-else>
+      <DataTable
       :columns="columns"
       :data="accounts"
-      @add="showAddForm"
+      :showAddButton="true"
+      :selectable="true"
+      @add="showAddModal = true"
       @edit="editAccount"
       @delete="deleteAccount"
       @batch-delete="batchDeleteAccounts">
-      <!-- 自定義頭像列 -->
-      <template #avatar="{ item }">
-        <img :src="item.avatar || defaultAvatar" 
-             class="w-10 h-10 rounded-full">
-      </template>
-      <!-- 自定義狀態列 -->
-      <template #status="{ item }">
+        <!-- 自定義頭像列 -->
+        <template #avatar="{ item }">
+          <img :src="item.avatar || defaultAvatar" 
+               class="w-10 h-10 rounded-full">
+        </template>
+        <!-- 自定義狀態列 -->
+        <template #status="{ item }">
 
-        <span :class="[
-          'px-2 py-1 text-xs rounded-full',
-          item.status === 'Enabled' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-        ]">
-          {{ item.status }}
-        </span>
-      </template>
-    </DataTable>
+          <span :class="[
+            'px-2 py-1 text-xs rounded-full',
+            item.status === 'Enabled' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          ]">
+            {{ item.status }}
+          </span>
+        </template>
+      </DataTable>
+    </div>
 
     <!-- 新增/編輯帳號彈窗 -->
     <div v-if="showAddModal" 
@@ -83,7 +107,7 @@
           </div>
         </div>
         <div class="mt-8 flex justify-end space-x-4">
-          <button @click="showAddModal = false" 
+          <button @click="closeModal" 
                   class="px-4 py-2 text-gray-700 border rounded-lg hover:bg-gray-50">
             取消
           </button>
@@ -98,10 +122,12 @@
 </template>
 
 <script>
+import { ref, onMounted } from 'vue'
 import DataTable from '../common/DataTable.vue'
 import axios from '@/utils/axios'
 import Swal from 'sweetalert2'
 import { useRouter } from 'vue-router'
+import { useLogger } from '@/composables/useLogger'
 
 export default {
   name: 'AccountManagement',
@@ -110,7 +136,12 @@ export default {
   },
   setup() {
     const router = useRouter()
-    return { router }
+    const accounts = ref([])
+    const showAddModal = ref(false)
+    const { logOperation } = useLogger()
+    const currentUser = ref(JSON.parse(localStorage.getItem('user') || '{}'))
+
+    return { router, accounts, showAddModal, logOperation, currentUser }
   },
   data() {
     return {
@@ -118,12 +149,10 @@ export default {
         { key: 'avatar', label: '頭像' },
         { key: 'username', label: '帳號名稱' },
         { key: 'email', label: '電子郵件' },
-        { key: 'registerTime', label: '註冊時間' },
-        { key: 'updateTime', label: '更新時間' },
+        { key: 'created_at', label: '註冊時間' },
+        { key: 'updated_at', label: '更新時間' },
         { key: 'status', label: '狀態' }
       ],
-      accounts: [],
-      showAddModal: false,
       editingAccount: null,
       accountForm: {
         username: '',
@@ -144,12 +173,15 @@ export default {
   },
   async created() {
     await this.fetchAccounts()
+    // 記錄訪問帳號管理頁面
+    await this.logOperation('【帳號管理】訪問帳號管理頁面', '查看')
   },
   methods: {
     async fetchAccounts() {
       try {
         const token = localStorage.getItem('token')
         console.log('從 AccountManagement 獲取的 token:', token)
+        console.log('從 AccountManagement 獲取的 backend_url:', import.meta.env.VITE_BACKEND_URL)
         if (!token) {
           Swal.fire({
             icon: 'warning',
@@ -162,16 +194,17 @@ export default {
         }
 
         const response = await axios.get('/users/')
-        
+        console.log('useravatar', response.data.users[1].avatar)
         this.accounts = response.data.users.map(user => ({
+          
           id: user.id,
           username: user.username,
           email: user.email,
           avatar: user.avatar 
             ? `${import.meta.env.VITE_BACKEND_URL}/api/users/avatar/${user.avatar.split('/').pop()}`
             : 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.username,  // 使用用戶名作為種子生成預設頭像
-          registerTime: user.register_time,
-          updateTime: user.update_time,
+          created_at: user.register_time,
+          updated_at: user.update_time,
           status: user.status
         }))
       } catch (error) {
@@ -225,9 +258,28 @@ export default {
       this.showAddModal = true
     },
     async deleteAccount(account) {
+      // 檢查是否為當前登入帳號
+      if (account.username === this.currentUser.username) {
+        Swal.fire({
+          icon: 'error',
+          title: '無法刪除當前帳號',
+          text: '為了系統安全，不能刪除您正在使用的帳號',
+          confirmButtonText: '確定'
+        })
+        return
+      }
+
       const result = await Swal.fire({
-        title: '確定要刪除此帳號嗎？',
+        title: '確定要刪除嗎？',
         text: '此操作無法復原',
+        html: `
+          <div class="text-left">
+            <p class="mb-2">即將刪除以下帳號：</p>
+            <ul class="list-disc pl-5">
+              <li>${account.username} (${account.email})</li>
+            </ul>
+          </div>
+        `,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: '確定刪除',
@@ -239,6 +291,7 @@ export default {
         try {
           await axios.delete(`/users/${account.id}`)
           await this.fetchAccounts()
+          await this.logOperation(`【帳號管理】刪除帳號 ${account.username}`, '刪除')
           Swal.fire({
             icon: 'success',
             title: '刪除成功',
@@ -256,9 +309,43 @@ export default {
       }
     },
     async batchDeleteAccounts(ids) {
+      if (!ids || ids.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: '請選擇要刪除的帳號',
+          text: '您尚未選擇任何帳號',
+          confirmButtonText: '確定'
+        })
+        return
+      }
+
+      // 檢查是否包含當前登入帳號
+      const selectedAccounts = this.accounts.filter(account => ids.includes(account.id))
+      const hasCurrentUser = selectedAccounts.some(account => account.username === this.currentUser.username)
+      
+      if (hasCurrentUser) {
+        Swal.fire({
+          icon: 'error',
+          title: '無法刪除當前帳號',
+          text: '為了系統安全，不能刪除您正在使用的帳號',
+          confirmButtonText: '確定'
+        })
+        return
+      }
+
       const result = await Swal.fire({
         title: `確定要刪除選中的 ${ids.length} 個帳號嗎？`,
         text: '此操作無法復原',
+        html: `
+          <div class="text-left">
+            <p class="mb-2">即將刪除以下帳號：</p>
+            <ul class="list-disc pl-5">
+              ${selectedAccounts.map(account => `
+                <li>${account.username} (${account.email})</li>
+              `).join('')}
+            </ul>
+          </div>
+        `,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: '確定刪除',
@@ -268,8 +355,17 @@ export default {
 
       if (result.isConfirmed) {
         try {
-          await Promise.all(ids.map(id => axios.delete(`/users/${id}`)))
+          // 過濾掉當前用戶的ID
+          const idsToDelete = ids.filter(id => {
+            const account = this.accounts.find(a => a.id === id)
+            return account.username !== this.currentUser.username
+          })
+          
+          // 使用 Promise.all 並行處理刪除請求
+          await Promise.all(idsToDelete.map(id => axios.delete(`/users/${id}`)))
+
           await this.fetchAccounts()
+          await this.logOperation(`【帳號管理】批量刪除帳號 (${ids.length} 筆)`, '刪除')
           Swal.fire({
             icon: 'success',
             title: '批量刪除成功',
@@ -277,10 +373,11 @@ export default {
             showConfirmButton: false
           })
         } catch (error) {
+          console.error('批量刪除失敗:', error)
           Swal.fire({
             icon: 'error',
             title: '批量刪除失敗',
-            text: error.response?.data?.message || '請稍後再試',
+            text: '刪除過程中發生錯誤，請稍後再試',
             confirmButtonText: '確定'
           })
         }
@@ -340,6 +437,70 @@ export default {
           return
         }
         
+        let avatarPath = ''
+        
+        // 如果有選擇頭像，先上傳
+        if (this.avatarFile) {
+          // 檢查 token
+          const token = localStorage.getItem('token')
+          if (!token) {
+            Swal.fire({
+              icon: 'error',
+              title: '上傳失敗',
+              text: '請先登入',
+              confirmButtonText: '確定'
+            })
+            this.router.push('/login')
+            return
+          }
+          
+          const formData = new FormData()
+          formData.append('avatar', this.avatarFile)
+          
+          try {
+            console.log('準備上傳的檔案:', this.avatarFile)
+            const formData = new FormData()
+            formData.append('file', this.avatarFile)
+            const response = await axios.post('/users/avatar', formData, {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': `Bearer ${token}`
+              }
+            })
+            console.log('上傳回應:', response.data)
+            avatarPath = response.data.avatar_path
+            console.log('取得的頭像路徑:', avatarPath)
+          } catch (error) {
+            console.error('上傳錯誤詳情:', {
+              status: error.response?.status,
+              data: error.response?.data,
+              message: error.message
+            })
+            // 如果是 401 錯誤，表示 token 無效或過期
+            if (error.response?.status === 401) {
+              localStorage.removeItem('token')
+              Swal.fire({
+                icon: 'warning',
+                title: '登入已過期',
+                text: '請重新登入',
+                confirmButtonText: '確定'
+              }).then(() => {
+                this.router.push('/login')
+              })
+              return
+            }
+            
+            console.error('頭像上傳失敗:', error)
+            Swal.fire({
+              icon: 'error',
+              title: '頭像上傳失敗',
+              text: error.response?.data?.message || '請稍後再試',
+              confirmButtonText: '確定'
+            })
+            return
+          }
+        }
+
         let data = {
           username: this.accountForm.username,
           email: this.accountForm.email,
@@ -353,8 +514,8 @@ export default {
 
         if (this.editingAccount) {
           await axios.put(`/users/${this.editingAccount.id}`, data)
-          // 等待獲取最新數據
           await this.fetchAccounts()
+          await this.logOperation(`【帳號管理】編輯帳號 ${this.editingAccount.username}`, '修改')
           
           Swal.fire({
             icon: 'success',
@@ -367,9 +528,12 @@ export default {
             username: this.accountForm.username,
             email: this.accountForm.email,
             password: this.accountForm.password,
-            confirm_password: this.accountForm.password
+            confirm_password: this.accountForm.password,
+            avatar: avatarPath || '',  // 添加頭像路徑
+            status: this.accountForm.status
           })
           await this.fetchAccounts()
+          await this.logOperation(`【帳號管理】新增帳號 ${this.accountForm.username}`, '新增')
           
           Swal.fire({
             icon: 'success',
@@ -408,6 +572,21 @@ export default {
     resetAvatarForm() {
       this.previewAvatar = null
       this.avatarFile = null
+    },
+    resetForm() {
+      this.accountForm = {
+        username: '',
+        email: '',
+        password: '',
+        status: 'Enabled'
+      }
+      this.editingAccount = null
+      this.showAddModal = false
+      this.resetAvatarForm()
+    },
+    closeModal() {
+      this.showAddModal = false
+      this.resetForm()
     }
   }
 }

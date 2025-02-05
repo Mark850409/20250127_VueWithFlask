@@ -1,11 +1,11 @@
 <template>
   <div class="bg-white rounded-lg shadow-sm overflow-hidden">
     <!-- 表格控制列 -->
-    <div class="p-4 border-b flex justify-between items-center bg-gray-900 text-white">
+    <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-800 text-white">
       <div class="flex items-center space-x-2">
         <span class="text-sm">顯示</span>
         <select v-model="pageSize" 
-                class="bg-gray-800 border-gray-700 text-white text-sm rounded px-3 py-1 pr-8 focus:ring-1 focus:ring-blue-500 appearance-none">
+                class="bg-gray-700 border-gray-600 text-white text-sm rounded-md px-3 py-1.5 pr-8 focus:ring-1 focus:ring-blue-500 appearance-none">
           <option value="10">10</option>
           <option value="25">25</option>
           <option value="50">50</option>
@@ -18,19 +18,19 @@
         <div class="flex items-center space-x-4">
           <button v-if="selectedItems.length" 
                   @click="batchDelete"
-                  class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm">
+                  class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm transition-colors duration-200">
             <i class="fas fa-trash-alt mr-2"></i>批次刪除
           </button>
           <button v-if="showAddButton" 
                   @click="$emit('add')"
-                  class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
-            <i class="fas fa-plus mr-2"></i>新增
+                  class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 text-sm rounded-md hover:bg-blue-100 transition-colors duration-200">
+            <i class="fas fa-plus mr-1.5"></i>新增
           </button>
           <div class="relative">
             <input type="text" 
                    v-model="searchQuery" 
-                   placeholder="搜尋使用者..." 
-                   class="bg-gray-800 border-gray-700 text-white pl-8 pr-4 py-1 rounded w-64 focus:ring-1 focus:ring-blue-500">
+                   placeholder="搜尋..." 
+                   class="bg-gray-700 border-gray-600 text-white pl-8 pr-4 py-1.5 rounded-md w-64 focus:ring-1 focus:ring-blue-500 placeholder-gray-400">
             <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
           </div>
         </div>
@@ -40,47 +40,54 @@
     <!-- 表格內容 -->
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+        <thead class="bg-gray-50 sticky top-0">
           <tr>
-            <th class="px-6 py-3 text-left">
+            <th v-if="selectable" scope="col" class="w-12 px-3 py-3">
               <input type="checkbox" 
-                     v-model="selectAll"
                      @change="toggleSelectAll"
-                     class="rounded border-gray-300">
+                     :checked="isAllSelected"
+                     :indeterminate="selectedItems.length > 0 && !isAllSelected"
+                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0">
             </th>
             <th v-for="column in columns" 
                 :key="column.key"
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                scope="col"
+                class="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               {{ column.label }}
             </th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <!-- 如果不是只使用自定義操作欄，則顯示預設操作欄標題 -->
+            <th v-if="!customActionsOnly && showDefaultActions" 
+                class="px-6 py-3.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
               操作
             </th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="item in paginatedData" :key="item.id" class="hover:bg-gray-50">
-            <td class="px-6 py-4">
+          <tr v-for="item in paginatedData" :key="item.id" class="hover:bg-gray-50 transition-colors duration-150">
+            <td v-if="selectable" class="w-12 px-3 py-4">
               <input type="checkbox" 
                      v-model="selectedItems"
                      :value="item.id"
-                     class="rounded border-gray-300">
+                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0">
             </td>
             <td v-for="column in columns" 
                 :key="column.key"
-                class="px-6 py-4 whitespace-nowrap">
+                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               <slot :name="column.key" :item="item">
-                {{ item[column.key] }}
+                {{ column.formatter ? column.formatter(item[column.key]) : item[column.key] }}
               </slot>
             </td>
-            <td class="px-6 py-4 text-right space-x-2">
-              <button @click="$emit('edit', item)" 
-                      class="text-blue-600 hover:text-blue-900">
-                <i class="fas fa-edit"></i>
+            <!-- 如果不是只使用自定義操作欄，則顯示預設操作按鈕 -->
+            <td v-if="!customActionsOnly && showDefaultActions" 
+                class="px-6 py-4 text-right space-x-3">
+              <button v-if="showEditButton"
+                      @click="$emit('edit', item)" 
+                      class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 text-sm rounded-md hover:bg-blue-100 transition-colors duration-200">
+                <i class="fas fa-edit mr-1.5"></i>編輯
               </button>
               <button @click="$emit('delete', item)" 
-                      class="text-red-600 hover:text-red-900">
-                <i class="fas fa-trash"></i>
+                      class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-600 text-sm rounded-md hover:bg-red-100 transition-colors duration-200">
+                <i class="fas fa-trash mr-1.5"></i>刪除
               </button>
             </td>
           </tr>
@@ -89,7 +96,7 @@
     </div>
 
     <!-- 分頁區域 -->
-    <div class="px-6 py-4 mt-2 flex justify-between items-center border-t">
+    <div class="px-6 py-4 flex justify-between items-center border-t bg-gray-50">
       <div class="text-sm text-gray-700">
         顯示第 {{ startIndex + 1 }} 至 {{ endIndex }} 筆，共 {{ totalItems }} 筆資料
       </div>
@@ -171,7 +178,23 @@ export default {
       type: Array,
       required: true
     },
+    selectable: {
+      type: Boolean,
+      default: true
+    },
     showAddButton: {
+      type: Boolean,
+      default: true
+    },
+    showEditButton: {
+      type: Boolean,
+      default: true
+    },
+    customActionsOnly: {
+      type: Boolean,
+      default: false
+    },
+    showDefaultActions: {
       type: Boolean,
       default: true
     }
@@ -182,7 +205,6 @@ export default {
       pageSize: 10,
       currentPage: 1,
       selectedItems: [],
-      selectAll: false
     }
   },
   computed: {
@@ -222,6 +244,18 @@ export default {
         pages.push(i)
       }
       return pages
+    },
+    hasDefaultActions() {
+      return true
+    },
+    showDefaultActions() {
+      return !this.customActionsOnly && this.$props.showDefaultActions
+    },
+    isAllSelected() {
+      return this.paginatedData.length > 0 && this.selectedItems.length === this.paginatedData.length
+    },
+    currentPageIds() {
+      return this.paginatedData.map(item => item.id)
     }
   },
   methods: {
@@ -239,16 +273,16 @@ export default {
       this.currentPage = page
     },
     toggleSelectAll() {
-      if (this.selectAll) {
-        this.selectedItems = this.paginatedData.map(item => item.id)
+      if (this.isAllSelected) {
+        this.selectedItems = this.selectedItems.filter(id => !this.currentPageIds.includes(id))
       } else {
-        this.selectedItems = []
+        const newSelectedItems = new Set([...this.selectedItems, ...this.currentPageIds])
+        this.selectedItems = Array.from(newSelectedItems)
       }
     },
     batchDelete() {
       this.$emit('batch-delete', this.selectedItems)
       this.selectedItems = []
-      this.selectAll = false
     },
     // 跳轉到首頁
     goToFirstPage() {
@@ -271,6 +305,12 @@ export default {
     },
     searchQuery() {
       this.currentPage = 1
+    },
+    currentPage() {
+      this.selectedItems = []
+    },
+    pageSize() {
+      this.selectedItems = []
     }
   }
 }

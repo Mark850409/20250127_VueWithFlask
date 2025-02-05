@@ -181,6 +181,8 @@ def register(body: UserRegisterSchema):
             data['avatar'] = f'{UPLOAD_FOLDER}/{filename}'
         else:
             data['avatar'] = ''
+
+        print('data', data)
         
         service = UserService()
         user = service.register(data)

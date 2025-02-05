@@ -1,107 +1,128 @@
 <template>
   <div>
-    <!-- 數據表格 -->
-    <DataTable
-      :columns="columns"
-      :data="ratings"
-      :show-add-button="false"
-      @edit="handleEdit"
-      @delete="handleDelete"
-      @batch-delete="handleBatchDelete">
-      <!-- 自定義評分列 -->
-      <template #rating="{ item }">
-        <div class="flex items-center">
-          <span class="text-yellow-400">
-            <i v-for="n in 5" :key="n" 
-               :class="['fas', n <= Math.floor(item.rating) ? 'fa-star' : 'fa-star-o']"></i>
-          </span>
-          <span class="ml-2 text-gray-600 text-sm">{{ item.rating }}</span>
-        </div>
-      </template>
-      <!-- 自定義評論內容列 -->
-      <template #text="{ item }">
-        <span class="truncate block max-w-md">
-          {{ truncateText(item.text, 30) }}
-        </span>
-      </template>
-    </DataTable>
-
-    <!-- 新增/編輯彈窗 -->
-    <el-dialog
-      title="編輯評分"
-      v-model="showAddModal"
-      width="500px"
-      :close-on-click-modal="false"
-      destroy-on-close>
-      <div class="p-4">
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            用戶 <span class="text-red-500">*</span>
-          </label>
-          <input 
-            v-model="ratingForm.user"
-            type="text"
-            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            :class="{'border-red-500': errors.user}"
-            placeholder="請輸入用戶名稱">
-          <span v-if="errors.user" class="text-red-500 text-xs mt-1">{{ errors.user }}</span>
-        </div>
-        
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            店家 <span class="text-red-500">*</span>
-          </label>
-          <input 
-            v-model="ratingForm.restaurant_name"
-            type="text"
-            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            :class="{'border-red-500': errors.restaurant_name}"
-            placeholder="請輸入店家名稱">
-          <span v-if="errors.restaurant_name" class="text-red-500 text-xs mt-1">{{ errors.restaurant_name }}</span>
-        </div>
-        
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            評分 <span class="text-red-500">*</span>
-          </label>
-          <el-rate 
-            v-model="ratingForm.rating"
-            :max="5"
-            class="mt-1">
-          </el-rate>
-          <span v-if="errors.rating" class="text-red-500 text-xs mt-1">{{ errors.rating }}</span>
-        </div>
-        
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            評論內容 <span class="text-red-500">*</span>
-          </label>
-          <textarea 
-            v-model="ratingForm.text"
-            rows="6"
-            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            :class="{'border-red-500': errors.text}"
-            placeholder="請輸入評論內容">
-          </textarea>
-          <span v-if="errors.text" class="text-red-500 text-xs mt-1">{{ errors.text }}</span>
-        </div>
+    <!-- 無資料時顯示 -->
+    <div v-if="!ratings || ratings.length === 0" 
+         class="bg-white rounded-lg shadow-sm p-8 text-center">
+      <div class="text-gray-500 mb-4">
+        <i class="fas fa-star text-4xl"></i>
       </div>
-      
-      <template #footer>
-        <div class="flex justify-end space-x-3">
-          <button 
-            @click="showAddModal = false"
-            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
-            取消
-          </button>
-          <button 
-            @click="validateAndSubmit"
-            class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-            確定
-          </button>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">
+        尚無評分資料
+      </h3>
+      <p class="text-gray-500 mb-4">
+        目前還沒有任何評分記錄。
+        <br>
+        當使用者對飲料店進行評分後，評分資料會顯示在這裡。
+      </p>
+    </div>
+
+    <!-- 有資料時顯示表格 -->
+    <div v-else>
+      <!-- 數據表格 -->
+      <DataTable
+        :columns="columns"
+        :data="ratings"
+        :show-add-button="false"
+        :show-default-actions="true"
+        :custom-actions-only="false"
+        @edit="handleEdit"
+        @delete="handleDelete"
+        @batch-delete="handleBatchDelete">
+        <!-- 自定義評分列 -->
+        <template #rating="{ item }">
+          <div class="flex items-center">
+            <span class="text-yellow-400">
+              <i v-for="n in 5" :key="n" 
+                 :class="['fas', n <= Math.floor(item.rating) ? 'fa-star' : 'fa-star-o']"></i>
+            </span>
+            <span class="ml-2 text-gray-600 text-sm">{{ item.rating }}</span>
+          </div>
+        </template>
+        <!-- 自定義評論內容列 -->
+        <template #text="{ item }">
+          <span class="truncate inline-block max-w-[300px]">
+            {{ truncateText(item.text, 30) }}
+          </span>
+        </template>
+      </DataTable>
+
+      <!-- 新增/編輯彈窗 -->
+      <el-dialog
+        title="編輯評分"
+        v-model="showAddModal"
+        width="500px"
+        :close-on-click-modal="false"
+        destroy-on-close>
+        <div class="p-4">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              用戶 <span class="text-red-500">*</span>
+            </label>
+            <input 
+              v-model="ratingForm.user"
+              type="text"
+              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              :class="{'border-red-500': errors.user}"
+              placeholder="請輸入用戶名稱">
+            <span v-if="errors.user" class="text-red-500 text-xs mt-1">{{ errors.user }}</span>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              店家 <span class="text-red-500">*</span>
+            </label>
+            <input 
+              v-model="ratingForm.restaurant_name"
+              type="text"
+              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              :class="{'border-red-500': errors.restaurant_name}"
+              placeholder="請輸入店家名稱">
+            <span v-if="errors.restaurant_name" class="text-red-500 text-xs mt-1">{{ errors.restaurant_name }}</span>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              評分 <span class="text-red-500">*</span>
+            </label>
+            <el-rate 
+              v-model="ratingForm.rating"
+              :max="5"
+              class="mt-1">
+            </el-rate>
+            <span v-if="errors.rating" class="text-red-500 text-xs mt-1">{{ errors.rating }}</span>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              評論內容 <span class="text-red-500">*</span>
+            </label>
+            <textarea 
+              v-model="ratingForm.text"
+              rows="6"
+              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              :class="{'border-red-500': errors.text}"
+              placeholder="請輸入評論內容">
+            </textarea>
+            <span v-if="errors.text" class="text-red-500 text-xs mt-1">{{ errors.text }}</span>
+          </div>
         </div>
-      </template>
-    </el-dialog>
+        
+        <template #footer>
+          <div class="flex justify-end space-x-3">
+            <button 
+              @click="showAddModal = false"
+              class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+              取消
+            </button>
+            <button 
+              @click="validateAndSubmit"
+              class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+              確定
+            </button>
+          </div>
+        </template>
+      </el-dialog>
+    </div>
   </div>
 </template>
 
