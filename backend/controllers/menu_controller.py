@@ -2,6 +2,7 @@ from flask_openapi3 import APIBlueprint, Tag
 from services.menu_service import MenuService
 from schemas.menu_schema import *
 from pydantic import BaseModel, Field
+from typing import List, Optional
 
 menu_bp = APIBlueprint('menus', __name__, url_prefix='/api/menus')
 menu_tag = Tag(name='menus', description='選單管理')
@@ -10,6 +11,15 @@ menu_tag = Tag(name='menus', description='選單管理')
 class MenuPath(BaseModel):
     """選單路徑參數"""
     menu_id: int = Field(..., description='選單ID')
+
+class MenuOrderItem(BaseModel):
+    id: int
+    sort_order: int
+    parent_id: Optional[int]
+    category: Optional[str]
+
+class MenuOrderUpdate(BaseModel):
+    menus: List[MenuOrderItem]
 
 @menu_bp.get('/', tags=[menu_tag])
 def get_menus():
@@ -39,6 +49,12 @@ def create_menu(body: MenuCreateSchema):
     existing_menus = service.get_all_menus()
     
     menu_data = body.dict()
+    
+    # 處理狀態值轉換
+    if menu_data.get('status') == 'Enabled':
+        menu_data['status'] = 'active'
+    elif menu_data.get('status') == 'Disabled':
+        menu_data['status'] = 'disabled'
     
     # 如果沒有任何選單，強制設置為頂層選單
     if not existing_menus:
@@ -136,4 +152,22 @@ def delete_menu(path: MenuPath):
     
     if service.delete_menu(menu_id):
         return '', 204
-    return {'message': '刪除失敗'}, 500 
+    return {'message': '刪除失敗'}, 500
+
+@menu_bp.put('/order', tags=[menu_tag])
+def update_menu_order(body: MenuOrderUpdate):
+    """更新選單排序
+    
+    Args:
+        body (MenuOrderUpdate): 選單排序數據
+        
+    Returns:
+        200: 更新成功
+        500: 更新失敗
+    """
+    service = MenuService()
+    try:
+        service.update_menu_order(body.menus)
+        return {'message': '更新成功'}
+    except Exception as e:
+        return {'message': str(e)}, 500 

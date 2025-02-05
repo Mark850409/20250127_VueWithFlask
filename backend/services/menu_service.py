@@ -16,6 +16,14 @@ class MenuService:
     
     def create_menu(self, menu_data: dict) -> Menu:
         """創建選單"""
+        # 處理狀態值轉換
+        status_map = {
+            'Enabled': 'active',
+            'Disabled': 'disabled'
+        }
+        if menu_data.get('status') in status_map:
+            menu_data['status'] = status_map[menu_data['status']]
+        
         # 檢查是否有任何選單存在
         existing_menus = self.get_all_menus()
         
@@ -36,6 +44,12 @@ class MenuService:
     
     def update_menu(self, menu_id: int, menu_data: dict) -> Optional[Menu]:
         """更新選單"""
+        # 處理狀態值轉換
+        if menu_data.get('status') == 'Enabled':
+            menu_data['status'] = 'active'
+        elif menu_data.get('status') == 'Disabled':
+            menu_data['status'] = 'disabled'
+        
         return self.dao.update_menu(menu_id, menu_data)
     
     def delete_menu(self, menu_id: int) -> bool:
@@ -59,4 +73,27 @@ class MenuService:
                 tree.append(node)
             return tree
         
-        return build_tree() 
+        return build_tree()
+    
+    def update_menu_order(self, menus: List[dict]) -> None:
+        """更新選單排序"""
+        try:
+            # 開始資料庫事務
+            db.session.begin()
+            
+            for menu_data in menus:
+                menu = self.get_menu(menu_data.id)
+                if menu:
+                    menu.sort_order = menu_data.sort_order
+                    if menu_data.parent_id is not None:
+                        menu.parent_id = menu_data.parent_id
+                    if menu_data.category is not None:
+                        menu.category = menu_data.category
+                    db.session.add(menu)
+            
+            # 提交事務
+            db.session.commit()
+        except Exception as e:
+            # 發生錯誤時回滾事務
+            db.session.rollback()
+            raise ValueError(f'更新排序失敗: {str(e)}') 

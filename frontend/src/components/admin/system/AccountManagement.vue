@@ -124,10 +124,10 @@
 <script>
 import { ref, onMounted } from 'vue'
 import DataTable from '../common/DataTable.vue'
-import axios from '@/utils/axios'
 import Swal from 'sweetalert2'
 import { useRouter } from 'vue-router'
 import { useLogger } from '@/composables/useLogger'
+import { accountAPI } from '@/api'
 
 export default {
   name: 'AccountManagement',
@@ -180,8 +180,9 @@ export default {
     async fetchAccounts() {
       try {
         const token = localStorage.getItem('token')
-        console.log('從 AccountManagement 獲取的 token:', token)
-        console.log('從 AccountManagement 獲取的 backend_url:', import.meta.env.VITE_BACKEND_URL)
+        console.log('Backend URL:', import.meta.env.VITE_BACKEND_URL)
+        console.log('Token:', token)
+        
         if (!token) {
           Swal.fire({
             icon: 'warning',
@@ -193,8 +194,9 @@ export default {
           return
         }
 
-        const response = await axios.get('/users/')
-        console.log('useravatar', response.data.users[1].avatar)
+        const response = await accountAPI.getAccounts()
+        console.log('API Response:', response)
+        
         this.accounts = response.data.users.map(user => ({
           
           id: user.id,
@@ -208,6 +210,11 @@ export default {
           status: user.status
         }))
       } catch (error) {
+        console.error('FetchAccounts Error:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message
+        })
         // 如果是 401 錯誤，表示 token 無效或過期
         if (error.response?.status === 401) {
           localStorage.removeItem('token')
@@ -289,7 +296,7 @@ export default {
 
       if (result.isConfirmed) {
         try {
-          await axios.delete(`/users/${account.id}`)
+          await accountAPI.deleteAccount(account.id)
           await this.fetchAccounts()
           await this.logOperation(`【帳號管理】刪除帳號 ${account.username}`, '刪除')
           Swal.fire({
@@ -362,7 +369,7 @@ export default {
           })
           
           // 使用 Promise.all 並行處理刪除請求
-          await Promise.all(idsToDelete.map(id => axios.delete(`/users/${id}`)))
+          await Promise.all(idsToDelete.map(id => accountAPI.deleteAccount(id)))
 
           await this.fetchAccounts()
           await this.logOperation(`【帳號管理】批量刪除帳號 (${ids.length} 筆)`, '刪除')
@@ -457,12 +464,7 @@ export default {
             console.log('準備上傳的檔案:', this.avatarFile)
             const formData = new FormData()
             formData.append('file', this.avatarFile)
-            const response = await axios.post('/users/avatar', formData, {
-              headers: {
-                'Content-Type': 'multipart/form-data',
-                'Authorization': `Bearer ${token}`
-              }
-            })
+            const response = await accountAPI.uploadAvatar(formData, token)
             console.log('上傳回應:', response.data)
             if (response.data && response.data.avatar_url) {
               avatarPath = response.data.avatar_url
@@ -512,7 +514,7 @@ export default {
         }
 
         if (this.editingAccount) {
-          await axios.put(`/users/${this.editingAccount.id}`, data)
+          await accountAPI.updateAccount(this.editingAccount.id, data)
           await this.fetchAccounts()
           await this.logOperation(`【帳號管理】編輯帳號 ${this.editingAccount.username}`, '修改')
           
@@ -532,24 +534,19 @@ export default {
           }
           
           // 1. 先進行註冊
-          const registerResponse = await axios.post('/users/register', registerData)
-          console.log('註冊回應:', registerResponse.data)
+          const response = await accountAPI.createAccount(registerData)
+          console.log('註冊回應:', response.data)
           
           // 2. 如果有頭像且註冊成功，再上傳頭像
-          if (registerResponse.status === 201 && this.avatarFile) {
+          if (response.status === 201 && this.avatarFile) {
             // 儲存註冊返回的 token
-            localStorage.setItem('token', registerResponse.data.token)
+            localStorage.setItem('token', response.data.token)
 
             try {
               const formData = new FormData()
               formData.append('file', this.avatarFile)
               
-              const avatarResponse = await axios.post('/users/avatar', formData, {
-                headers: {
-                  'Content-Type': 'multipart/form-data',
-                  'Authorization': `Bearer ${registerResponse.data.token}`
-                }
-              })
+              const avatarResponse = await accountAPI.uploadAvatar(formData, response.data.token)
               console.log('頭像上傳回應:', avatarResponse.data)
             } catch (error) {
               console.error('頭像上傳失敗:', error)

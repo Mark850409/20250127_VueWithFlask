@@ -5,7 +5,13 @@ class MenuDAO:
     @staticmethod
     def get_all_menus() -> List[Menu]:
         """獲取所有選單"""
-        return Menu.query.order_by(Menu.sort_order.asc()).all()
+        # 先按照 sort_order 排序，如果有 category 則也考慮進去
+        query = Menu.query
+        if hasattr(Menu, 'category'):
+            query = query.order_by(Menu.category.asc(), Menu.sort_order.asc())
+        else:
+            query = query.order_by(Menu.sort_order.asc())
+        return query.all()
     
     @staticmethod
     def get_menu_by_id(menu_id: int) -> Optional[Menu]:
@@ -43,4 +49,9 @@ class MenuDAO:
     @staticmethod
     def get_menus_by_parent_id(parent_id: Optional[int] = None) -> List[Menu]:
         """獲取指定父級ID的所有選單"""
-        return Menu.query.filter_by(parent_id=parent_id).order_by(Menu.sort_order.asc()).all() 
+        query = Menu.query.filter_by(parent_id=parent_id)
+        if hasattr(Menu, 'category'):
+            query = query.order_by(Menu.category.asc(), Menu.sort_order.asc())
+        else:
+            query = query.order_by(Menu.sort_order.asc())
+        return query.all() 

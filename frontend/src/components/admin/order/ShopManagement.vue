@@ -21,48 +21,48 @@
 
     <!-- 有資料時顯示表格 -->
     <div v-else>
-      <DataTable
-        :columns="columns"
-        :data="shops"
+    <DataTable
+      :columns="columns"
+      :data="shops"
         @add="handleAdd"
-        @edit="editShop"
-        @delete="deleteShop"
-        @batch-delete="batchDeleteShops">
-        <!-- 自定義圖片列 -->
+      @edit="editShop"
+      @delete="deleteShop"
+      @batch-delete="batchDeleteShops">
+      <!-- 自定義圖片列 -->
         <template #hero_image="{ item }">
           <div class="w-20 flex-shrink-0">
             <img :src="getShopImage(item)" 
                  class="w-20 h-20 rounded-lg object-cover shadow-sm"
                  alt="店家圖片">
           </div>
-        </template>
-        <!-- 自定義星級列 -->
-        <template #rating="{ item }">
-          <div class="flex items-center">
-            <div class="flex text-yellow-400">
-              <i v-for="n in 5" :key="n" 
-                 :class="['fas', n <= Math.floor(item.rating) ? 'fa-star' : 'fa-star-o']"></i>
-            </div>
-            <span class="ml-2 text-gray-600">{{ item.rating }}</span>
+      </template>
+      <!-- 自定義星級列 -->
+      <template #rating="{ item }">
+        <div class="flex items-center">
+          <div class="flex text-yellow-400">
+            <i v-for="n in 5" :key="n" 
+               :class="['fas', n <= Math.floor(item.rating) ? 'fa-star' : 'fa-star-o']"></i>
           </div>
-        </template>
-        <!-- 自定義狀態列 -->
+          <span class="ml-2 text-gray-600">{{ item.rating }}</span>
+        </div>
+      </template>
+      <!-- 自定義狀態列 -->
         <template #is_new_until="{ item }">
-          <span :class="[
-            'px-2 py-1 text-xs rounded-full',
+        <span :class="[
+          'px-2 py-1 text-xs rounded-full',
             isNewStore(item.is_new_until) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-          ]">
+        ]">
             {{ isNewStore(item.is_new_until) ? '新開幕' : '已開幕' }}
-          </span>
-        </template>
-        <!-- 自定義瀏覽次數列 -->
+        </span>
+      </template>
+      <!-- 自定義瀏覽次數列 -->
         <template #review_number="{ item }">
-          <div class="flex items-center text-gray-600">
-            <i class="fas fa-eye mr-2"></i>
+        <div class="flex items-center text-gray-600">
+          <i class="fas fa-eye mr-2"></i>
             {{ item.review_number }}
-          </div>
-        </template>
-      </DataTable>
+        </div>
+      </template>
+    </DataTable>
     </div>
 
     <!-- 新增/編輯彈窗 -->
@@ -109,7 +109,7 @@
                 <i class="fas fa-camera mr-2"></i>主要圖片
               </label>
             </div>
-            <div class="flex flex-col items-center">
+          <div class="flex flex-col items-center">
               <div class="relative w-32 h-32 mb-4">
                 <img :src="previewListingImage || shopForm.hero_listing_image" 
                      class="w-full h-full rounded-lg object-cover shadow-sm">
@@ -121,17 +121,17 @@
                   <span class="text-xs text-center font-medium">點擊上傳<br>列表圖片</span>
                 </div>
               </div>
-              <label class="px-4 py-2 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200">
+            <label class="px-4 py-2 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200">
                 <input type="file" class="hidden" accept="image/*" @change="handleListingImageUpload">
                 <i class="fas fa-camera mr-2"></i>列表圖片
-              </label>
+            </label>
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
-            <div>
+          <div>
               <label class="required-field">店家名稱</label>
-              <input type="text" v-model="shopForm.name" 
+            <input type="text" v-model="shopForm.name" 
                      @input="handleNameInput"
                      class="form-input">
             </div>
@@ -139,8 +139,8 @@
               <label>正規化名稱</label>
               <input type="text" v-model="shopForm.normalized_name" 
                      class="form-input" readonly>
-            </div>
-            <div>
+          </div>
+          <div>
               <label class="required-field">城市</label>
               <select v-model="shopForm.city_CN" 
                       @change="handleCityChange"
@@ -148,9 +148,9 @@
                 <option v-for="city in cityOptions" 
                         :key="city" 
                         :value="city">{{ city }}</option>
-              </select>
-            </div>
-            <div>
+            </select>
+          </div>
+          <div>
               <label class="required-field">地址</label>
               <input type="text" v-model="shopForm.address" class="form-input">
             </div>
@@ -211,8 +211,8 @@
                      step="any"
                      class="form-input"
                      @input="validateLongitude">
-            </div>
-            <div>
+          </div>
+          <div>
               <label>距離</label>
               <input type="number" v-model="shopForm.distance" 
                      min="1" class="form-input">
@@ -232,8 +232,8 @@
                      @click="shopForm.rating = n"></i>
                 </template>
               </div>
-            </div>
-            <div>
+          </div>
+          <div>
               <label class="required-field">瀏覽次數</label>
               <input type="number" 
                      v-model="shopForm.review_number" 
@@ -260,8 +260,8 @@
             <div>
               <label>重定向URL</label>
               <input type="text" v-model="shopForm.redirection_url" class="form-input">
-            </div>
-            <div>
+          </div>
+          <div>
               <label>標籤</label>
               <input type="text" v-model="shopForm.tag" class="form-input">
             </div>
@@ -296,8 +296,8 @@ import { ref, onMounted } from 'vue'
 import Swal from 'sweetalert2'
 import DataTable from '../common/DataTable.vue'
 import BackToHome from '../common/BackToHome.vue'
-import axios from '@/utils/axios'  // 使用配置好的 axios 實例，這樣就會自動帶上 token
 import { useLogger } from '@/composables/useLogger'
+import { shopAPI } from '@/api'
 
 export default {
   name: 'ShopManagement',
@@ -405,7 +405,7 @@ export default {
     // 獲取所有店家
     async fetchShops() {
       try {
-        const response = await axios.get('/stores/')
+        const response = await shopAPI.getShops()
         this.shops = response.data.stores
         console.log('店家列表:', this.shops)
       } catch (error) {
@@ -445,15 +445,7 @@ export default {
         }
         
         try {
-          const response = await axios.post('/stores/upload', formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-            // 添加調試信息
-            onUploadProgress: progressEvent => {
-              console.log('上傳進度:', progressEvent.loaded, '/', progressEvent.total)
-            }
-          })
+          const response = await shopAPI.uploadImage(formData)
           this.shopForm.hero_image = response.data.url
         } catch (error) {
           console.log('完整錯誤信息:', error.response || error)
@@ -480,7 +472,7 @@ export default {
     // 編輯店家
     async editShop(shop) {
       try {
-        const response = await axios.get(`/stores/${shop.id}`)
+        const response = await shopAPI.getShop(shop.id)
         this.editingShop = response.data
         this.shopForm = { ...response.data }
         this.previewImage = null
@@ -513,7 +505,7 @@ export default {
       
       if (result.isConfirmed) {
         try {
-          await axios.delete(`/stores/${shop.id}`)
+          await shopAPI.deleteShop(shop.id)
           await this.fetchShops()
           await this.logOperation(`【飲料店管理】刪除飲料店 ${shop.name}`, '刪除')
           Swal.fire({
@@ -569,7 +561,7 @@ export default {
       
       if (result.isConfirmed) {
         try {
-          await Promise.all(ids.map(id => axios.delete(`/stores/${id}`)))
+          await Promise.all(ids.map(id => shopAPI.deleteShop(id)))
           await this.fetchShops()
           await this.logOperation(`【飲料店管理】批量刪除飲料店 (${ids.length} 筆)`, '刪除')
           Swal.fire({
@@ -635,10 +627,10 @@ export default {
         })
         
         console.log('準備發送的數據:', formData)  // 調試用
-        
-        if(this.editingShop) {
+
+      if(this.editingShop) {
           // 更新店家
-          await axios.put(`/stores/${this.editingShop.id}`, formData)
+          await shopAPI.updateShop(this.editingShop.id, formData)
           await this.logOperation(`【飲料店管理】編輯飲料店 ${this.shopForm.name}`, '修改')
           Swal.fire({
             icon: 'success',
@@ -655,7 +647,7 @@ export default {
           })
         } else {
           // 創建店家
-          await axios.post('/stores/', formData)
+          await shopAPI.createShop(formData)
           await this.logOperation(`【飲料店管理】新增飲料店 ${this.shopForm.name}`, '新增')
           Swal.fire({
             icon: 'success',
@@ -707,7 +699,7 @@ export default {
               confirmButton: 'bg-blue-500 hover:bg-blue-600'
             }
           })
-        } else {
+      } else {
           // 其他錯誤
           Swal.fire({
             icon: 'error',
@@ -805,11 +797,7 @@ export default {
         formData.append('file', file)
         
         try {
-          const response = await axios.post('/stores/upload', formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            }
-          })
+          const response = await shopAPI.uploadImage(formData)
           this.shopForm.hero_listing_image = response.data.url
         } catch (error) {
           console.log('完整錯誤信息:', error.response || error)
@@ -993,7 +981,7 @@ export default {
     },
   }
 }
-</script>
+</script> 
 
 <style scoped>
 /* 確保表格內容不會換行 */

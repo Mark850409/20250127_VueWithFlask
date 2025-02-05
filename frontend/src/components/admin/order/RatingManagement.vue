@@ -129,13 +129,16 @@
 <script>
 import { ref, onMounted, watch } from 'vue'
 import DataTable from '../common/DataTable.vue'
-import axios from '@/utils/axios'
+import BackToHome from '../common/BackToHome.vue'
+import { useLogger } from '@/composables/useLogger'
+import { ratingAPI } from '@/api'
 import Swal from 'sweetalert2'
 
 export default {
   name: 'RatingManagement',
   components: {
-    DataTable
+    DataTable,
+    BackToHome
   },
   setup() {
     const columns = [
@@ -179,8 +182,9 @@ export default {
     // 獲取評分列表
     const fetchRatings = async () => {
       try {
-        const response = await axios.get('/ratings/')
+        const response = await ratingAPI.getRatings()
         ratings.value = response.data.ratings
+        console.log('評分列表:', ratings.value)
       } catch (error) {
         Swal.fire({
           icon: 'error',
@@ -247,7 +251,7 @@ export default {
         })
 
         if (result.isConfirmed) {
-          await axios.delete(`/ratings/${rating.id}`)
+          await ratingAPI.deleteRating(rating.id)
           Swal.fire({
             icon: 'success',
             title: '已刪除',
@@ -283,7 +287,7 @@ export default {
         })
 
         if (result.isConfirmed) {
-          await Promise.all(ids.map(id => axios.delete(`/ratings/${id}`)))
+          await ratingAPI.batchDeleteRatings(ids)
           Swal.fire({
             icon: 'success',
             title: '已刪除',
@@ -312,7 +316,11 @@ export default {
 
     const handleSubmit = async () => {
       try {
-        await axios.put(`/ratings/${editingRating.value.id}`, ratingForm.value)
+        if (editingRating.value) {
+          await ratingAPI.updateRating(editingRating.value.id, ratingForm.value)
+        } else {
+          await ratingAPI.createRating(ratingForm.value)
+        }
         Swal.fire({
           icon: 'success',
           title: '成功',

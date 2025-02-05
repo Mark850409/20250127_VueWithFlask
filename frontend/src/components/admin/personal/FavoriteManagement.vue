@@ -61,7 +61,9 @@
 <script>
 import { ref, onMounted } from 'vue'
 import DataTable from '../common/DataTable.vue'
-import axios from '@/utils/axios'
+import BackToHome from '../common/BackToHome.vue'
+import { useLogger } from '@/composables/useLogger'
+import { favoriteAPI } from '@/api'
 import Swal from 'sweetalert2'
 
 export default {
@@ -70,6 +72,7 @@ export default {
     DataTable
   },
   setup() {
+    const { logOperation } = useLogger()
     const columns = [
       { key: 'username', label: '用戶' },
       { key: 'store_image', label: '商品圖片' },
@@ -98,8 +101,7 @@ export default {
     // 獲取最愛列表
     const fetchFavorites = async () => {
       try {
-        const response = await axios.get('/favorites/')
-        // 確保使用正確的數據結構
+        const response = await favoriteAPI.getFavorites()
         favorites.value = response.data.favorites || []
         console.log('收藏列表:', favorites.value)
       } catch (error) {
@@ -127,8 +129,9 @@ export default {
         })
 
         if (result.isConfirmed) {
-          await axios.delete(`/favorites/${id}`)
+          await favoriteAPI.deleteFavorite(id)
           await fetchFavorites()
+          await logOperation('【收藏管理】刪除收藏', '刪除')
           Swal.fire({
             icon: 'success',
             title: '已刪除',
@@ -162,9 +165,9 @@ export default {
         })
 
         if (result.isConfirmed) {
-          // 由於 API 不支援批量刪除，所以需要逐個刪除
-          await Promise.all(ids.map(id => axios.delete(`/favorites/${id}`)))
+          await favoriteAPI.batchDeleteFavorites(ids)
           await fetchFavorites()
+          await logOperation(`【收藏管理】批量刪除收藏 (${ids.length} 筆)`, '刪除')
           Swal.fire({
             icon: 'success',
             title: '已刪除',
@@ -188,8 +191,9 @@ export default {
       event.target.src = defaultImage
     }
 
-    onMounted(() => {
-      fetchFavorites()
+    onMounted(async () => {
+      await fetchFavorites()
+      await logOperation('【收藏管理】訪問收藏管理頁面', '查看')
     })
 
     return {

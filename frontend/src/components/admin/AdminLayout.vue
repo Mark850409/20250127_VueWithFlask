@@ -60,170 +60,46 @@
             <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Apps</h3>
           </div>
 
-          <!-- 系統管理 -->
-          <div class="space-y-1">
-            <div class="flex items-center px-4 py-3 text-sm font-medium rounded-lg cursor-pointer"
-                 :class="[
-                   $route.path.includes('/admin/system') || openMenus.system
-                     ? 'text-blue-600 bg-blue-50' 
-                     : 'text-gray-700 hover:bg-gray-100'
-                 ]"
-                 @click="toggleMenu('system')">
-              <div class="flex-shrink-0 w-6">
-                <i class="fas fa-cog text-lg"></i>
+          <!-- 動態生成的選單 -->
+          <template v-for="category in menuCategories" :key="category">
+            <div class="space-y-1">
+              <!-- 主選單 -->
+              <div class="flex items-center px-4 py-3 text-sm font-medium rounded-lg cursor-pointer"
+                   :class="[
+                     getMenusByCategory(category).some(menu => $route.path.includes(menu.path)) || openMenus[category]
+                       ? 'text-blue-600 bg-blue-50' 
+                       : 'text-gray-700 hover:bg-gray-100'
+                   ]"
+                   @click="toggleMenu(category)">
+                <div class="flex-shrink-0 w-6">
+                  <i :class="[getMenusByCategory(category)[0]?.icon || 'fas fa-folder', 'text-lg']"></i>
+                </div>
+                <div class="ml-3 flex-1" v-if="!isSidebarCollapsed">
+                  <div>{{ category }}</div>
+                </div>
+                <i v-if="!isSidebarCollapsed" 
+                   class="fas fa-chevron-right text-sm transition-transform duration-200"
+                   :class="{ 'transform rotate-90': openMenus[category] }"></i>
               </div>
-              <div class="ml-3 flex-1" v-if="!isSidebarCollapsed">
-                <div>系統管理</div>
+
+              <!-- 子選單 -->
+              <div v-show="openMenus[category] && !isSidebarCollapsed" 
+                   class="pl-4 ml-4 space-y-2 border-l border-gray-200 py-2">
+                <router-link v-for="menu in getMenusByCategory(category)"
+                            :key="menu.id"
+                            :to="menu.path"
+                            class="flex items-center px-4 py-2.5 text-sm rounded-lg transition-colors duration-150"
+                            :class="[
+                              $route.path === menu.path
+                                ? 'text-blue-600 bg-blue-50'
+                                : 'text-gray-600 hover:bg-gray-100'
+                            ]">
+                  <i :class="[menu.icon, 'text-lg w-6']"></i>
+                  <span class="ml-3">{{ menu.name }}</span>
+                </router-link>
               </div>
-              <i v-if="!isSidebarCollapsed" 
-                 class="fas fa-chevron-right text-sm transition-transform duration-200"
-                 :class="{ 'transform rotate-90': openMenus.system }"></i>
             </div>
-
-            <!-- 子選單 -->
-            <div v-show="openMenus.system && !isSidebarCollapsed" 
-                 class="pl-4 ml-4 space-y-2 border-l border-gray-200 py-2">
-              <router-link to="/admin/accounts" 
-                class="flex items-center px-4 py-2.5 text-sm rounded-lg transition-colors duration-150"
-                :class="[
-                  $route.path === '/admin/accounts'
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-600 hover:bg-gray-100'
-                ]">
-                <i class="fas fa-users text-lg w-6"></i>
-                <span class="ml-3">帳號管理</span>
-              </router-link>
-              <router-link to="/admin/git" 
-                class="flex items-center px-4 py-2.5 text-sm rounded-lg transition-colors duration-150"
-                :class="[
-                  $route.path === '/admin/git'
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-600 hover:bg-gray-100'
-                ]">
-                <i class="fab fa-git-alt text-lg w-6"></i>
-                <span class="ml-3">版控管理</span>
-              </router-link>
-              <router-link to="/admin/logs" 
-                class="flex items-center px-4 py-2 text-sm rounded-lg transition-colors duration-150"
-                :class="[
-                  $route.path === '/admin/logs'
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-600 hover:bg-gray-100'
-                ]">
-                <i class="fas fa-history text-lg w-6"></i>
-                <span class="ml-3">日誌管理</span>
-              </router-link>
-              <router-link to="/admin/menus" 
-                class="flex items-center px-4 py-2 text-sm rounded-lg transition-colors duration-150"
-                :class="[
-                  $route.path === '/admin/menus'
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-600 hover:bg-gray-100'
-                ]">
-                <i class="fas fa-bars text-lg w-6"></i>
-                <span class="ml-3">選單管理</span>
-              </router-link>
-            </div>
-          </div>
-
-          <!-- 點餐管理 -->
-          <div class="space-y-1">
-            <div class="flex items-center px-4 py-3 text-sm font-medium rounded-lg cursor-pointer"
-                 :class="[
-                   $route.path.includes('/admin/shops') || 
-                   $route.path.includes('/admin/ratings') || 
-                   $route.path.includes('/admin/comments') || 
-                   openMenus.order
-                     ? 'text-blue-600 bg-blue-50' 
-                     : 'text-gray-700 hover:bg-gray-100'
-                 ]"
-                 @click="toggleMenu('order')">
-              <i class="fas fa-coffee text-lg w-6"></i>
-              <span v-if="!isSidebarCollapsed" class="ml-3 flex-1">點餐管理</span>
-              <i v-if="!isSidebarCollapsed" 
-                 class="fas fa-chevron-right text-sm transition-transform duration-200"
-                 :class="{ 'transform rotate-90': openMenus.order }"></i>
-            </div>
-
-            <!-- 子選單 -->
-            <div v-show="openMenus.order && !isSidebarCollapsed" 
-                 class="pl-4 ml-4 space-y-2 border-l border-gray-200 py-2">
-              <router-link to="/admin/shops" 
-                class="flex items-center px-4 py-2.5 text-sm rounded-lg transition-colors duration-150"
-                :class="[
-                  $route.path === '/admin/shops'
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-600 hover:bg-gray-100'
-                ]">
-                <i class="fas fa-store text-lg w-6"></i>
-                <span class="ml-3">飲料店管理</span>
-              </router-link>
-              <router-link to="/admin/ratings" 
-                class="flex items-center px-4 py-2.5 text-sm rounded-lg transition-colors duration-150"
-                :class="[
-                  $route.path === '/admin/ratings'
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-600 hover:bg-gray-100'
-                ]">
-                <i class="fas fa-star text-lg w-6"></i>
-                <span class="ml-3">評分管理</span>
-              </router-link>
-              <router-link to="/admin/comments" 
-                class="flex items-center px-4 py-2.5 text-sm rounded-lg transition-colors duration-150"
-                :class="[
-                  $route.path === '/admin/comments'
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-600 hover:bg-gray-100'
-                ]">
-                <i class="fas fa-comments text-lg w-6"></i>
-                <span class="ml-3">留言板管理</span>
-              </router-link>
-            </div>
-          </div>
-
-          <!-- 個人設定管理 -->
-          <div class="space-y-1">
-            <div class="flex items-center px-4 py-3 text-sm font-medium rounded-lg cursor-pointer"
-                 :class="[
-                   $route.path.includes('/admin/users') || 
-                   $route.path.includes('/admin/favorites') || 
-                   openMenus.personal
-                     ? 'text-blue-600 bg-blue-50' 
-                     : 'text-gray-700 hover:bg-gray-100'
-                 ]"
-                 @click="toggleMenu('personal')">
-              <i class="fas fa-user-cog text-lg w-6"></i>
-              <span v-if="!isSidebarCollapsed" class="ml-3 flex-1">個人設定管理</span>
-              <i v-if="!isSidebarCollapsed" 
-                 class="fas fa-chevron-right text-sm transition-transform duration-200"
-                 :class="{ 'transform rotate-90': openMenus.personal }"></i>
-            </div>
-
-            <!-- 子選單 -->
-            <div v-show="openMenus.personal && !isSidebarCollapsed" 
-                 class="pl-4 ml-4 space-y-2 border-l border-gray-200 py-2">
-              <router-link to="/admin/users" 
-                class="flex items-center px-4 py-2.5 text-sm rounded-lg transition-colors duration-150"
-                :class="[
-                  $route.path === '/admin/users'
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-600 hover:bg-gray-100'
-                ]">
-                <i class="fas fa-user text-lg w-6"></i>
-                <span class="ml-3">管理員管理</span>
-              </router-link>
-              <router-link to="/admin/favorites" 
-                class="flex items-center px-4 py-2.5 text-sm rounded-lg transition-colors duration-150"
-                :class="[
-                  $route.path === '/admin/favorites'
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-600 hover:bg-gray-100'
-                ]">
-                <i class="fas fa-heart text-lg w-6"></i>
-                <span class="ml-3">最愛管理</span>
-              </router-link>
-            </div>
-          </div>
+          </template>
         </div>
       </div>
 
@@ -284,6 +160,7 @@ import axios from '@/utils/axios'
 import Swal from 'sweetalert2'
 import { onBeforeMount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { menuAPI } from '@/api'
 
 export default {
   name: 'AdminLayout',
@@ -296,6 +173,8 @@ export default {
     const tokenExpireTime = ref(null)
     const remainingTime = ref(0)
     let timerInterval = null
+    const menus = ref([])
+    const loading = ref(false)
 
     // 開始計時器
     const startExpirationTimer = () => {
@@ -398,16 +277,14 @@ export default {
     return {
       remainingTime,
       formatTime,
-      startExpirationTimer
+      startExpirationTimer,
+      menus,
+      loading
     }
   },
   data() {
     return {
-      openMenus: {
-        system: false,
-        order: false,
-        personal: false
-      },
+      openMenus: {}, // 初始化為空對象
       isSidebarCollapsed: false,
       isSidebarVisible: true,
       userInfo: {
@@ -456,33 +333,48 @@ export default {
         'GitManagement': '管理系統版本控制和代碼更新',
       }
       return descriptions[route] || '歡迎使用後台管理系統'
+    },
+    menuCategories() {
+      const categories = new Set(this.menus.map(menu => menu.category))
+      return Array.from(categories)
     }
   },
   methods: {
     toggleMenu(menu) {
-      // 關閉其他選單，只保持當前選單打開
-      Object.keys(this.openMenus).forEach(key => {
-        this.openMenus[key] = key === menu ? !this.openMenus[key] : false
-      })
+      const newOpenMenus = { ...this.openMenus }
+      
+      // 切換當前選單的狀態
+      newOpenMenus[menu] = !newOpenMenus[menu]
+      
+      // 如果是打開當前選單，則關閉其他選單
+      if (newOpenMenus[menu]) {
+        Object.keys(newOpenMenus).forEach(key => {
+          if (key !== menu) {
+            newOpenMenus[key] = false
+          }
+        })
+      }
+      
+      this.openMenus = newOpenMenus
     },
     // 根據當前路由自動展開對應的選單
     updateMenuState() {
       const path = this.$route.path
-      // 重置所有選單狀態
-      Object.keys(this.openMenus).forEach(key => {
-        this.openMenus[key] = false
-      })
+      const newOpenMenus = { ...this.openMenus }
+      
       // 根據路徑決定要展開哪個選單
       if (path.includes('/admin/system') || path.includes('/admin/accounts') || 
           path.includes('/admin/logs') || path.includes('/admin/menus') ||
           path.includes('/admin/git')) {
-        this.openMenus.system = true
+        newOpenMenus['系統管理'] = true
       } else if (path.includes('/admin/shops') || path.includes('/admin/ratings') || 
                 path.includes('/admin/comments')) {
-        this.openMenus.order = true
+        newOpenMenus['點餐管理'] = true
       } else if (path.includes('/admin/users') || path.includes('/admin/favorites')) {
-        this.openMenus.personal = true
+        newOpenMenus['個人設定管理'] = true
       }
+      
+      this.openMenus = newOpenMenus
     },
     toggleSidebar() {
       this.isSidebarCollapsed = !this.isSidebarCollapsed
@@ -551,6 +443,23 @@ export default {
     handleAvatarError(e) {
       console.error('頭像加載失敗，使用默認頭像')
       e.target.src = this.defaultAvatar
+    },
+    getMenusByCategory(category) {
+      return this.menus.filter(menu => menu.category === category)
+    },
+    isCurrentRoute(path) {
+      return this.$route.path === path
+    },
+    async fetchMenus() {
+      try {
+        this.loading = true
+        const response = await menuAPI.getMenus()
+        this.menus = response.data.menus || []
+      } catch (error) {
+        console.error('獲取選單失敗:', error)
+      } finally {
+        this.loading = false
+      }
     }
   },
   watch: {
@@ -559,9 +468,12 @@ export default {
       this.updateMenuState()
     }
   },
-  mounted() {
-    // 初始化時設置選單狀態
+  async created() {
+    await this.fetchMenus()
+    // 根據當前路由設置初始選單狀態
     this.updateMenuState()
+  },
+  mounted() {
     // 獲取用戶信息
     this.getUserInfo()
     window.addEventListener('resize', this.handleResize)
