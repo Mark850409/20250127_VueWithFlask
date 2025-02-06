@@ -7,6 +7,9 @@ tw_tz = pytz.timezone('Asia/Taipei')
 
 class User(db.Model):
     __tablename__ = 'users'
+    __table_args__ = (
+        db.Index('ix_user_register_time', 'register_time'),
+    )
     
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)

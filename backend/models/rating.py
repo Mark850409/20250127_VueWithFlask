@@ -7,6 +7,10 @@ tw_tz = pytz.timezone('Asia/Taipei')
 
 class Rating(db.Model):
     __tablename__ = 'ratings'
+    __table_args__ = (
+        db.Index('ix_rating_time', 'time'),
+        db.Index('ix_rating_restaurant_name', 'restaurant_name'),
+    )
     
     id = db.Column(db.Integer, primary_key=True)
     place_id = db.Column(db.String(500), nullable=False)

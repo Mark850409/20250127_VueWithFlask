@@ -8,6 +8,9 @@ tw_tz = pytz.timezone('Asia/Taipei')
 
 class Log(db.Model):
     __tablename__ = 'logs'
+    __table_args__ = (
+        db.Index('ix_log_created_at', 'created_at'),
+    )
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # 改為可為空

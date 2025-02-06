@@ -3,6 +3,10 @@ from models.database import db
 
 class Store(db.Model):
     __tablename__ = 'stores'
+    __table_args__ = (
+        db.Index('ix_store_created_at', 'created_at'),
+        db.Index('ix_store_name', 'name'),
+    )
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)

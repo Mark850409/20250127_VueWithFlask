@@ -7,6 +7,9 @@ tw_tz = pytz.timezone('Asia/Taipei')
 class Favorite(db.Model):
     """最愛模型"""
     __tablename__ = 'favorites'
+    __table_args__ = (
+        db.Index('ix_favorite_created_at', 'created_at'),
+    )
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)

@@ -153,3 +153,26 @@
 2025-02-06 13:31:07,022 - INFO - 127.0.0.1 - - [06/Feb/2025 13:31:07] "GET /api/status?_t=1738848666297 HTTP/1.1" 200 -
 2025-02-06 13:31:07,030 - INFO - 127.0.0.1 - - [06/Feb/2025 13:31:07] "OPTIONS /api/commits?_t=1738848667029 HTTP/1.1" 200 -
 2025-02-06 13:31:07,240 - INFO - 127.0.0.1 - - [06/Feb/2025 13:31:07] "GET /api/commits?_t=1738848667029 HTTP/1.1" 200 -
+2025-02-06 13:33:15,605 - INFO - 127.0.0.1 - - [06/Feb/2025 13:33:15] "OPTIONS /api/status?_t=1738848795294 HTTP/1.1" 200 -
+2025-02-06 13:33:16,030 - INFO - 127.0.0.1 - - [06/Feb/2025 13:33:16] "GET /api/status?_t=1738848795294 HTTP/1.1" 200 -
+2025-02-06 13:33:23,996 - INFO - 127.0.0.1 - - [06/Feb/2025 13:33:23] "OPTIONS /api/add HTTP/1.1" 200 -
+2025-02-06 13:33:24,836 - INFO - 127.0.0.1 - - [06/Feb/2025 13:33:24] "POST /api/add HTTP/1.1" 200 -
+2025-02-06 13:33:25,154 - INFO - 127.0.0.1 - - [06/Feb/2025 13:33:25] "OPTIONS /api/commit HTTP/1.1" 200 -
+2025-02-06 13:33:25,516 - INFO - 127.0.0.1 - - [06/Feb/2025 13:33:25] "POST /api/commit HTTP/1.1" 200 -
+2025-02-06 13:33:25,519 - INFO - 127.0.0.1 - - [06/Feb/2025 13:33:25] "OPTIONS /api/status?_t=1738848805518 HTTP/1.1" 200 -
+2025-02-06 13:33:25,884 - INFO - 127.0.0.1 - - [06/Feb/2025 13:33:25] "GET /api/status?_t=1738848805518 HTTP/1.1" 200 -
+2025-02-06 13:33:26,206 - INFO - 127.0.0.1 - - [06/Feb/2025 13:33:26] "OPTIONS /api/commits?_t=1738848805894 HTTP/1.1" 200 -
+2025-02-06 13:33:26,243 - INFO - 127.0.0.1 - - [06/Feb/2025 13:33:26] "GET /api/commits?_t=1738848805894 HTTP/1.1" 200 -
+2025-02-06 13:33:30,982 - INFO - 127.0.0.1 - - [06/Feb/2025 13:33:30] "OPTIONS /api/push HTTP/1.1" 200 -
+2025-02-06 13:33:36,125 - INFO - 127.0.0.1 - - [06/Feb/2025 13:33:36] "POST /api/push HTTP/1.1" 200 -
+2025-02-06 13:33:36,439 - INFO - 127.0.0.1 - - [06/Feb/2025 13:33:36] "OPTIONS /api/status?_t=1738848816126 HTTP/1.1" 200 -
+2025-02-06 13:33:36,541 - INFO - 127.0.0.1 - - [06/Feb/2025 13:33:36] "GET /api/status?_t=1738848816126 HTTP/1.1" 200 -
+2025-02-06 13:33:36,702 - INFO - 127.0.0.1 - - [06/Feb/2025 13:33:36] "OPTIONS /api/commits?_t=1738848816547 HTTP/1.1" 200 -
+2025-02-06 13:33:37,052 - INFO - 127.0.0.1 - - [06/Feb/2025 13:33:37] "GET /api/commits?_t=1738848816547 HTTP/1.1" 200 -
+2025-02-06 13:40:43,955 - INFO -  * Detected change in 'e:\\Project\\developer_project\\thesis\\20250203\\backend\\controllers\\dashboard_controller.py', reloading
+2025-02-06 13:40:44,334 - INFO -  * Restarting with stat
+2025-02-06 13:40:47,358 - INFO - API queries_quota: 60
+2025-02-06 13:40:47,361 - WARNING -  * Debugger is active!
+2025-02-06 13:40:47,364 - INFO -  * Debugger PIN: 179-333-801
+2025-02-06 13:41:40,722 - INFO -  * Detected change in 'e:\\Project\\developer_project\\thesis\\20250203\\backend\\controllers\\__init__.py', reloading
+2025-02-06 13:41:41,014 - INFO -  * Restarting with stat

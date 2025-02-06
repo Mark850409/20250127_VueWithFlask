@@ -36,7 +36,7 @@
         <div class="space-y-4 overflow-hidden">
           <!-- Navigation 分類標題 -->
           <div v-if="!isSidebarCollapsed" class="px-4 pt-2">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Navigation</h3>
+            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">ADMIN</h3>
           </div>
 
           <!-- Dashboard -->
@@ -51,7 +51,7 @@
               <i class="fas fa-home text-lg"></i>
             </div>
             <div class="ml-3 flex-1" v-if="!isSidebarCollapsed">
-              <div>Dashboards</div>
+              <div>儀錶板管理</div>
             </div>
           </router-link>
 
@@ -305,7 +305,7 @@ export default {
     getBannerTitle() {
       const route = this.$route.name
       const titles = {
-        'Dashboard': '儀表板',
+        'Dashboard': '儀表板管理',
         'AccountManagement': '帳號管理',
         'LogManagement': '日誌管理',
         'MenuManagement': '選單管理',
