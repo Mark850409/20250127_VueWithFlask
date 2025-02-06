@@ -1,37 +1,119 @@
-2025-02-06 00:53:03,559 - INFO - API queries_quota: 60
-2025-02-06 00:53:04,873 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-02-06 16:38:10,291 - INFO - API queries_quota: 60
+2025-02-06 16:38:11,662 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:5000
  * Running on http://192.168.0.122:5000
-2025-02-06 00:53:04,874 - INFO - [33mPress CTRL+C to quit[0m
-2025-02-06 00:53:04,875 - INFO -  * Restarting with stat
-2025-02-05 16:53:08,423 - INFO - API queries_quota: 60
-2025-02-05 16:53:08,463 - WARNING -  * Debugger is active!
-2025-02-05 16:53:08,465 - INFO -  * Debugger PIN: 909-213-384
-2025-02-05 16:53:13,404 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:13] "OPTIONS /api/menus/?_t=1738774393099 HTTP/1.1" 200 -
-2025-02-05 16:53:13,406 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:13] "OPTIONS /api/users/verify?_t=1738774393099 HTTP/1.1" 200 -
-2025-02-05 16:53:13,407 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:13] "OPTIONS /api/users/14?_t=1738774393099 HTTP/1.1" 200 -
-2025-02-05 16:53:13,408 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:13] "OPTIONS /api/users/verify?_t=1738774393099 HTTP/1.1" 200 -
-2025-02-05 16:53:13,740 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:13] "GET /api/users/verify?_t=1738774393099 HTTP/1.1" 200 -
-2025-02-05 16:53:13,745 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:13] "GET /api/menus/?_t=1738774393099 HTTP/1.1" 200 -
-2025-02-05 16:53:13,752 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:13] "GET /api/users/14?_t=1738774393099 HTTP/1.1" 200 -
-2025-02-05 16:53:13,987 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:13] "GET /api/users/verify?_t=1738774393099 HTTP/1.1" 200 -
-2025-02-05 16:53:13,991 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:13] "OPTIONS /api/users/14?_t=1738774393989 HTTP/1.1" 200 -
-2025-02-05 16:53:14,051 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:14] "GET /api/users/14?_t=1738774393989 HTTP/1.1" 200 -
-2025-02-05 16:53:14,149 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:14] "GET /api/users/avatar/14_20250205_163817_deafault.png HTTP/1.1" 200 -
-2025-02-05 16:53:27,256 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:27] "OPTIONS /api/remote/add HTTP/1.1" 200 -
-2025-02-05 16:53:27,261 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:27] "[35m[1mPOST /api/remote/add HTTP/1.1[0m" 500 -
-2025-02-05 16:53:30,635 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:30] "OPTIONS /api/init HTTP/1.1" 200 -
-2025-02-05 16:53:30,942 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:30] "POST /api/init HTTP/1.1" 200 -
-2025-02-05 16:53:31,259 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:31] "OPTIONS /api/status?_t=1738774410948 HTTP/1.1" 200 -
-2025-02-05 16:53:31,417 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:31] "GET /api/status?_t=1738774410948 HTTP/1.1" 200 -
-2025-02-05 16:53:32,716 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:32] "OPTIONS /api/remote/add HTTP/1.1" 200 -
-2025-02-05 16:53:33,122 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:33] "POST /api/remote/add HTTP/1.1" 200 -
-2025-02-05 16:53:33,445 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:33] "OPTIONS /api/status?_t=1738774413129 HTTP/1.1" 200 -
-2025-02-05 16:53:33,581 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:33] "GET /api/status?_t=1738774413129 HTTP/1.1" 200 -
-2025-02-05 16:53:33,712 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:33] "OPTIONS /api/commits?_t=1738774413588 HTTP/1.1" 200 -
-2025-02-05 16:53:34,082 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:34] "GET /api/commits?_t=1738774413588 HTTP/1.1" 200 -
-2025-02-05 16:53:41,628 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:41] "OPTIONS /api/reset HTTP/1.1" 200 -
-2025-02-05 16:53:41,775 - INFO - 127.0.0.1 - - [05/Feb/2025 16:53:41] "[35m[1mPOST /api/reset HTTP/1.1[0m" 500 -
-2025-02-05 16:54:01,100 - INFO - 127.0.0.1 - - [05/Feb/2025 16:54:01] "OPTIONS /api/status?_t=1738774440786 HTTP/1.1" 200 -
-2025-02-05 16:54:01,531 - INFO - 127.0.0.1 - - [05/Feb/2025 16:54:01] "GET /api/status?_t=1738774440786 HTTP/1.1" 200 -
+2025-02-06 16:38:11,662 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-06 16:38:11,663 - INFO -  * Restarting with stat
+2025-02-06 08:38:14,485 - INFO - API queries_quota: 60
+2025-02-06 08:38:14,529 - WARNING -  * Debugger is active!
+2025-02-06 08:38:14,531 - INFO -  * Debugger PIN: 909-213-384
+2025-02-06 16:38:25,022 - INFO - API queries_quota: 60
+2025-02-06 16:38:26,335 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-06 16:38:26,336 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-06 16:38:26,337 - INFO -  * Restarting with stat
+2025-02-06 08:38:29,437 - INFO - API queries_quota: 60
+2025-02-06 08:38:29,482 - WARNING -  * Debugger is active!
+2025-02-06 08:38:29,484 - INFO -  * Debugger PIN: 909-213-384
+2025-02-06 08:40:05,108 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\app.py', reloading
+2025-02-06 16:40:05,386 - INFO -  * Restarting with stat
+2025-02-06 08:40:08,294 - INFO - API queries_quota: 60
+2025-02-06 08:40:08,724 - WARNING -  * Debugger is active!
+2025-02-06 08:40:08,726 - INFO -  * Debugger PIN: 909-213-384
+2025-02-06 08:40:19,431 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\app.py', reloading
+2025-02-06 16:40:19,727 - INFO -  * Restarting with stat
+2025-02-06 08:40:22,612 - INFO - API queries_quota: 60
+2025-02-06 08:40:22,656 - WARNING -  * Debugger is active!
+2025-02-06 08:40:22,658 - INFO -  * Debugger PIN: 909-213-384
+2025-02-06 08:40:38,107 - INFO - 127.0.0.1 - - [06/Feb/2025 08:40:38] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-06 08:40:38,739 - INFO - 127.0.0.1 - - [06/Feb/2025 08:40:38] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-06 08:40:39,115 - INFO - 127.0.0.1 - - [06/Feb/2025 08:40:39] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-06 08:40:39,823 - INFO - 127.0.0.1 - - [06/Feb/2025 08:40:39] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-06 08:40:40,500 - INFO - 127.0.0.1 - - [06/Feb/2025 08:40:40] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-06 08:43:12,678 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\controllers\\googlemaps_info_controller.py', reloading
+2025-02-06 16:43:12,965 - INFO -  * Restarting with stat
+2025-02-06 08:43:15,984 - INFO - API queries_quota: 60
+2025-02-06 08:43:16,026 - WARNING -  * Debugger is active!
+2025-02-06 08:43:16,029 - INFO -  * Debugger PIN: 909-213-384
+2025-02-06 08:43:16,098 - INFO - 127.0.0.1 - - [06/Feb/2025 08:43:16] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-06 08:43:16,148 - INFO - 127.0.0.1 - - [06/Feb/2025 08:43:16] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-06 08:43:16,149 - INFO - 127.0.0.1 - - [06/Feb/2025 08:43:16] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-06 08:43:16,422 - INFO - 127.0.0.1 - - [06/Feb/2025 08:43:16] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-06 08:43:17,023 - INFO - 127.0.0.1 - - [06/Feb/2025 08:43:17] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-06 08:43:17,050 - INFO - 127.0.0.1 - - [06/Feb/2025 08:43:17] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-06 08:45:27,903 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\controllers\\googlemaps_info_controller.py', reloading
+2025-02-06 16:45:28,225 - INFO -  * Restarting with stat
+2025-02-06 08:45:31,218 - INFO - API queries_quota: 60
+2025-02-06 08:45:31,265 - WARNING -  * Debugger is active!
+2025-02-06 08:45:31,268 - INFO -  * Debugger PIN: 909-213-384
+2025-02-06 08:45:31,338 - INFO - 127.0.0.1 - - [06/Feb/2025 08:45:31] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-06 08:45:31,418 - INFO - 127.0.0.1 - - [06/Feb/2025 08:45:31] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-06 08:45:31,419 - INFO - 127.0.0.1 - - [06/Feb/2025 08:45:31] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-06 08:45:31,673 - INFO - 127.0.0.1 - - [06/Feb/2025 08:45:31] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-06 08:45:32,335 - INFO - 127.0.0.1 - - [06/Feb/2025 08:45:32] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-06 08:45:32,336 - INFO - 127.0.0.1 - - [06/Feb/2025 08:45:32] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-06 08:46:54,331 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\controllers\\googlemaps_info_controller.py', reloading
+2025-02-06 16:46:54,634 - INFO -  * Restarting with stat
+2025-02-06 08:46:57,455 - INFO - API queries_quota: 60
+2025-02-06 08:46:57,494 - WARNING -  * Debugger is active!
+2025-02-06 08:46:57,496 - INFO -  * Debugger PIN: 909-213-384
+2025-02-06 08:48:20,494 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\controllers\\googlemaps_info_controller.py', reloading
+2025-02-06 16:48:20,783 - INFO -  * Restarting with stat
+2025-02-06 08:48:23,700 - INFO - API queries_quota: 60
+2025-02-06 08:48:23,749 - WARNING -  * Debugger is active!
+2025-02-06 08:48:23,752 - INFO -  * Debugger PIN: 909-213-384
+2025-02-06 08:48:25,103 - INFO - 127.0.0.1 - - [06/Feb/2025 08:48:25] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-06 08:48:25,144 - INFO - 127.0.0.1 - - [06/Feb/2025 08:48:25] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-06 08:48:25,350 - INFO - 127.0.0.1 - - [06/Feb/2025 08:48:25] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-06 08:48:25,427 - INFO - 127.0.0.1 - - [06/Feb/2025 08:48:25] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-06 08:48:25,902 - INFO - 127.0.0.1 - - [06/Feb/2025 08:48:25] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-06 08:48:25,905 - INFO - 127.0.0.1 - - [06/Feb/2025 08:48:25] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-06 08:48:38,602 - INFO - API queries_quota: 60
+2025-02-06 16:52:27,142 - INFO - API queries_quota: 60
+2025-02-06 16:52:28,450 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-06 16:52:28,451 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-06 16:52:28,452 - INFO -  * Restarting with stat
+2025-02-06 08:52:31,374 - INFO - API queries_quota: 60
+2025-02-06 08:52:31,416 - WARNING -  * Debugger is active!
+2025-02-06 08:52:31,418 - INFO -  * Debugger PIN: 909-213-384
+2025-02-06 08:52:31,501 - INFO - 127.0.0.1 - - [06/Feb/2025 08:52:31] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-06 08:52:31,582 - INFO - 127.0.0.1 - - [06/Feb/2025 08:52:31] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-06 08:52:31,583 - INFO - 127.0.0.1 - - [06/Feb/2025 08:52:31] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-06 08:52:31,843 - INFO - 127.0.0.1 - - [06/Feb/2025 08:52:31] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-06 08:52:32,820 - INFO - 127.0.0.1 - - [06/Feb/2025 08:52:32] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-06 08:52:32,822 - INFO - 127.0.0.1 - - [06/Feb/2025 08:52:32] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-06 08:52:39,895 - INFO - API queries_quota: 60
+2025-02-06 08:53:09,506 - INFO - 127.0.0.1 - - [06/Feb/2025 08:53:09] "[35m[1mPOST /api/googlemaps-info/process HTTP/1.1[0m" 500 -
+2025-02-06 08:54:23,317 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\controllers\\googlemaps_info_controller.py', reloading
+2025-02-06 16:54:23,618 - INFO -  * Restarting with stat
+2025-02-06 08:54:26,391 - INFO - API queries_quota: 60
+2025-02-06 08:54:26,429 - WARNING -  * Debugger is active!
+2025-02-06 08:54:26,431 - INFO -  * Debugger PIN: 909-213-384
+2025-02-06 08:56:46,763 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\googlemaps_info_service.py', reloading
+2025-02-06 16:56:47,060 - INFO -  * Restarting with stat
+2025-02-06 08:56:50,108 - INFO - API queries_quota: 60
+2025-02-06 08:56:50,156 - WARNING -  * Debugger is active!
+2025-02-06 08:56:50,158 - INFO -  * Debugger PIN: 909-213-384
+2025-02-06 16:57:02,909 - INFO - API queries_quota: 60
+2025-02-06 16:57:04,567 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-06 16:57:04,567 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-06 16:57:04,569 - INFO -  * Restarting with stat
+2025-02-06 08:57:07,659 - INFO - API queries_quota: 60
+2025-02-06 08:57:07,706 - WARNING -  * Debugger is active!
+2025-02-06 08:57:07,708 - INFO -  * Debugger PIN: 909-213-384
+2025-02-06 08:57:10,781 - INFO - 127.0.0.1 - - [06/Feb/2025 08:57:10] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-06 08:57:10,821 - INFO - 127.0.0.1 - - [06/Feb/2025 08:57:10] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-06 08:57:11,048 - INFO - 127.0.0.1 - - [06/Feb/2025 08:57:11] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-06 08:57:11,106 - INFO - 127.0.0.1 - - [06/Feb/2025 08:57:11] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-06 08:57:11,686 - INFO - 127.0.0.1 - - [06/Feb/2025 08:57:11] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-06 08:57:11,697 - INFO - 127.0.0.1 - - [06/Feb/2025 08:57:11] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-06 08:57:16,908 - INFO - API queries_quota: 60

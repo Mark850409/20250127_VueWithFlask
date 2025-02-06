@@ -1,0 +1,155 @@
+2025-02-06 17:04:58,560 - INFO - API queries_quota: 60
+2025-02-06 17:05:00,355 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-06 17:05:00,357 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-06 17:05:00,358 - INFO -  * Restarting with stat
+2025-02-06 09:05:03,326 - INFO - API queries_quota: 60
+2025-02-06 09:05:03,368 - WARNING -  * Debugger is active!
+2025-02-06 09:05:03,370 - INFO -  * Debugger PIN: 179-333-801
+2025-02-06 09:05:09,535 - INFO - 127.0.0.1 - - [06/Feb/2025 09:05:09] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-06 09:05:09,948 - INFO - 127.0.0.1 - - [06/Feb/2025 09:05:09] "GET /openapi/static/css/swagger-ui.css HTTP/1.1" 200 -
+2025-02-06 09:05:10,540 - INFO - 127.0.0.1 - - [06/Feb/2025 09:05:10] "GET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1" 200 -
+2025-02-06 09:05:12,096 - INFO - 127.0.0.1 - - [06/Feb/2025 09:05:12] "GET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1" 200 -
+2025-02-06 09:05:12,756 - INFO - 127.0.0.1 - - [06/Feb/2025 09:05:12] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-06 09:05:12,760 - INFO - 127.0.0.1 - - [06/Feb/2025 09:05:12] "GET /openapi/static/images/swagger.svg HTTP/1.1" 200 -
+2025-02-06 09:05:17,200 - INFO - API queries_quota: 60
+2025-02-06 09:14:43,684 - INFO - 127.0.0.1 - - [06/Feb/2025 09:14:43] "[35m[1mPOST /api/googlemaps-info/process HTTP/1.1[0m" 500 -
+2025-02-06 21:13:48,978 - INFO - API queries_quota: 60
+2025-02-06 21:13:50,292 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-06 21:13:50,292 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-06 21:13:50,297 - INFO -  * Restarting with stat
+2025-02-06 13:13:53,233 - INFO - API queries_quota: 60
+2025-02-06 13:13:53,279 - WARNING -  * Debugger is active!
+2025-02-06 13:13:53,282 - INFO -  * Debugger PIN: 126-357-858
+2025-02-06 13:13:54,611 - INFO - 127.0.0.1 - - [06/Feb/2025 13:13:54] "[33mGET /openapi/swagger HTTP/1.1[0m" 404 -
+2025-02-06 13:13:54,876 - INFO - 127.0.0.1 - - [06/Feb/2025 13:13:54] "[33mGET /openapi/swagger HTTP/1.1[0m" 404 -
+2025-02-06 13:13:55,202 - INFO - 127.0.0.1 - - [06/Feb/2025 13:13:55] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-06 13:13:58,691 - INFO - 127.0.0.1 - - [06/Feb/2025 13:13:58] "[33mGET /openapi/swagger HTTP/1.1[0m" 404 -
+2025-02-06 21:14:28,861 - INFO - API queries_quota: 60
+2025-02-06 21:15:07,560 - INFO - API queries_quota: 60
+2025-02-06 21:16:57,949 - INFO - API queries_quota: 60
+2025-02-06 21:16:59,252 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-06 21:16:59,253 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-06 21:16:59,257 - INFO -  * Restarting with stat
+2025-02-06 13:17:02,240 - INFO - API queries_quota: 60
+2025-02-06 13:17:02,268 - WARNING -  * Debugger is active!
+2025-02-06 13:17:02,270 - INFO -  * Debugger PIN: 179-333-801
+2025-02-06 13:17:02,338 - INFO - 127.0.0.1 - - [06/Feb/2025 13:17:02] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-06 13:17:02,389 - INFO - 127.0.0.1 - - [06/Feb/2025 13:17:02] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-06 13:17:02,390 - INFO - 127.0.0.1 - - [06/Feb/2025 13:17:02] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-06 13:17:02,668 - INFO - 127.0.0.1 - - [06/Feb/2025 13:17:02] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-06 13:17:03,157 - INFO - 127.0.0.1 - - [06/Feb/2025 13:17:03] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-06 13:17:10,330 - INFO - 127.0.0.1 - - [06/Feb/2025 13:17:10] "GET /api/client-ip HTTP/1.1" 200 -
+2025-02-06 21:24:02,663 - INFO - API queries_quota: 60
+2025-02-06 21:24:03,939 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-06 21:24:03,940 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-06 21:24:03,942 - INFO -  * Restarting with stat
+2025-02-06 13:24:06,849 - INFO - API queries_quota: 60
+2025-02-06 13:24:06,854 - WARNING -  * Debugger is active!
+2025-02-06 13:24:06,856 - INFO -  * Debugger PIN: 179-333-801
+2025-02-06 13:24:07,969 - INFO - 127.0.0.1 - - [06/Feb/2025 13:24:07] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-06 13:24:08,255 - INFO - 127.0.0.1 - - [06/Feb/2025 13:24:08] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-06 13:24:08,296 - INFO - 127.0.0.1 - - [06/Feb/2025 13:24:08] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-06 13:24:08,297 - INFO - 127.0.0.1 - - [06/Feb/2025 13:24:08] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-06 13:24:09,084 - INFO - 127.0.0.1 - - [06/Feb/2025 13:24:09] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-06 13:27:12,914 - INFO - API queries_quota: 60
+2025-02-06 13:27:14,192 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-06 13:27:14,193 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-06 13:27:14,194 - INFO -  * Restarting with stat
+2025-02-06 13:27:17,024 - INFO - API queries_quota: 60
+2025-02-06 13:27:17,028 - WARNING -  * Debugger is active!
+2025-02-06 13:27:17,031 - INFO -  * Debugger PIN: 179-333-801
+2025-02-06 13:27:17,151 - INFO - 127.0.0.1 - - [06/Feb/2025 13:27:17] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-06 13:27:17,189 - INFO - 127.0.0.1 - - [06/Feb/2025 13:27:17] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-06 13:27:17,403 - INFO - 127.0.0.1 - - [06/Feb/2025 13:27:17] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-06 13:27:17,482 - INFO - 127.0.0.1 - - [06/Feb/2025 13:27:17] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-06 13:27:17,955 - INFO - 127.0.0.1 - - [06/Feb/2025 13:27:17] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-06 13:27:17,956 - INFO - 127.0.0.1 - - [06/Feb/2025 13:27:17] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-06 13:27:22,684 - INFO - 127.0.0.1 - - [06/Feb/2025 13:27:22] "[31m[1mGET /api/users/ HTTP/1.1[0m" 401 -
+2025-02-06 13:27:57,320 - INFO - 127.0.0.1 - - [06/Feb/2025 13:27:57] "OPTIONS /api/menus/?_t=1738848477015 HTTP/1.1" 200 -
+2025-02-06 13:27:57,322 - INFO - 127.0.0.1 - - [06/Feb/2025 13:27:57] "OPTIONS /api/users/verify?_t=1738848477015 HTTP/1.1" 200 -
+2025-02-06 13:27:57,345 - INFO - 127.0.0.1 - - [06/Feb/2025 13:27:57] "OPTIONS /api/users/14?_t=1738848477015 HTTP/1.1" 200 -
+2025-02-06 13:27:57,346 - INFO - 127.0.0.1 - - [06/Feb/2025 13:27:57] "OPTIONS /api/users/verify?_t=1738848477015 HTTP/1.1" 200 -
+2025-02-06 13:27:57,350 - INFO - 127.0.0.1 - - [06/Feb/2025 13:27:57] "GET /api/menus/?_t=1738848477015 HTTP/1.1" 200 -
+2025-02-06 13:27:57,647 - INFO - 127.0.0.1 - - [06/Feb/2025 13:27:57] "[31m[1mGET /api/users/verify?_t=1738848477015 HTTP/1.1[0m" 401 -
+2025-02-06 13:27:57,654 - INFO - 127.0.0.1 - - [06/Feb/2025 13:27:57] "GET /api/users/14?_t=1738848477015 HTTP/1.1" 200 -
+2025-02-06 13:27:57,963 - INFO - 127.0.0.1 - - [06/Feb/2025 13:27:57] "[31m[1mGET /api/users/verify?_t=1738848477015 HTTP/1.1[0m" 401 -
+2025-02-06 13:27:58,117 - INFO - 127.0.0.1 - - [06/Feb/2025 13:27:58] "GET /api/users/avatar/14_20250205_163817_deafault.png HTTP/1.1" 200 -
+2025-02-06 13:28:06,791 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:06] "OPTIONS /api/users/login HTTP/1.1" 200 -
+2025-02-06 13:28:07,376 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:07] "POST /api/users/login HTTP/1.1" 200 -
+2025-02-06 13:28:09,215 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:09] "OPTIONS /api/menus/?_t=1738848488891 HTTP/1.1" 200 -
+2025-02-06 13:28:09,215 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:09] "OPTIONS /api/users/verify?_t=1738848488891 HTTP/1.1" 200 -
+2025-02-06 13:28:09,216 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:09] "OPTIONS /api/users/14?_t=1738848488891 HTTP/1.1" 200 -
+2025-02-06 13:28:09,217 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:09] "OPTIONS /api/users/verify?_t=1738848488891 HTTP/1.1" 200 -
+2025-02-06 13:28:09,222 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:09] "GET /api/menus/?_t=1738848488891 HTTP/1.1" 200 -
+2025-02-06 13:28:09,527 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:09] "GET /api/users/verify?_t=1738848488891 HTTP/1.1" 200 -
+2025-02-06 13:28:09,534 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:09] "GET /api/users/14?_t=1738848488891 HTTP/1.1" 200 -
+2025-02-06 13:28:09,839 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:09] "GET /api/users/verify?_t=1738848488891 HTTP/1.1" 200 -
+2025-02-06 13:28:09,842 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:09] "OPTIONS /api/users/14?_t=1738848489841 HTTP/1.1" 200 -
+2025-02-06 13:28:10,155 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:10] "GET /api/users/14?_t=1738848489841 HTTP/1.1" 200 -
+2025-02-06 13:28:15,682 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:15] "OPTIONS /api/users/?_t=1738848495366 HTTP/1.1" 200 -
+2025-02-06 13:28:15,688 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:15] "GET /api/users/?_t=1738848495366 HTTP/1.1" 200 -
+2025-02-06 13:28:15,946 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:15] "OPTIONS /api/client-ip?_t=1738848495694 HTTP/1.1" 200 -
+2025-02-06 13:28:16,015 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:16] "GET /api/client-ip?_t=1738848495694 HTTP/1.1" 200 -
+2025-02-06 13:28:16,020 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:16] "OPTIONS /api/logs/ HTTP/1.1" 200 -
+2025-02-06 13:28:16,302 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:16] "GET /api/users/avatar/51_20250205_163818_deafault.png HTTP/1.1" 200 -
+2025-02-06 13:28:16,341 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:16] "[35m[1mPOST /api/logs/ HTTP/1.1[0m" 201 -
+2025-02-06 13:28:17,603 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:17] "OPTIONS /api/logs/?_t=1738848497280 HTTP/1.1" 200 -
+2025-02-06 13:28:17,751 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:17] "GET /api/logs/?_t=1738848497280 HTTP/1.1" 200 -
+2025-02-06 13:28:22,398 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:22] "OPTIONS /api/menus/?_t=1738848502390 HTTP/1.1" 200 -
+2025-02-06 13:28:22,714 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:22] "GET /api/menus/?_t=1738848502390 HTTP/1.1" 200 -
+2025-02-06 13:28:23,026 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:23] "OPTIONS /api/menus/sections?_t=1738848502719 HTTP/1.1" 200 -
+2025-02-06 13:28:23,050 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:23] "GET /api/menus/sections?_t=1738848502719 HTTP/1.1" 200 -
+2025-02-06 13:28:23,291 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:23] "OPTIONS /api/client-ip?_t=1738848503053 HTTP/1.1" 200 -
+2025-02-06 13:28:23,600 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:23] "GET /api/client-ip?_t=1738848503053 HTTP/1.1" 200 -
+2025-02-06 13:28:23,605 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:23] "OPTIONS /api/logs/ HTTP/1.1" 200 -
+2025-02-06 13:28:23,905 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:23] "[35m[1mPOST /api/logs/ HTTP/1.1[0m" 201 -
+2025-02-06 13:28:26,941 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:26] "OPTIONS /api/favorites/?_t=1738848506625 HTTP/1.1" 200 -
+2025-02-06 13:28:26,982 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:26] "GET /api/favorites/?_t=1738848506625 HTTP/1.1" 200 -
+2025-02-06 13:28:27,208 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:27] "OPTIONS /api/client-ip?_t=1738848506984 HTTP/1.1" 200 -
+2025-02-06 13:28:27,520 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:27] "GET /api/client-ip?_t=1738848506984 HTTP/1.1" 200 -
+2025-02-06 13:28:27,837 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:27] "[35m[1mPOST /api/logs/ HTTP/1.1[0m" 201 -
+2025-02-06 13:28:28,414 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:28] "OPTIONS /api/stores/?_t=1738848508403 HTTP/1.1" 200 -
+2025-02-06 13:28:28,561 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:28] "GET /api/stores/?_t=1738848508403 HTTP/1.1" 200 -
+2025-02-06 13:28:28,925 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:28] "OPTIONS /api/client-ip?_t=1738848508610 HTTP/1.1" 200 -
+2025-02-06 13:28:29,242 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:29] "GET /api/client-ip?_t=1738848508610 HTTP/1.1" 200 -
+2025-02-06 13:28:29,250 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:29] "OPTIONS /api/logs/ HTTP/1.1" 200 -
+2025-02-06 13:28:29,542 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:29] "[35m[1mPOST /api/logs/ HTTP/1.1[0m" 201 -
+2025-02-06 13:28:33,226 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:33] "OPTIONS /api/ratings/?_t=1738848512910 HTTP/1.1" 200 -
+2025-02-06 13:28:33,897 - INFO - 127.0.0.1 - - [06/Feb/2025 13:28:33] "GET /api/ratings/?_t=1738848512910 HTTP/1.1" 200 -
+2025-02-06 13:29:07,521 - INFO - 127.0.0.1 - - [06/Feb/2025 13:29:07] "OPTIONS /api/menus/?_t=1738848547518 HTTP/1.1" 200 -
+2025-02-06 13:29:07,834 - INFO - 127.0.0.1 - - [06/Feb/2025 13:29:07] "OPTIONS /api/users/verify?_t=1738848547518 HTTP/1.1" 200 -
+2025-02-06 13:29:07,836 - INFO - 127.0.0.1 - - [06/Feb/2025 13:29:07] "OPTIONS /api/users/14?_t=1738848547518 HTTP/1.1" 200 -
+2025-02-06 13:29:07,839 - INFO - 127.0.0.1 - - [06/Feb/2025 13:29:07] "OPTIONS /api/users/verify?_t=1738848547518 HTTP/1.1" 200 -
+2025-02-06 13:29:07,846 - INFO - 127.0.0.1 - - [06/Feb/2025 13:29:07] "GET /api/menus/?_t=1738848547518 HTTP/1.1" 200 -
+2025-02-06 13:29:08,102 - INFO - 127.0.0.1 - - [06/Feb/2025 13:29:08] "GET /api/users/verify?_t=1738848547518 HTTP/1.1" 200 -
+2025-02-06 13:29:08,150 - INFO - 127.0.0.1 - - [06/Feb/2025 13:29:08] "GET /api/users/verify?_t=1738848547518 HTTP/1.1" 200 -
+2025-02-06 13:29:08,152 - INFO - 127.0.0.1 - - [06/Feb/2025 13:29:08] "GET /api/users/14?_t=1738848547518 HTTP/1.1" 200 -
+2025-02-06 13:29:08,447 - INFO - 127.0.0.1 - - [06/Feb/2025 13:29:08] "GET /api/users/avatar/14_20250205_163817_deafault.png HTTP/1.1" 200 -
+2025-02-06 13:29:08,463 - INFO - 127.0.0.1 - - [06/Feb/2025 13:29:08] "OPTIONS /api/users/14?_t=1738848548152 HTTP/1.1" 200 -
+2025-02-06 13:29:08,469 - INFO - 127.0.0.1 - - [06/Feb/2025 13:29:08] "GET /api/users/14?_t=1738848548152 HTTP/1.1" 200 -
+2025-02-06 13:29:24,110 - INFO - 127.0.0.1 - - [06/Feb/2025 13:29:24] "GET /api/users/ HTTP/1.1" 200 -
+2025-02-06 13:30:05,971 - INFO - 127.0.0.1 - - [06/Feb/2025 13:30:05] "OPTIONS /api/init HTTP/1.1" 200 -
+2025-02-06 13:30:05,976 - INFO - 127.0.0.1 - - [06/Feb/2025 13:30:05] "POST /api/init HTTP/1.1" 200 -
+2025-02-06 13:30:06,287 - INFO - 127.0.0.1 - - [06/Feb/2025 13:30:06] "OPTIONS /api/status?_t=1738848605984 HTTP/1.1" 200 -
+2025-02-06 13:30:06,790 - INFO - 127.0.0.1 - - [06/Feb/2025 13:30:06] "GET /api/status?_t=1738848605984 HTTP/1.1" 200 -
+2025-02-06 13:31:06,122 - INFO - 127.0.0.1 - - [06/Feb/2025 13:31:06] "OPTIONS /api/remote/add HTTP/1.1" 200 -
+2025-02-06 13:31:06,291 - INFO - 127.0.0.1 - - [06/Feb/2025 13:31:06] "POST /api/remote/add HTTP/1.1" 200 -
+2025-02-06 13:31:06,606 - INFO - 127.0.0.1 - - [06/Feb/2025 13:31:06] "OPTIONS /api/status?_t=1738848666297 HTTP/1.1" 200 -
+2025-02-06 13:31:07,022 - INFO - 127.0.0.1 - - [06/Feb/2025 13:31:07] "GET /api/status?_t=1738848666297 HTTP/1.1" 200 -
+2025-02-06 13:31:07,030 - INFO - 127.0.0.1 - - [06/Feb/2025 13:31:07] "OPTIONS /api/commits?_t=1738848667029 HTTP/1.1" 200 -
+2025-02-06 13:31:07,240 - INFO - 127.0.0.1 - - [06/Feb/2025 13:31:07] "GET /api/commits?_t=1738848667029 HTTP/1.1" 200 -
