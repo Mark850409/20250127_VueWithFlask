@@ -11,6 +11,11 @@
         <Features />
       </div>
 
+      <!-- 熱門飲料推薦區塊 - 只在登入時顯示 -->
+      <div id="recommend" v-if="isLoggedIn">
+        <Recommendations />
+      </div>
+
       <div id="learning">
         <div class="py-20 bg-white">
           <div class="container mx-auto px-4">
@@ -101,15 +106,12 @@
         <Pricing />
       </div>
 
-      <div id="recommend">
-        <Recommendations />
-      </div>
-
     </div>
   </div>
 </template>
 
 <script>
+import { ref, onMounted } from 'vue'
 import Navbar from '../common/Navbar.vue'
 import Banner from './Banner.vue'
 import Recommendations from './Recommendations.vue'
@@ -117,7 +119,6 @@ import Footer from '../common/Footer.vue'
 import Features from './Features.vue'
 import Learning from './Learning.vue'
 import Pricing from './Pricing.vue'
-
 
 export default {
   components: {
@@ -128,6 +129,25 @@ export default {
     Features,
     Learning,
     Pricing
+  },
+  setup() {
+    const isLoggedIn = ref(false)
+
+    // 檢查登入狀態
+    const checkLoginStatus = () => {
+      const token = localStorage.getItem('token')
+      isLoggedIn.value = !!token
+    }
+
+    onMounted(() => {
+      checkLoginStatus()
+      // 監聽 localStorage 變化
+      window.addEventListener('storage', checkLoginStatus)
+    })
+
+    return {
+      isLoggedIn
+    }
   }
 }
 </script> 
