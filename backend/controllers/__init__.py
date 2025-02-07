@@ -17,9 +17,11 @@ from controllers.googlemaps_controller import googlemaps_bp
 from controllers.system_controller import system_bp
 from controllers.googlemaps_info_controller import googlemaps_info_bp
 from controllers.dashboard_controller import dashboard_bp
+from controllers.recommend_controller import recommend_bp
 __all__ = [
     'user_bp',
     'git_bp',
+
     'log_bp',
     'menu_bp',
     'store_bp',
@@ -34,5 +36,6 @@ __all__ = [
     'googlemaps_bp',
     'system_bp',
     'googlemaps_info_bp',
-    'dashboard_bp'
+    'dashboard_bp',
+    'recommend_bp'
 ] 

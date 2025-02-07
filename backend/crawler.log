@@ -2064,3 +2064,556 @@ WHERE date_format(users.register_time + INTERVAL 8 HOUR, %(date_format_5)s) = %(
 2025-02-07 03:13:10,700 - INFO - 127.0.0.1 - - [07/Feb/2025 03:13:10] "GET /api/ratings/?_t=1738897989755 HTTP/1.1" 200 -
 2025-02-07 03:22:01,215 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\Collaborative_filtering.py', reloading
 2025-02-07 03:22:01,824 - INFO -  * Restarting with stat
+2025-02-07 09:45:16,410 - INFO - API queries_quota: 60
+2025-02-07 09:45:17,686 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-07 09:45:17,686 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-07 09:45:17,688 - INFO -  * Restarting with stat
+2025-02-07 09:45:20,771 - INFO - API queries_quota: 60
+2025-02-07 09:45:20,777 - WARNING -  * Debugger is active!
+2025-02-07 09:45:20,779 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 09:45:20,848 - INFO - 127.0.0.1 - - [07/Feb/2025 09:45:20] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 09:45:21,248 - INFO - 127.0.0.1 - - [07/Feb/2025 09:45:21] "GET /openapi/static/css/swagger-ui.css HTTP/1.1" 200 -
+2025-02-07 09:45:21,811 - INFO - 127.0.0.1 - - [07/Feb/2025 09:45:21] "GET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1" 200 -
+2025-02-07 09:45:23,326 - INFO - 127.0.0.1 - - [07/Feb/2025 09:45:23] "GET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1" 200 -
+2025-02-07 09:45:23,854 - INFO - 127.0.0.1 - - [07/Feb/2025 09:45:23] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 09:45:23,857 - INFO - 127.0.0.1 - - [07/Feb/2025 09:45:23] "GET /openapi/static/images/swagger.svg HTTP/1.1" 200 -
+2025-02-07 09:45:31,975 - INFO - 127.0.0.1 - - [07/Feb/2025 09:45:31] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 09:47:19,404 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 09:47:19,705 - INFO -  * Restarting with stat
+2025-02-07 09:47:22,739 - INFO - API queries_quota: 60
+2025-02-07 09:47:22,745 - WARNING -  * Debugger is active!
+2025-02-07 09:47:22,747 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 09:47:35,030 - INFO - 127.0.0.1 - - [07/Feb/2025 09:47:35] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 09:47:35,067 - INFO - 127.0.0.1 - - [07/Feb/2025 09:47:35] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 09:47:35,268 - INFO - 127.0.0.1 - - [07/Feb/2025 09:47:35] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 09:47:35,343 - INFO - 127.0.0.1 - - [07/Feb/2025 09:47:35] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 09:47:35,818 - INFO - 127.0.0.1 - - [07/Feb/2025 09:47:35] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 09:47:35,820 - INFO - 127.0.0.1 - - [07/Feb/2025 09:47:35] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 09:47:41,214 - INFO - 127.0.0.1 - - [07/Feb/2025 09:47:41] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 09:49:11,281 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 09:49:11,639 - INFO -  * Restarting with stat
+2025-02-07 09:49:14,813 - INFO - API queries_quota: 60
+2025-02-07 09:49:14,818 - WARNING -  * Debugger is active!
+2025-02-07 09:49:14,821 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 09:49:14,889 - INFO - 127.0.0.1 - - [07/Feb/2025 09:49:14] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 09:49:14,939 - INFO - 127.0.0.1 - - [07/Feb/2025 09:49:14] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 09:49:14,939 - INFO - 127.0.0.1 - - [07/Feb/2025 09:49:14] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 09:49:15,204 - INFO - 127.0.0.1 - - [07/Feb/2025 09:49:15] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 09:49:15,669 - INFO - 127.0.0.1 - - [07/Feb/2025 09:49:15] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 09:49:15,671 - INFO - 127.0.0.1 - - [07/Feb/2025 09:49:15] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 09:50:28,686 - INFO - API queries_quota: 60
+2025-02-07 09:50:29,969 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-07 09:50:29,969 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-07 09:50:29,971 - INFO -  * Restarting with stat
+2025-02-07 09:50:32,851 - INFO - API queries_quota: 60
+2025-02-07 09:50:32,857 - WARNING -  * Debugger is active!
+2025-02-07 09:50:32,859 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 09:50:35,633 - INFO - 127.0.0.1 - - [07/Feb/2025 09:50:35] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 09:50:35,666 - INFO - 127.0.0.1 - - [07/Feb/2025 09:50:35] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 09:50:35,897 - INFO - 127.0.0.1 - - [07/Feb/2025 09:50:35] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 09:50:35,960 - INFO - 127.0.0.1 - - [07/Feb/2025 09:50:35] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 09:50:36,436 - INFO - 127.0.0.1 - - [07/Feb/2025 09:50:36] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 09:50:36,438 - INFO - 127.0.0.1 - - [07/Feb/2025 09:50:36] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 09:51:56,956 - INFO - API queries_quota: 60
+2025-02-07 09:51:58,225 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-07 09:51:58,225 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-07 09:51:58,226 - INFO -  * Restarting with stat
+2025-02-07 09:52:01,382 - INFO - API queries_quota: 60
+2025-02-07 09:52:01,388 - WARNING -  * Debugger is active!
+2025-02-07 09:52:01,390 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 09:52:01,460 - INFO - 127.0.0.1 - - [07/Feb/2025 09:52:01] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 09:52:01,510 - INFO - 127.0.0.1 - - [07/Feb/2025 09:52:01] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 09:52:01,510 - INFO - 127.0.0.1 - - [07/Feb/2025 09:52:01] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 09:52:01,789 - INFO - 127.0.0.1 - - [07/Feb/2025 09:52:01] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 09:52:02,260 - INFO - 127.0.0.1 - - [07/Feb/2025 09:52:02] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 09:52:02,261 - INFO - 127.0.0.1 - - [07/Feb/2025 09:52:02] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 09:52:06,528 - INFO - 127.0.0.1 - - [07/Feb/2025 09:52:06] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 09:52:29,169 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 09:52:29,444 - INFO -  * Restarting with stat
+2025-02-07 09:52:32,670 - INFO - API queries_quota: 60
+2025-02-07 09:52:32,675 - WARNING -  * Debugger is active!
+2025-02-07 09:52:32,678 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 09:53:21,660 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 09:53:21,964 - INFO -  * Restarting with stat
+2025-02-07 09:53:25,208 - INFO - API queries_quota: 60
+2025-02-07 09:53:25,213 - WARNING -  * Debugger is active!
+2025-02-07 09:53:25,215 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 09:53:26,044 - INFO - 127.0.0.1 - - [07/Feb/2025 09:53:26] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 09:53:26,079 - INFO - 127.0.0.1 - - [07/Feb/2025 09:53:26] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 09:53:26,305 - INFO - 127.0.0.1 - - [07/Feb/2025 09:53:26] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 09:53:26,369 - INFO - 127.0.0.1 - - [07/Feb/2025 09:53:26] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 09:53:26,851 - INFO - 127.0.0.1 - - [07/Feb/2025 09:53:26] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 09:53:26,853 - INFO - 127.0.0.1 - - [07/Feb/2025 09:53:26] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 09:53:32,581 - INFO - 127.0.0.1 - - [07/Feb/2025 09:53:32] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 09:55:44,598 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 09:55:44,907 - INFO -  * Restarting with stat
+2025-02-07 09:55:48,210 - INFO - API queries_quota: 60
+2025-02-07 09:55:48,214 - WARNING -  * Debugger is active!
+2025-02-07 09:55:48,217 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 09:55:48,290 - INFO - 127.0.0.1 - - [07/Feb/2025 09:55:48] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 09:55:48,341 - INFO - 127.0.0.1 - - [07/Feb/2025 09:55:48] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 09:55:48,341 - INFO - 127.0.0.1 - - [07/Feb/2025 09:55:48] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 09:55:48,616 - INFO - 127.0.0.1 - - [07/Feb/2025 09:55:48] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 09:55:49,103 - INFO - 127.0.0.1 - - [07/Feb/2025 09:55:49] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 09:55:49,104 - INFO - 127.0.0.1 - - [07/Feb/2025 09:55:49] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 09:57:21,246 - INFO - API queries_quota: 60
+2025-02-07 09:57:22,508 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-07 09:57:22,508 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-07 09:57:22,509 - INFO -  * Restarting with stat
+2025-02-07 09:57:25,569 - INFO - API queries_quota: 60
+2025-02-07 09:57:25,574 - WARNING -  * Debugger is active!
+2025-02-07 09:57:25,576 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 09:57:25,647 - INFO - 127.0.0.1 - - [07/Feb/2025 09:57:25] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 09:57:25,693 - INFO - 127.0.0.1 - - [07/Feb/2025 09:57:25] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 09:57:25,694 - INFO - 127.0.0.1 - - [07/Feb/2025 09:57:25] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 09:57:25,966 - INFO - 127.0.0.1 - - [07/Feb/2025 09:57:25] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 09:57:26,439 - INFO - 127.0.0.1 - - [07/Feb/2025 09:57:26] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 09:57:26,440 - INFO - 127.0.0.1 - - [07/Feb/2025 09:57:26] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 09:57:31,384 - INFO - 127.0.0.1 - - [07/Feb/2025 09:57:31] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 09:58:32,737 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 09:58:33,048 - INFO -  * Restarting with stat
+2025-02-07 09:58:36,453 - INFO - API queries_quota: 60
+2025-02-07 09:58:36,458 - WARNING -  * Debugger is active!
+2025-02-07 09:58:36,461 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 09:58:36,532 - INFO - 127.0.0.1 - - [07/Feb/2025 09:58:36] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 09:58:36,580 - INFO - 127.0.0.1 - - [07/Feb/2025 09:58:36] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 09:58:36,581 - INFO - 127.0.0.1 - - [07/Feb/2025 09:58:36] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 09:58:36,848 - INFO - 127.0.0.1 - - [07/Feb/2025 09:58:36] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 09:58:37,325 - INFO - 127.0.0.1 - - [07/Feb/2025 09:58:37] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 09:58:37,327 - INFO - 127.0.0.1 - - [07/Feb/2025 09:58:37] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 09:58:41,810 - INFO - 127.0.0.1 - - [07/Feb/2025 09:58:41] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 09:59:38,316 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 09:59:38,631 - INFO -  * Restarting with stat
+2025-02-07 09:59:41,954 - INFO - API queries_quota: 60
+2025-02-07 09:59:41,959 - WARNING -  * Debugger is active!
+2025-02-07 09:59:41,961 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 09:59:42,032 - INFO - 127.0.0.1 - - [07/Feb/2025 09:59:42] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 09:59:42,079 - INFO - 127.0.0.1 - - [07/Feb/2025 09:59:42] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 09:59:42,080 - INFO - 127.0.0.1 - - [07/Feb/2025 09:59:42] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 09:59:42,365 - INFO - 127.0.0.1 - - [07/Feb/2025 09:59:42] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 09:59:42,834 - INFO - 127.0.0.1 - - [07/Feb/2025 09:59:42] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 09:59:42,836 - INFO - 127.0.0.1 - - [07/Feb/2025 09:59:42] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 09:59:47,294 - INFO - 127.0.0.1 - - [07/Feb/2025 09:59:47] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:01:22,099 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:01:22,401 - INFO -  * Restarting with stat
+2025-02-07 10:01:25,705 - INFO - API queries_quota: 60
+2025-02-07 10:01:25,710 - WARNING -  * Debugger is active!
+2025-02-07 10:01:25,713 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:01:25,779 - INFO - 127.0.0.1 - - [07/Feb/2025 10:01:25] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:01:25,827 - INFO - 127.0.0.1 - - [07/Feb/2025 10:01:25] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:01:25,828 - INFO - 127.0.0.1 - - [07/Feb/2025 10:01:25] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:01:26,111 - INFO - 127.0.0.1 - - [07/Feb/2025 10:01:26] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:01:26,582 - INFO - 127.0.0.1 - - [07/Feb/2025 10:01:26] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:01:26,584 - INFO - 127.0.0.1 - - [07/Feb/2025 10:01:26] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:01:30,872 - INFO - 127.0.0.1 - - [07/Feb/2025 10:01:30] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:03:13,136 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:03:13,455 - INFO -  * Restarting with stat
+2025-02-07 10:03:16,763 - INFO - API queries_quota: 60
+2025-02-07 10:03:16,768 - WARNING -  * Debugger is active!
+2025-02-07 10:03:16,770 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:03:16,840 - INFO - 127.0.0.1 - - [07/Feb/2025 10:03:16] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:03:16,889 - INFO - 127.0.0.1 - - [07/Feb/2025 10:03:16] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:03:16,890 - INFO - 127.0.0.1 - - [07/Feb/2025 10:03:16] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:03:17,162 - INFO - 127.0.0.1 - - [07/Feb/2025 10:03:17] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:03:17,637 - INFO - 127.0.0.1 - - [07/Feb/2025 10:03:17] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:03:17,639 - INFO - 127.0.0.1 - - [07/Feb/2025 10:03:17] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:03:22,281 - INFO - 127.0.0.1 - - [07/Feb/2025 10:03:22] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:05:21,472 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:05:21,808 - INFO -  * Restarting with stat
+2025-02-07 10:05:24,877 - INFO - API queries_quota: 60
+2025-02-07 10:05:24,882 - WARNING -  * Debugger is active!
+2025-02-07 10:05:24,884 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:05:42,835 - INFO - 127.0.0.1 - - [07/Feb/2025 10:05:42] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:05:42,866 - INFO - 127.0.0.1 - - [07/Feb/2025 10:05:42] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:05:43,101 - INFO - 127.0.0.1 - - [07/Feb/2025 10:05:43] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:05:43,148 - INFO - 127.0.0.1 - - [07/Feb/2025 10:05:43] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:05:43,624 - INFO - 127.0.0.1 - - [07/Feb/2025 10:05:43] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:05:43,625 - INFO - 127.0.0.1 - - [07/Feb/2025 10:05:43] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:05:51,190 - INFO - 127.0.0.1 - - [07/Feb/2025 10:05:51] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:06:54,936 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:06:55,237 - INFO -  * Restarting with stat
+2025-02-07 10:06:58,392 - INFO - API queries_quota: 60
+2025-02-07 10:06:58,398 - WARNING -  * Debugger is active!
+2025-02-07 10:06:58,401 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:06:58,470 - INFO - 127.0.0.1 - - [07/Feb/2025 10:06:58] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:06:58,522 - INFO - 127.0.0.1 - - [07/Feb/2025 10:06:58] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:06:58,522 - INFO - 127.0.0.1 - - [07/Feb/2025 10:06:58] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:06:58,801 - INFO - 127.0.0.1 - - [07/Feb/2025 10:06:58] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:06:59,275 - INFO - 127.0.0.1 - - [07/Feb/2025 10:06:59] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:06:59,277 - INFO - 127.0.0.1 - - [07/Feb/2025 10:06:59] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:07:06,431 - INFO - 127.0.0.1 - - [07/Feb/2025 10:07:06] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:07:54,316 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:07:54,626 - INFO -  * Restarting with stat
+2025-02-07 10:07:57,752 - INFO - API queries_quota: 60
+2025-02-07 10:07:57,757 - WARNING -  * Debugger is active!
+2025-02-07 10:07:57,759 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:08:55,316 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:08:55,623 - INFO -  * Restarting with stat
+2025-02-07 10:08:58,654 - INFO - API queries_quota: 60
+2025-02-07 10:08:58,658 - WARNING -  * Debugger is active!
+2025-02-07 10:08:58,661 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:09:04,711 - INFO - 127.0.0.1 - - [07/Feb/2025 10:09:04] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:09:04,749 - INFO - 127.0.0.1 - - [07/Feb/2025 10:09:04] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:09:04,973 - INFO - 127.0.0.1 - - [07/Feb/2025 10:09:04] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:09:05,035 - INFO - 127.0.0.1 - - [07/Feb/2025 10:09:05] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:09:05,511 - INFO - 127.0.0.1 - - [07/Feb/2025 10:09:05] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:09:05,513 - INFO - 127.0.0.1 - - [07/Feb/2025 10:09:05] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:10:36,075 - INFO - API queries_quota: 60
+2025-02-07 10:10:37,332 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-07 10:10:37,333 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-07 10:10:37,334 - INFO -  * Restarting with stat
+2025-02-07 10:10:40,367 - INFO - API queries_quota: 60
+2025-02-07 10:10:40,374 - WARNING -  * Debugger is active!
+2025-02-07 10:10:40,377 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:10:40,448 - INFO - 127.0.0.1 - - [07/Feb/2025 10:10:40] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:10:40,835 - INFO - 127.0.0.1 - - [07/Feb/2025 10:10:40] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:10:40,836 - INFO - 127.0.0.1 - - [07/Feb/2025 10:10:40] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:10:40,837 - INFO - 127.0.0.1 - - [07/Feb/2025 10:10:40] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:10:41,551 - INFO - 127.0.0.1 - - [07/Feb/2025 10:10:41] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:10:41,888 - INFO - 127.0.0.1 - - [07/Feb/2025 10:10:41] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:10:46,029 - INFO - 127.0.0.1 - - [07/Feb/2025 10:10:46] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:12:05,609 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:12:05,903 - INFO -  * Restarting with stat
+2025-02-07 10:12:08,992 - INFO - API queries_quota: 60
+2025-02-07 10:12:08,998 - WARNING -  * Debugger is active!
+2025-02-07 10:12:09,000 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:13:14,029 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:13:14,380 - INFO -  * Restarting with stat
+2025-02-07 10:13:17,634 - INFO - API queries_quota: 60
+2025-02-07 10:13:17,640 - WARNING -  * Debugger is active!
+2025-02-07 10:13:17,642 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:14:14,060 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:14:14,377 - INFO -  * Restarting with stat
+2025-02-07 10:14:17,612 - INFO - API queries_quota: 60
+2025-02-07 10:14:17,618 - WARNING -  * Debugger is active!
+2025-02-07 10:14:17,621 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:14:17,687 - INFO - 127.0.0.1 - - [07/Feb/2025 10:14:17] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:14:17,738 - INFO - 127.0.0.1 - - [07/Feb/2025 10:14:17] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:14:17,739 - INFO - 127.0.0.1 - - [07/Feb/2025 10:14:17] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:14:18,008 - INFO - 127.0.0.1 - - [07/Feb/2025 10:14:18] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:14:18,513 - INFO - 127.0.0.1 - - [07/Feb/2025 10:14:18] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:14:18,516 - INFO - 127.0.0.1 - - [07/Feb/2025 10:14:18] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:14:23,692 - INFO - 127.0.0.1 - - [07/Feb/2025 10:14:23] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:16:05,097 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:16:05,382 - INFO -  * Restarting with stat
+2025-02-07 10:16:08,608 - INFO - API queries_quota: 60
+2025-02-07 10:16:08,613 - WARNING -  * Debugger is active!
+2025-02-07 10:16:08,616 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:16:08,684 - INFO - 127.0.0.1 - - [07/Feb/2025 10:16:08] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:16:08,737 - INFO - 127.0.0.1 - - [07/Feb/2025 10:16:08] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:16:08,738 - INFO - 127.0.0.1 - - [07/Feb/2025 10:16:08] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:16:09,004 - INFO - 127.0.0.1 - - [07/Feb/2025 10:16:09] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:16:09,481 - INFO - 127.0.0.1 - - [07/Feb/2025 10:16:09] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:16:09,483 - INFO - 127.0.0.1 - - [07/Feb/2025 10:16:09] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:16:13,841 - INFO - 127.0.0.1 - - [07/Feb/2025 10:16:13] "[31m[1mGET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1[0m" 400 -
+2025-02-07 10:17:11,482 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:17:11,748 - INFO -  * Restarting with stat
+2025-02-07 10:17:14,873 - INFO - API queries_quota: 60
+2025-02-07 10:17:14,878 - WARNING -  * Debugger is active!
+2025-02-07 10:17:14,881 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:17:15,606 - INFO - 127.0.0.1 - - [07/Feb/2025 10:17:15] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:17:15,639 - INFO - 127.0.0.1 - - [07/Feb/2025 10:17:15] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:17:15,869 - INFO - 127.0.0.1 - - [07/Feb/2025 10:17:15] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:17:15,929 - INFO - 127.0.0.1 - - [07/Feb/2025 10:17:15] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:17:16,403 - INFO - 127.0.0.1 - - [07/Feb/2025 10:17:16] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:17:16,405 - INFO - 127.0.0.1 - - [07/Feb/2025 10:17:16] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:17:20,664 - INFO - 127.0.0.1 - - [07/Feb/2025 10:17:20] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:20:02,907 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:20:03,202 - INFO -  * Restarting with stat
+2025-02-07 10:20:06,322 - INFO - API queries_quota: 60
+2025-02-07 10:20:06,328 - WARNING -  * Debugger is active!
+2025-02-07 10:20:06,331 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:20:08,437 - INFO - 127.0.0.1 - - [07/Feb/2025 10:20:08] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:20:08,471 - INFO - 127.0.0.1 - - [07/Feb/2025 10:20:08] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:20:08,699 - INFO - 127.0.0.1 - - [07/Feb/2025 10:20:08] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:20:08,760 - INFO - 127.0.0.1 - - [07/Feb/2025 10:20:08] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:20:09,235 - INFO - 127.0.0.1 - - [07/Feb/2025 10:20:09] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:20:09,237 - INFO - 127.0.0.1 - - [07/Feb/2025 10:20:09] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:20:48,919 - INFO - API queries_quota: 60
+2025-02-07 10:20:50,206 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-07 10:20:50,207 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-07 10:20:50,209 - INFO -  * Restarting with stat
+2025-02-07 10:20:53,177 - INFO - API queries_quota: 60
+2025-02-07 10:20:53,182 - WARNING -  * Debugger is active!
+2025-02-07 10:20:53,185 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:20:54,177 - INFO - 127.0.0.1 - - [07/Feb/2025 10:20:54] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:20:54,213 - INFO - 127.0.0.1 - - [07/Feb/2025 10:20:54] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:20:54,439 - INFO - 127.0.0.1 - - [07/Feb/2025 10:20:54] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:20:54,502 - INFO - 127.0.0.1 - - [07/Feb/2025 10:20:54] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:20:55,452 - INFO - 127.0.0.1 - - [07/Feb/2025 10:20:55] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:20:55,477 - INFO - 127.0.0.1 - - [07/Feb/2025 10:20:55] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:20:59,189 - INFO - 127.0.0.1 - - [07/Feb/2025 10:20:59] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:21:23,063 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:21:23,360 - INFO -  * Restarting with stat
+2025-02-07 10:21:26,406 - INFO - API queries_quota: 60
+2025-02-07 10:21:26,411 - WARNING -  * Debugger is active!
+2025-02-07 10:21:26,414 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:21:31,836 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:21:32,141 - INFO -  * Restarting with stat
+2025-02-07 10:21:35,357 - INFO - API queries_quota: 60
+2025-02-07 10:21:35,362 - WARNING -  * Debugger is active!
+2025-02-07 10:21:35,365 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:21:35,437 - INFO - 127.0.0.1 - - [07/Feb/2025 10:21:35] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:21:35,488 - INFO - 127.0.0.1 - - [07/Feb/2025 10:21:35] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:21:35,489 - INFO - 127.0.0.1 - - [07/Feb/2025 10:21:35] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:21:35,752 - INFO - 127.0.0.1 - - [07/Feb/2025 10:21:35] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:21:36,226 - INFO - 127.0.0.1 - - [07/Feb/2025 10:21:36] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:21:36,228 - INFO - 127.0.0.1 - - [07/Feb/2025 10:21:36] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:21:55,801 - INFO - API queries_quota: 60
+2025-02-07 10:21:57,071 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-07 10:21:57,071 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-07 10:21:57,073 - INFO -  * Restarting with stat
+2025-02-07 10:22:00,037 - INFO - API queries_quota: 60
+2025-02-07 10:22:00,044 - WARNING -  * Debugger is active!
+2025-02-07 10:22:00,048 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:22:00,119 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:00] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:22:00,168 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:00] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:22:00,169 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:00] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:22:00,441 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:00] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:22:00,902 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:00] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:22:00,904 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:00] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:22:04,656 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:04] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:22:16,882 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:22:17,408 - INFO -  * Restarting with stat
+2025-02-07 10:22:20,522 - INFO - API queries_quota: 60
+2025-02-07 10:22:20,528 - WARNING -  * Debugger is active!
+2025-02-07 10:22:20,530 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:22:20,599 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:20] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:22:20,647 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:20] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:22:20,647 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:20] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:22:20,917 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:20] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:22:21,377 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:21] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:22:21,379 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:21] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:22:25,384 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:25] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:22:43,334 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:22:43,619 - INFO -  * Restarting with stat
+2025-02-07 10:22:46,811 - INFO - API queries_quota: 60
+2025-02-07 10:22:46,817 - WARNING -  * Debugger is active!
+2025-02-07 10:22:46,820 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:22:46,892 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:46] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:22:46,939 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:46] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:22:46,940 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:46] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:22:47,213 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:47] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:22:47,685 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:47] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:22:47,687 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:47] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:22:52,066 - INFO - 127.0.0.1 - - [07/Feb/2025 10:22:52] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:23:05,758 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:23:06,044 - INFO -  * Restarting with stat
+2025-02-07 10:23:08,981 - INFO - API queries_quota: 60
+2025-02-07 10:23:08,986 - WARNING -  * Debugger is active!
+2025-02-07 10:23:08,989 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:24:32,006 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:24:32,310 - INFO -  * Restarting with stat
+2025-02-07 10:24:35,437 - INFO - API queries_quota: 60
+2025-02-07 10:24:35,442 - WARNING -  * Debugger is active!
+2025-02-07 10:24:35,444 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:24:35,515 - INFO - 127.0.0.1 - - [07/Feb/2025 10:24:35] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:24:35,562 - INFO - 127.0.0.1 - - [07/Feb/2025 10:24:35] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:24:35,563 - INFO - 127.0.0.1 - - [07/Feb/2025 10:24:35] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:24:35,841 - INFO - 127.0.0.1 - - [07/Feb/2025 10:24:35] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:24:36,316 - INFO - 127.0.0.1 - - [07/Feb/2025 10:24:36] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:24:36,318 - INFO - 127.0.0.1 - - [07/Feb/2025 10:24:36] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:24:41,607 - INFO - 127.0.0.1 - - [07/Feb/2025 10:24:41] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:25:34,455 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:25:34,761 - INFO -  * Restarting with stat
+2025-02-07 10:25:38,012 - INFO - API queries_quota: 60
+2025-02-07 10:25:38,017 - WARNING -  * Debugger is active!
+2025-02-07 10:25:38,020 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:25:38,089 - INFO - 127.0.0.1 - - [07/Feb/2025 10:25:38] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:25:38,135 - INFO - 127.0.0.1 - - [07/Feb/2025 10:25:38] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:25:38,136 - INFO - 127.0.0.1 - - [07/Feb/2025 10:25:38] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:25:38,407 - INFO - 127.0.0.1 - - [07/Feb/2025 10:25:38] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:25:38,882 - INFO - 127.0.0.1 - - [07/Feb/2025 10:25:38] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:25:38,883 - INFO - 127.0.0.1 - - [07/Feb/2025 10:25:38] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:25:44,699 - INFO - 127.0.0.1 - - [07/Feb/2025 10:25:44] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:26:46,234 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:26:46,549 - INFO -  * Restarting with stat
+2025-02-07 10:26:49,739 - INFO - API queries_quota: 60
+2025-02-07 10:26:49,744 - WARNING -  * Debugger is active!
+2025-02-07 10:26:49,747 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:26:49,817 - INFO - 127.0.0.1 - - [07/Feb/2025 10:26:49] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:26:49,864 - INFO - 127.0.0.1 - - [07/Feb/2025 10:26:49] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:26:49,865 - INFO - 127.0.0.1 - - [07/Feb/2025 10:26:49] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:26:50,148 - INFO - 127.0.0.1 - - [07/Feb/2025 10:26:50] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:26:50,623 - INFO - 127.0.0.1 - - [07/Feb/2025 10:26:50] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:26:50,625 - INFO - 127.0.0.1 - - [07/Feb/2025 10:26:50] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:26:56,043 - INFO - 127.0.0.1 - - [07/Feb/2025 10:26:56] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:28:15,277 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:28:15,580 - INFO -  * Restarting with stat
+2025-02-07 10:28:18,733 - INFO - API queries_quota: 60
+2025-02-07 10:28:18,738 - WARNING -  * Debugger is active!
+2025-02-07 10:28:18,742 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:28:18,812 - INFO - 127.0.0.1 - - [07/Feb/2025 10:28:18] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:28:18,858 - INFO - 127.0.0.1 - - [07/Feb/2025 10:28:18] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:28:18,859 - INFO - 127.0.0.1 - - [07/Feb/2025 10:28:18] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:28:19,133 - INFO - 127.0.0.1 - - [07/Feb/2025 10:28:19] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:28:19,601 - INFO - 127.0.0.1 - - [07/Feb/2025 10:28:19] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:28:19,603 - INFO - 127.0.0.1 - - [07/Feb/2025 10:28:19] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:28:23,330 - INFO - 127.0.0.1 - - [07/Feb/2025 10:28:23] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:29:06,474 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:29:06,765 - INFO -  * Restarting with stat
+2025-02-07 10:29:09,874 - INFO - API queries_quota: 60
+2025-02-07 10:29:09,880 - WARNING -  * Debugger is active!
+2025-02-07 10:29:09,882 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:29:52,499 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:29:52,792 - INFO -  * Restarting with stat
+2025-02-07 10:29:56,025 - INFO - API queries_quota: 60
+2025-02-07 10:29:56,030 - WARNING -  * Debugger is active!
+2025-02-07 10:29:56,033 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:29:56,100 - INFO - 127.0.0.1 - - [07/Feb/2025 10:29:56] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:29:56,150 - INFO - 127.0.0.1 - - [07/Feb/2025 10:29:56] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:29:56,151 - INFO - 127.0.0.1 - - [07/Feb/2025 10:29:56] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:29:56,429 - INFO - 127.0.0.1 - - [07/Feb/2025 10:29:56] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:29:56,894 - INFO - 127.0.0.1 - - [07/Feb/2025 10:29:56] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:29:56,895 - INFO - 127.0.0.1 - - [07/Feb/2025 10:29:56] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:30:01,583 - INFO - 127.0.0.1 - - [07/Feb/2025 10:30:01] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:31:43,275 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:31:43,576 - INFO -  * Restarting with stat
+2025-02-07 10:31:46,758 - INFO - API queries_quota: 60
+2025-02-07 10:31:46,763 - WARNING -  * Debugger is active!
+2025-02-07 10:31:46,766 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:31:46,834 - INFO - 127.0.0.1 - - [07/Feb/2025 10:31:46] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:31:46,882 - INFO - 127.0.0.1 - - [07/Feb/2025 10:31:46] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:31:46,882 - INFO - 127.0.0.1 - - [07/Feb/2025 10:31:46] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:31:47,152 - INFO - 127.0.0.1 - - [07/Feb/2025 10:31:47] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:31:47,738 - INFO - 127.0.0.1 - - [07/Feb/2025 10:31:47] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:31:47,739 - INFO - 127.0.0.1 - - [07/Feb/2025 10:31:47] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:32:48,722 - INFO - API queries_quota: 60
+2025-02-07 10:32:49,996 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-07 10:32:49,996 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-07 10:32:49,998 - INFO -  * Restarting with stat
+2025-02-07 10:32:53,166 - INFO - API queries_quota: 60
+2025-02-07 10:32:53,172 - WARNING -  * Debugger is active!
+2025-02-07 10:32:53,174 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:32:53,244 - INFO - 127.0.0.1 - - [07/Feb/2025 10:32:53] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:32:53,290 - INFO - 127.0.0.1 - - [07/Feb/2025 10:32:53] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:32:53,290 - INFO - 127.0.0.1 - - [07/Feb/2025 10:32:53] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:32:53,569 - INFO - 127.0.0.1 - - [07/Feb/2025 10:32:53] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:32:54,044 - INFO - 127.0.0.1 - - [07/Feb/2025 10:32:54] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:32:54,045 - INFO - 127.0.0.1 - - [07/Feb/2025 10:32:54] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:33:00,381 - INFO - 127.0.0.1 - - [07/Feb/2025 10:33:00] "GET /api/recommend_data?user_id=1&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:33:18,101 - INFO - 127.0.0.1 - - [07/Feb/2025 10:33:18] "GET /api/recommend_data?user_id=2&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:33:28,215 - INFO - 127.0.0.1 - - [07/Feb/2025 10:33:28] "GET /api/recommend_data?user_id=5000&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:34:03,217 - INFO - 127.0.0.1 - - [07/Feb/2025 10:34:03] "GET /api/recommend_data?user_id=2350&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:34:08,622 - INFO - 127.0.0.1 - - [07/Feb/2025 10:34:08] "GET /api/recommend_data?user_id=2349&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:34:49,617 - INFO - 127.0.0.1 - - [07/Feb/2025 10:34:49] "GET /api/recommend_data?user_id=2000&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:34:54,029 - INFO - 127.0.0.1 - - [07/Feb/2025 10:34:54] "GET /api/recommend_data?user_id=1000&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:34:58,422 - INFO - 127.0.0.1 - - [07/Feb/2025 10:34:58] "GET /api/recommend_data?user_id=500&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:35:02,624 - INFO - 127.0.0.1 - - [07/Feb/2025 10:35:02] "GET /api/recommend_data?user_id=600&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:35:07,408 - INFO - 127.0.0.1 - - [07/Feb/2025 10:35:07] "GET /api/recommend_data?user_id=800&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:35:12,208 - INFO - 127.0.0.1 - - [07/Feb/2025 10:35:12] "GET /api/recommend_data?user_id=790&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:35:16,436 - INFO - 127.0.0.1 - - [07/Feb/2025 10:35:16] "GET /api/recommend_data?user_id=700&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:35:21,498 - INFO - 127.0.0.1 - - [07/Feb/2025 10:35:21] "GET /api/recommend_data?user_id=650&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:35:26,965 - INFO - 127.0.0.1 - - [07/Feb/2025 10:35:26] "GET /api/recommend_data?user_id=600&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:35:31,493 - INFO - 127.0.0.1 - - [07/Feb/2025 10:35:31] "GET /api/recommend_data?user_id=630&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:35:35,477 - INFO - 127.0.0.1 - - [07/Feb/2025 10:35:35] "GET /api/recommend_data?user_id=620&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:35:39,800 - INFO - 127.0.0.1 - - [07/Feb/2025 10:35:39] "GET /api/recommend_data?user_id=610&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:35:44,623 - INFO - 127.0.0.1 - - [07/Feb/2025 10:35:44] "GET /api/recommend_data?user_id=605&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:35:48,066 - INFO - 127.0.0.1 - - [07/Feb/2025 10:35:48] "GET /api/recommend_data?user_id=603&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:35:51,742 - INFO - 127.0.0.1 - - [07/Feb/2025 10:35:51] "GET /api/recommend_data?user_id=602&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:35:57,934 - INFO - 127.0.0.1 - - [07/Feb/2025 10:35:57] "GET /api/recommend_data?user_id=603&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:36:01,601 - INFO - 127.0.0.1 - - [07/Feb/2025 10:36:01] "GET /api/recommend_data?user_id=602&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:36:21,575 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:36:21,890 - INFO -  * Restarting with stat
+2025-02-07 10:36:25,093 - INFO - API queries_quota: 60
+2025-02-07 10:36:25,100 - WARNING -  * Debugger is active!
+2025-02-07 10:36:25,102 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:36:25,174 - INFO - 127.0.0.1 - - [07/Feb/2025 10:36:25] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:36:25,229 - INFO - 127.0.0.1 - - [07/Feb/2025 10:36:25] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:36:25,229 - INFO - 127.0.0.1 - - [07/Feb/2025 10:36:25] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:36:25,506 - INFO - 127.0.0.1 - - [07/Feb/2025 10:36:25] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:36:26,089 - INFO - 127.0.0.1 - - [07/Feb/2025 10:36:26] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:36:26,091 - INFO - 127.0.0.1 - - [07/Feb/2025 10:36:26] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:36:56,549 - INFO -  * Detected change in 'E:\\Project\\developer_project\\thesis\\20250203\\backend\\services\\recommend_service.py', reloading
+2025-02-07 10:36:56,917 - INFO -  * Restarting with stat
+2025-02-07 10:37:00,250 - INFO - API queries_quota: 60
+2025-02-07 10:37:00,257 - WARNING -  * Debugger is active!
+2025-02-07 10:37:00,259 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 10:37:00,329 - INFO - 127.0.0.1 - - [07/Feb/2025 10:37:00] "GET /openapi/swagger HTTP/1.1" 200 -
+2025-02-07 10:37:00,379 - INFO - 127.0.0.1 - - [07/Feb/2025 10:37:00] "[36mGET /openapi/static/css/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-02-07 10:37:00,379 - INFO - 127.0.0.1 - - [07/Feb/2025 10:37:00] "[36mGET /openapi/static/js/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-02-07 10:37:00,650 - INFO - 127.0.0.1 - - [07/Feb/2025 10:37:00] "[36mGET /openapi/static/js/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-02-07 10:37:01,135 - INFO - 127.0.0.1 - - [07/Feb/2025 10:37:01] "GET /openapi/openapi.json HTTP/1.1" 200 -
+2025-02-07 10:37:01,137 - INFO - 127.0.0.1 - - [07/Feb/2025 10:37:01] "[36mGET /openapi/static/images/swagger.svg HTTP/1.1[0m" 304 -
+2025-02-07 10:37:25,324 - INFO - 127.0.0.1 - - [07/Feb/2025 10:37:25] "GET /api/recommend_data?user_id=603&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:37:47,212 - INFO - 127.0.0.1 - - [07/Feb/2025 10:37:47] "GET /api/recommend_data?user_id=604&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:37:51,365 - INFO - 127.0.0.1 - - [07/Feb/2025 10:37:51] "GET /api/recommend_data?user_id=606&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:37:55,663 - INFO - 127.0.0.1 - - [07/Feb/2025 10:37:55] "GET /api/recommend_data?user_id=607&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:37:59,396 - INFO - 127.0.0.1 - - [07/Feb/2025 10:37:59] "GET /api/recommend_data?user_id=608&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:38:05,294 - INFO - 127.0.0.1 - - [07/Feb/2025 10:38:05] "GET /api/recommend_data?user_id=610&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:38:09,989 - INFO - 127.0.0.1 - - [07/Feb/2025 10:38:09] "GET /api/recommend_data?user_id=609&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:40:16,223 - INFO - 127.0.0.1 - - [07/Feb/2025 10:40:16] "GET /api/recommend_data?user_id=609&num_recommendations=5 HTTP/1.1" 200 -
+2025-02-07 10:40:21,374 - INFO - 127.0.0.1 - - [07/Feb/2025 10:40:21] "GET /api/recommend_data?user_id=609&num_recommendations=7 HTTP/1.1" 200 -
+2025-02-07 14:58:52,027 - INFO - API queries_quota: 60
+2025-02-07 14:58:53,303 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-07 14:58:53,303 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-07 14:58:53,304 - INFO -  * Restarting with stat
+2025-02-07 14:58:56,579 - INFO - API queries_quota: 60
+2025-02-07 14:58:56,584 - WARNING -  * Debugger is active!
+2025-02-07 14:58:56,588 - INFO -  * Debugger PIN: 100-311-296
+2025-02-07 14:58:56,793 - INFO - 127.0.0.1 - - [07/Feb/2025 14:58:56] "GET /api/users/avatar/14_20250206_161717_undraw_profile-pic_fatv.png HTTP/1.1" 200 -
+2025-02-07 14:58:58,845 - INFO - 127.0.0.1 - - [07/Feb/2025 14:58:58] "GET /api/users/avatar/14_20250206_161717_undraw_profile-pic_fatv.png HTTP/1.1" 200 -
+2025-02-07 14:59:03,430 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:03] "OPTIONS /api/menus/?_t=1738940343111 HTTP/1.1" 200 -
+2025-02-07 14:59:03,431 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:03] "OPTIONS /api/users/verify?_t=1738940343111 HTTP/1.1" 200 -
+2025-02-07 14:59:03,432 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:03] "OPTIONS /api/users/14?_t=1738940343111 HTTP/1.1" 200 -
+2025-02-07 14:59:03,433 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:03] "OPTIONS /api/dashboard/stats/?_t=1738940343111 HTTP/1.1" 200 -
+2025-02-07 14:59:03,435 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:03] "OPTIONS /api/users/verify?_t=1738940343111 HTTP/1.1" 200 -
+2025-02-07 14:59:03,751 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:03] "[31m[1mGET /api/users/verify?_t=1738940343111 HTTP/1.1[0m" 401 -
+2025-02-07 14:59:03,775 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:03] "[31m[1mGET /api/dashboard/stats/?_t=1738940343111 HTTP/1.1[0m" 401 -
+2025-02-07 14:59:03,780 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:03] "GET /api/users/14?_t=1738940343111 HTTP/1.1" 200 -
+2025-02-07 14:59:03,786 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:03] "GET /api/menus/?_t=1738940343111 HTTP/1.1" 200 -
+2025-02-07 14:59:04,015 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:04] "[31m[1mGET /api/users/verify?_t=1738940343111 HTTP/1.1[0m" 401 -
+2025-02-07 14:59:26,895 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:26] "OPTIONS /api/users/login HTTP/1.1" 200 -
+2025-02-07 14:59:27,114 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:27] "POST /api/users/login HTTP/1.1" 200 -
+2025-02-07 14:59:28,980 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:28] "OPTIONS /api/menus/?_t=1738940368665 HTTP/1.1" 200 -
+2025-02-07 14:59:28,981 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:28] "OPTIONS /api/users/14?_t=1738940368665 HTTP/1.1" 200 -
+2025-02-07 14:59:28,982 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:28] "OPTIONS /api/users/verify?_t=1738940368665 HTTP/1.1" 200 -
+2025-02-07 14:59:28,983 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:28] "OPTIONS /api/dashboard/stats/?_t=1738940368665 HTTP/1.1" 200 -
+2025-02-07 14:59:28,984 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:28] "OPTIONS /api/users/verify?_t=1738940368665 HTTP/1.1" 200 -
+2025-02-07 14:59:29,294 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:29] "GET /api/menus/?_t=1738940368665 HTTP/1.1" 200 -
+2025-02-07 14:59:29,295 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:29] "GET /api/users/14?_t=1738940368665 HTTP/1.1" 200 -
+2025-02-07 14:59:29,296 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:29] "GET /api/users/verify?_t=1738940368665 HTTP/1.1" 200 -
+2025-02-07 14:59:29,550 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:29] "GET /api/users/verify?_t=1738940368665 HTTP/1.1" 200 -
+2025-02-07 14:59:29,555 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:29] "OPTIONS /api/users/14?_t=1738940369553 HTTP/1.1" 200 -
+2025-02-07 14:59:29,614 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:29] "GET /api/users/14?_t=1738940369553 HTTP/1.1" 200 -
+2025-02-07 14:59:29,645 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:29] "GET /api/users/avatar/14_20250206_161717_undraw_profile-pic_fatv.png HTTP/1.1" 200 -
+2025-02-07 14:59:30,618 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:30] "GET /api/dashboard/stats/?_t=1738940368665 HTTP/1.1" 200 -
+2025-02-07 14:59:40,245 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:40] "OPTIONS /api/init HTTP/1.1" 200 -
+2025-02-07 14:59:40,253 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:40] "POST /api/init HTTP/1.1" 200 -
+2025-02-07 14:59:40,508 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:40] "OPTIONS /api/status?_t=1738940380261 HTTP/1.1" 200 -
+2025-02-07 14:59:40,980 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:40] "GET /api/status?_t=1738940380261 HTTP/1.1" 200 -
+2025-02-07 14:59:50,339 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:50] "OPTIONS /api/remote/add HTTP/1.1" 200 -
+2025-02-07 14:59:50,441 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:50] "POST /api/remote/add HTTP/1.1" 200 -
+2025-02-07 14:59:50,751 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:50] "OPTIONS /api/status?_t=1738940390447 HTTP/1.1" 200 -
+2025-02-07 14:59:51,179 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:51] "GET /api/status?_t=1738940390447 HTTP/1.1" 200 -
+2025-02-07 14:59:51,187 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:51] "OPTIONS /api/commits?_t=1738940391186 HTTP/1.1" 200 -
+2025-02-07 14:59:51,390 - INFO - 127.0.0.1 - - [07/Feb/2025 14:59:51] "GET /api/commits?_t=1738940391186 HTTP/1.1" 200 -
+2025-02-07 15:00:44,554 - INFO - 127.0.0.1 - - [07/Feb/2025 15:00:44] "OPTIONS /api/status?_t=1738940444246 HTTP/1.1" 200 -
+2025-02-07 15:00:44,668 - INFO - 127.0.0.1 - - [07/Feb/2025 15:00:44] "GET /api/status?_t=1738940444246 HTTP/1.1" 200 -
