@@ -82,9 +82,13 @@ train_user_restaurant_matrix = pd.pivot_table(
 # 取得餐廳資料集
 restaurants_df = pd.read_sql('''
     select g.place_id,g.latitude,g.longitude,g.place_names,g.redirection_url,
-    g.navigation_url,g.city,g.city_CN
+    g.navigation_url,g.city,g.city_CN,s.hero_image,
+        s.hero_listing_image,
+        s.tag,
+        s.is_new_until
     from googlemaps_info g
     JOIN ratings r ON r.place_id = g.place_id
+    JOIN stores s ON s.id=g.id
     ORDER BY RAND()
 ''', con=engine)
 
@@ -116,7 +120,11 @@ restaurants_data = {
     'name': restaurants_df['place_names'],
     'redirection_url': restaurants_df['redirection_url'],
     'navigation_url': restaurants_df['navigation_url'],
-    'city': restaurants_df['city_CN']
+    'city': restaurants_df['city_CN'],
+    'hero_image': restaurants_df['hero_image'],
+    'hero_listing_image': restaurants_df['hero_listing_image'],
+    'tag': restaurants_df['tag'],
+    'is_new_until': restaurants_df['is_new_until']
 }
 restaurants_df = pd.DataFrame(restaurants_data)
 
@@ -439,7 +447,11 @@ def recommend_restaurants(user_id, num_recommendations):
                     city,
                     rating_info['distance'],
                     rating_info['rating'],
-                    rating_info['review_number']
+                    rating_info['review_number'],
+                    restaurant_info['hero_image'],
+                    restaurant_info['hero_listing_image'],
+                    restaurant_info['tag'],
+                    restaurant_info['is_new_until']
                 ))
                 recommended_ids.add(restaurant_id)
                 cities_used.add(city)
@@ -467,7 +479,11 @@ def recommend_restaurants(user_id, num_recommendations):
                     restaurant_info['city'],
                     rating_info['distance'],
                     rating_info['rating'],
-                    rating_info['review_number']
+                    rating_info['review_number'],
+                    restaurant_info['hero_image'],
+                    restaurant_info['hero_listing_image'],
+                    restaurant_info['tag'],
+                    restaurant_info['is_new_until']
                 ))
                 recommended_ids.add(restaurant_id)
         
@@ -543,7 +559,11 @@ def content_based_recommendations(user_id, num_recommendations):
                         city,
                         rating_info['distance'],
                         rating_info['rating'],
-                        rating_info['review_number']
+                        rating_info['review_number'],
+                        restaurant_info['hero_image'],
+                        restaurant_info['hero_listing_image'],
+                        restaurant_info['tag'],
+                        restaurant_info['is_new_until']
                     ))
                     processed_cities.add(city)
         
@@ -581,7 +601,11 @@ def content_based_recommendations(user_id, num_recommendations):
                     city,
                     rating_info['distance'],
                     rating_info['rating'],
-                    rating_info['review_number']
+                    rating_info['review_number'],
+                    restaurant_info['hero_image'],
+                    restaurant_info['hero_listing_image'],
+                    restaurant_info['tag'],
+                    restaurant_info['is_new_until']
                 ))
                 processed_cities.add(city)
         
@@ -604,13 +628,13 @@ def hybrid_recommendations(user_id, num_recommendations):
         # 取得協同過濾推薩餐廳
         cf_recommendations = recommend_restaurants(user_id, num_recommendations)
         # 取得內容推薩餐廳
-        #content_recommendations = content_based_recommendations(user_id, num_recommendations)
+        content_recommendations = content_based_recommendations(user_id, num_recommendations)
         # 將兩個推薩結果合併
-        #all_recommendations = cf_recommendations + content_recommendations
+        all_recommendations = cf_recommendations + content_recommendations
         # 存放唯一的推薩結果
         unique_recommendations = []
         seen = set()
-        for rec in cf_recommendations:
+        for rec in all_recommendations:
             # 沒有推薩過的餐廳才進行推薩
             if rec not in seen:
                 # 取得所有城市
@@ -678,18 +702,22 @@ def run_experiment(experiment_type):
     # 進行推薩
     for user_id in user_ids:
         recommendations = hybrid_recommendations(user_id, num_recommendations)
-        print(f"\n推薩給使用者【{user_id}】的餐廳如下：")
-        for name, lat, lon, redirection_url, navigation_url, city, distance, rating, review_number in recommendations:
+        print(f"\n推薦給使用者【{user_id}】的餐廳如下：")
+        for name, lat, lon, redirection_url, navigation_url, city, distance, rating, review_number, hero_image, hero_listing_image, tag, is_new_until in recommendations:
             print(f'''餐廳名稱：{name}
 經度：{lon}
 緯度：{lat}
 所在城市：{city}
-前往訂餐：{redirection_url if redirection_url else '無訂餐連結'}
+前往點餐：{redirection_url if redirection_url else '無訂餐連結'}
 前往導航：{navigation_url if navigation_url else '無導航連結'}
 距離：{distance:.2f}
 評分：{rating:.2f}
 瀏覽人數：{review_number}
-=============================''')
+主要圖片：{hero_image if hero_image else '無圖片'}
+列表圖片：{hero_listing_image if hero_listing_image else '無圖片'}
+標籤：{tag if tag else '無標籤'}
+新店期限：{is_new_until if is_new_until else '非新店'}
+''')
     
     # 評估模型
     results = evaluate_model(experiment_type)
