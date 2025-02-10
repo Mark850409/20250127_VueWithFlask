@@ -111,7 +111,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import Navbar from '../common/Navbar.vue'
 import Banner from './Banner.vue'
 import Recommendations from './Recommendations.vue'
@@ -119,6 +119,8 @@ import Footer from '../common/Footer.vue'
 import Features from './Features.vue'
 import Learning from './Learning.vue'
 import Pricing from './Pricing.vue'
+import axios from '@/utils/axios'
+import { useAuthStore } from '@/stores/auth'
 
 export default {
   components: {
@@ -131,22 +133,73 @@ export default {
     Pricing
   },
   setup() {
-    const isLoggedIn = ref(false)
+    const authStore = useAuthStore()
+    const isLoggedIn = computed(() => authStore.isLoggedIn)
+    let tokenCheckInterval = null
 
-    // 檢查登入狀態
-    const checkLoginStatus = () => {
+    const currentSort = ref('predicted')
+    const currentRecommendSort = ref('predicted')
+    
+    const sortOptions = [
+      { label: '預設排序', value: 'predicted' },
+      { label: '評分排序', value: 'rating' },
+      { label: '熱門排序', value: 'popular' }
+    ]
+
+    // 檢查登入狀態和 token 有效性
+    const checkLoginStatus = async () => {
       const token = localStorage.getItem('token')
-      isLoggedIn.value = !!token
+      if (!token) {
+        authStore.isLoggedIn = false
+        return
+      }
+
+      try {
+        // 驗證 token 有效性
+        const response = await axios.get('/users/verify', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+        
+        if (response.status === 200) {
+          authStore.isLoggedIn = true
+        } else {
+          // token 無效或過期
+          localStorage.removeItem('token')
+          authStore.isLoggedIn = false
+        }
+      } catch (error) {
+        console.error('Token 驗證失敗:', error)
+        localStorage.removeItem('token')
+        authStore.isLoggedIn = false
+      }
     }
 
     onMounted(() => {
+      // 初始檢查
       checkLoginStatus()
+      
+      // 設定定時檢查 (每10秒檢查一次)
+      tokenCheckInterval = setInterval(checkLoginStatus, 10000)
+      
       // 監聽 localStorage 變化
       window.addEventListener('storage', checkLoginStatus)
     })
 
+    // 組件卸載時清理定時器
+    onUnmounted(() => {
+      if (tokenCheckInterval) {
+        clearInterval(tokenCheckInterval)
+      }
+      window.removeEventListener('storage', checkLoginStatus)
+    })
+
     return {
-      isLoggedIn
+      isLoggedIn,
+      currentSort,
+      currentRecommendSort,
+      sortOptions
     }
   }
 }

@@ -1,6 +1,7 @@
 from typing import List, Optional
 from models.store import Store
 from dao.store_dao import StoreDAO
+from schemas.store_schema import SortField, SortOrder
 
 class StoreService:
     def __init__(self):
@@ -46,4 +47,13 @@ class StoreService:
                 raise ValueError('店家不存在')
             return self.dao.increment_views(store_id)
         except Exception as e:
-            raise Exception(f'瀏覽店家失敗: {str(e)}') 
+            raise Exception(f'瀏覽店家失敗: {str(e)}')
+    
+    def get_stores_with_params(
+        self,
+        limit: Optional[int] = None,
+        sort_by: SortField = SortField.DEFAULT,
+        order: SortOrder = SortOrder.DESC
+    ) -> List[Store]:
+        """獲取排序後的店家列表"""
+        return self.dao.get_stores_with_params(limit, sort_by, order) 

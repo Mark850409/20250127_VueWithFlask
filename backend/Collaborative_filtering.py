@@ -16,6 +16,7 @@ from sklearn.metrics.pairwise import euclidean_distances, manhattan_distances
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics.pairwise import cosine_similarity as cosine_similarity_metric
 from config.config import SQLALCHEMY_DATABASE_URI
+import traceback
 
 # 獲取當前文件的目錄
 current_dir = Path(__file__).parent
@@ -47,12 +48,19 @@ engine = create_engine(SQLALCHEMY_DATABASE_URI)
 
 # 取得評分資料集
 ratings_df = pd.read_sql('''
-select r.place_id,r.restaurant_name,r.rating,r.composite_score,
-r.user,s.city,s.city_CN,s.distance,s.review_number
-from ratings r
-JOIN stores s ON  s.id=r.id
-where confidence>=0.7 or confidence<= -0.7
-ORDER BY RAND()
+    SELECT 
+        r.place_id,
+        r.restaurant_name,
+        r.rating,
+        r.composite_score,
+        r.user,
+        s.city,
+        s.city_CN,
+        s.distance,
+        s.review_number
+    FROM ratings r
+    JOIN stores s ON s.id = r.id
+    ORDER BY RAND()
 ''', con=engine)
 
 # 建立user對應ID的表格，從1開始編號
@@ -62,15 +70,23 @@ user_to_id = {user: idx + 1 for idx, user in enumerate(unique_users)}
 # 使用 user_to_id 替换 'user' 列中的值
 ratings_df['user_id'] = ratings_df['user'].map(user_to_id)
 
+# 建立訓練矩陣
+train_user_restaurant_matrix = pd.pivot_table(
+    ratings_df,
+    values='rating',
+    index='user_id',
+    columns='place_id',
+    fill_value=0
+)
+
 # 取得餐廳資料集
 restaurants_df = pd.read_sql('''
-select g.place_id,g.latitude,g.longitude,g.place_names,g.redirection_url,
-g.navigation_url,g.city,g.city_CN
-from googlemaps_info g
-JOIN ratings r ON r.place_id = g.place_id
-WHERE g.place_id is not null
-''',
-    con=engine)
+    select g.place_id,g.latitude,g.longitude,g.place_names,g.redirection_url,
+    g.navigation_url,g.city,g.city_CN
+    from googlemaps_info g
+    JOIN ratings r ON r.place_id = g.place_id
+    ORDER BY RAND()
+''', con=engine)
 
 # 取得筆數資料集
 count_data = pd.read_sql(
@@ -328,7 +344,7 @@ def evaluate_model(experiment_type='rating_only'):
 
 
 # ===========================================================
-# 推薦餐廳主程式(基於內容推薦、協同過濾、混合推薦)
+# 推薦餐廳主程式(基於內容推薩、協同過濾、混合推薩)
 # ===========================================================
 
 # 推薦餐廳主程式(協同過濾)
@@ -351,82 +367,163 @@ def recommend_restaurants(user_id, num_recommendations):
         user_idx = train_user_restaurant_matrix.index.get_loc(user_id)
         similar_indices = similar_indices[similar_indices != user_idx]
         
-        # 輸出相似用戶資訊
-        print(f"\n與使用者【{user_id}】相似度最高的前5個使用者及其距離是：")
-        for i in range(5):
-            if i < len(similar_indices):
-                similar_user_idx = similar_indices[i]
-                similar_user_id = train_user_restaurant_matrix.index[similar_user_idx]
-                distance = distances[similar_user_idx]
-                print(f"{i+1}. 使用者ID: {similar_user_id}, 相似度距離: {distance:.4f}")
-        print("=============================")
+        # 預先獲取所有評分資訊並建立索引
+        restaurant_ratings = {}
+        for _, row in train_data.iterrows():
+            restaurant_id = row.name
+            restaurant_info = restaurants_df.iloc[restaurant_id]
+            restaurant_name = restaurant_info['name']
+            if restaurant_name not in restaurant_ratings:
+                restaurant_ratings[restaurant_name] = {
+                    'distance': float(row['distance']),
+                    'rating': float(row['rating']),
+                    'review_number': int(row['review_number'])
+                }
         
         # 用於存放推薦餐廳
         recommended_restaurants = []
         recommended_ids = set()
-        city_count = {}
         
-        # 遍歷相似用戶
-        for similar_user_idx in similar_indices[:30]:  # 限制處理數量提升效能
-            if distances[similar_user_idx] > 0.9:
+        # 選擇更多的相似用戶
+        num_similar_users = min(200, len(similar_indices))
+        selected_similar_users = similar_indices[:num_similar_users]
+        random.shuffle(selected_similar_users)
+        
+        # 收集所有可能的推薦
+        all_recommendations = []
+        
+        # 從相似用戶收集推薦
+        for similar_user_idx in selected_similar_users:
+            if distances[similar_user_idx] > 0.8:  # 相似度閾值
                 continue
                 
             similar_user_id = train_user_restaurant_matrix.index[similar_user_idx]
             similar_user_ratings = train_data[train_data['user_id'] == similar_user_id]
             
-            # 處理相似用戶的評分
             for _, row in similar_user_ratings.iterrows():
-                restaurant_id = row['restaurant_id']
+                restaurant_id = row.name
                 if restaurant_id not in recommended_ids:
-                    restaurant_info = restaurants_df[restaurants_df['restaurant_id'] == restaurant_id]
-                    if not restaurant_info.empty:
-                        city = restaurant_info['city'].values[0]
-                        if city_count.get(city, 0) < 1:  # 每個城市最多1個推薦
-                            recommended_restaurants.append((
-                                restaurant_info['name'].values[0],
-                                restaurant_info['latitude'].values[0],
-                                restaurant_info['longitude'].values[0],
-                                restaurant_info['redirection_url'].values[0],
-                                restaurant_info['navigation_url'].values[0],
-                                city,
-                                float(row['distance']),      # 從資料庫獲取距離
-                                float(row['rating']),        # 從資料庫獲取評分
-                                int(row['review_number'])    # 從資料庫獲取瀏覽人數
-                            ))
-                            recommended_ids.add(restaurant_id)
-                            city_count[city] = 1
-                            
-                            if len(recommended_restaurants) >= num_recommendations:
-                                break
-                                
+                    restaurant_info = restaurants_df.iloc[restaurant_id]
+                    restaurant_name = restaurant_info['name']
+                    rating_info = restaurant_ratings.get(restaurant_name)
+                    if rating_info:
+                        all_recommendations.append((
+                            restaurant_info,
+                            rating_info,
+                            restaurant_id
+                        ))
+        
+        # 打亂所有推薦
+        random.shuffle(all_recommendations)
+        
+        # 從推薦中選擇，確保城市多樣性
+        cities_used = set()
+        current_city_count = {}
+        
+        # 第一輪：優先選擇不同城市的餐廳
+        for rec in all_recommendations:
             if len(recommended_restaurants) >= num_recommendations:
                 break
+                
+            restaurant_info, rating_info, restaurant_id = rec
+            city = restaurant_info['city']
+            
+            # 限制每個城市最多推薦2家餐廳
+            if current_city_count.get(city, 0) < 1:
+                recommended_restaurants.append((
+                    restaurant_info['name'],
+                    restaurant_info['latitude'],
+                    restaurant_info['longitude'],
+                    restaurant_info['redirection_url'],
+                    restaurant_info['navigation_url'],
+                    city,
+                    rating_info['distance'],
+                    rating_info['rating'],
+                    rating_info['review_number']
+                ))
+                recommended_ids.add(restaurant_id)
+                cities_used.add(city)
+                current_city_count[city] = current_city_count.get(city, 0) + 1
+        
+        # 第二輪：如果還不夠，不限制城市數量
+        if len(recommended_restaurants) < num_recommendations:
+            remaining_recommendations = [
+                rec for rec in all_recommendations 
+                if rec[2] not in recommended_ids
+            ]
+            random.shuffle(remaining_recommendations)
+            
+            for rec in remaining_recommendations:
+                if len(recommended_restaurants) >= num_recommendations:
+                    break
+                    
+                restaurant_info, rating_info, restaurant_id = rec
+                recommended_restaurants.append((
+                    restaurant_info['name'],
+                    restaurant_info['latitude'],
+                    restaurant_info['longitude'],
+                    restaurant_info['redirection_url'],
+                    restaurant_info['navigation_url'],
+                    restaurant_info['city'],
+                    rating_info['distance'],
+                    rating_info['rating'],
+                    rating_info['review_number']
+                ))
+                recommended_ids.add(restaurant_id)
         
         return recommended_restaurants[:num_recommendations]
         
     except Exception as e:
         print(f"推薦過程發生錯誤: {str(e)}")
+        traceback.print_exc()
         return []
 
-
-# 推薦餐廳主程式(內容推薦)
+# 推薦餐廳主程式(內容推薩)
 def content_based_recommendations(user_id, num_recommendations):
     try:
-        # 計算餐廳之間內容相似性
-        content_similarities = cosine_similarity(train_user_restaurant_matrix)
+        # 檢查用戶是否存在於訓練矩陣中
+        if user_id not in train_user_restaurant_matrix.index:
+            return []
+            
+        # 獲取用戶向量並檢查是否有評分
+        user_vector = train_user_restaurant_matrix.loc[user_id].values.reshape(1, -1)
+        if np.all(user_vector == 0):
+            return []
         
-        # 確保隨機選擇的數量不超過可用的餐廳數量
-        available_restaurants = min(len(restaurants_df), len(content_similarities))
-        num_random_restaurants = min(20, available_restaurants)  # 減少隨機選擇數量以提升效能
+       
+        # 獲取用戶的歷史評分
+        user_ratings = train_data[train_data['user_id'] == user_id]
+        rated_restaurants = set(user_ratings.index)
         
-        # 隨機選擇餐廳
-        random_restaurant_indices = random.sample(range(available_restaurants), num_random_restaurants)
+        # 預先獲取所有評分資訊並建立索引
+        restaurant_ratings = {}
+        for _, row in train_data.iterrows():
+            restaurant_id = row.name
+            if restaurant_id not in restaurant_ratings:
+                restaurant_ratings[restaurant_id] = {
+                    'distance': float(row['distance']),
+                    'rating': float(row['rating']),
+                    'review_number': int(row['review_number'])
+                }
+        
+        # 預先過濾有評分資訊的餐廳（排除用戶已評分的餐廳）
+        valid_restaurants = []
+        for idx in range(len(restaurants_df)):
+            restaurant = restaurants_df.iloc[idx]
+            if restaurant.name in restaurant_ratings and restaurant.name not in rated_restaurants:
+                valid_restaurants.append(idx)
+        
+        # 隨機選擇有效的餐廳索引
+        num_random_restaurants = min(20, len(valid_restaurants))
+        if num_random_restaurants == 0:  # 如果沒有有效餐廳，返回空列表
+            return []
+        random_indices = random.sample(valid_restaurants, num_random_restaurants)
         
         recommended_restaurants = []
         processed_cities = set()
         
         # 第一輪：嘗試找到不同城市的推薦
-        for idx in random_restaurant_indices:
+        for idx in random_indices:
             if len(recommended_restaurants) >= num_recommendations:
                 break
                 
@@ -435,10 +532,8 @@ def content_based_recommendations(user_id, num_recommendations):
             
             # 確保城市不重複且未處理過
             if city not in processed_cities:
-                # 獲取評分資訊
-                restaurant_ratings = train_data[train_data['restaurant_id'] == restaurant_info['restaurant_id']]
-                if not restaurant_ratings.empty:
-                    rating_info = restaurant_ratings.iloc[0]
+                rating_info = restaurant_ratings.get(restaurant_info.name)
+                if rating_info:
                     recommended_restaurants.append((
                         restaurant_info['name'],
                         restaurant_info['latitude'],
@@ -446,19 +541,37 @@ def content_based_recommendations(user_id, num_recommendations):
                         restaurant_info['redirection_url'],
                         restaurant_info['navigation_url'],
                         city,
-                        float(rating_info['distance']),      # 從資料庫獲取距離
-                        float(rating_info['rating']),        # 從資料庫獲取評分
-                        int(rating_info['review_number'])    # 從資料庫獲取瀏覽人數
+                        rating_info['distance'],
+                        rating_info['rating'],
+                        rating_info['review_number']
                     ))
                     processed_cities.add(city)
+        
         # 如果推薦數量不足，從其他城市隨機補充
         while len(recommended_restaurants) < num_recommendations:
-            random_idx = random.randint(0, len(restaurants_df) - 1)
-            restaurant_info = restaurants_df.iloc[random_idx]
-            city = restaurant_info['city']
+            # 獲取未處理的城市
+            remaining_cities = list(set(restaurants_df['city'].unique()) - processed_cities)
             
-            # 如果這個城市還沒被推薦過
-            if city not in processed_cities:
+            # 如果沒有未處理的城市，則重新使用所有城市
+            if not remaining_cities:
+                remaining_cities = list(restaurants_df['city'].unique())
+                processed_cities.clear()  # 重置已處理城市集合
+            
+            # 隨機選擇一個城市
+            city = random.choice(remaining_cities)
+            
+            # 獲取該城市所有有效的餐廳（排除用戶已評分的餐廳）
+            city_restaurants = []
+            for idx in valid_restaurants:
+                restaurant = restaurants_df.iloc[idx]
+                if restaurant['city'] == city:
+                    rating_info = restaurant_ratings.get(restaurant.name)
+                    if rating_info:
+                        city_restaurants.append((restaurant, rating_info))
+            
+            if city_restaurants:
+                # 隨機選擇一家餐廳
+                restaurant_info, rating_info = random.choice(city_restaurants)
                 recommended_restaurants.append((
                     restaurant_info['name'],
                     restaurant_info['latitude'],
@@ -466,16 +579,17 @@ def content_based_recommendations(user_id, num_recommendations):
                     restaurant_info['redirection_url'],
                     restaurant_info['navigation_url'],
                     city,
-                    float(rating_info['distance']),      # 增加距離
-                    float(rating_info['rating']),        # 增加評分
-                    int(rating_info['review_number'])    # 增加瀏覽人數
+                    rating_info['distance'],
+                    rating_info['rating'],
+                    rating_info['review_number']
                 ))
                 processed_cities.add(city)
-            
+        
         return recommended_restaurants[:num_recommendations]
         
     except Exception as e:
         print(f"內容推薦過程發生錯誤: {str(e)}")
+        traceback.print_exc()
         return []
 
 
@@ -490,13 +604,13 @@ def hybrid_recommendations(user_id, num_recommendations):
         # 取得協同過濾推薩餐廳
         cf_recommendations = recommend_restaurants(user_id, num_recommendations)
         # 取得內容推薩餐廳
-        content_recommendations = content_based_recommendations(user_id, num_recommendations)
+        #content_recommendations = content_based_recommendations(user_id, num_recommendations)
         # 將兩個推薩結果合併
-        all_recommendations = cf_recommendations + content_recommendations
+        #all_recommendations = cf_recommendations + content_recommendations
         # 存放唯一的推薩結果
         unique_recommendations = []
         seen = set()
-        for rec in all_recommendations:
+        for rec in cf_recommendations:
             # 沒有推薩過的餐廳才進行推薩
             if rec not in seen:
                 # 取得所有城市
@@ -511,6 +625,7 @@ def hybrid_recommendations(user_id, num_recommendations):
             unique_recommendations = random.sample(unique_recommendations, num_recommendations)
 
     return unique_recommendations[:num_recommendations]
+
 
 
 # ===========================================================

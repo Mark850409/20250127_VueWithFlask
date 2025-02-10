@@ -6,7 +6,8 @@ from schemas.recommend_schema import (
     RecommendationQuery,
     RecommendationResponse,
     success_response,
-    error_response
+    error_response,
+    RecommendResponse
 )
 
 recommend_bp = APIBlueprint('recommend', __name__, url_prefix='/api')
@@ -71,52 +72,29 @@ def get_recommendations(query: RecommendationQuery):
 @recommend_bp.post(
     '/recommend_data',
     tags=[recommend_tag],
-    responses={
-        "200": {
-            "description": "成功創建推薦",
-            "content": {
-                "application/json": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "status": {"type": "string"},
-                            "message": {"type": "string"},
-                            "data": {"$ref": "#/components/schemas/RecommendDataResponse"}
-                        }
-                    }
-                }
-            }
-        },
-        "400": {
-            "description": "請求數據錯誤"
-        }
-    }
+    responses={"200": RecommendResponse, "400": RecommendResponse}
 )
 def create_recommend_data(body: RecommendDataCreate):
-    """
-    創建推薦數據API
+    """創建推薦數據
     
     Args:
-        body (RecommendDataCreate): 推薦數據
-            - user_id: 用戶ID
-            - restaurant_id: 餐廳ID
-            - rating: 評分
-            - distance: 距離
-            - review_number: 評論數量
-            - sentiment_score: 情感分數
-            - weighted_score: 加權分數
-            
+        body: 包含用戶ID和推薦數量的請求體
+    
     Returns:
-        200: 創建成功的推薦數據
-        400: 參數錯誤
+        200: 創建成功
+        400: 創建失敗
     """
     try:
-        if not body:
-            return error_response('No data provided')
-            
-        result = recommend_service.create_recommend_data(body.dict())
-        response = RecommendDataResponse(**result.to_dict())
+        service = RecommendService()
+        success = service.create_recommendations(
+            user_id=body.user_id,
+            num_recommendations=body.num_recommendations
+        )
         
-        return success_response(response.dict())
+        if success:
+            return {"message": "推薦數據創建成功"}, 200
+        else:
+            return {"message": "推薦數據創建失敗"}, 400
+            
     except Exception as e:
-        return error_response(str(e)) 
+        return {"message": f"創建推薦數據時發生錯誤: {str(e)}"}, 400 

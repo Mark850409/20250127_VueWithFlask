@@ -58,7 +58,7 @@ class DashboardService:
 
             # 獲取用戶活躍度數據
             activity_data = self._get_activity_data()
-            print(activity_data)
+            #print(activity_data)
 
             return {
                 "stats": [

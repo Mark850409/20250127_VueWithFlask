@@ -73,8 +73,8 @@ class Config:
     SQLALCHEMY_MAX_OVERFLOW = 20
     
     # JWT配置
-    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'dev-secret-key')
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'your-secret-key')
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', '86400')))
     
     # 日誌配置
     LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')

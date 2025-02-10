@@ -307,3 +307,49 @@ def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS 
+
+@store_bp.get('/query', tags=[store_tag])
+def query_stores(query: StoreQuerySchema):
+    """查詢店家列表
+    
+    可以指定返回筆數限制和排序方式
+    
+    Args:
+        query (StoreQuerySchema): 查詢參數
+            limit (int, optional): 返回筆數限制 (1-50)
+            sort_by (SortField, optional): 排序欄位 (rating/views/created_at/default)
+            order (SortOrder, optional): 排序方向 (asc/desc)
+    
+    Returns:
+        200 (List[StoreResponseSchema]): 店家列表
+        500: 服務器錯誤
+    
+    Example:
+        GET /api/stores/query?limit=10&sort_by=rating&order=desc
+    """
+    try:
+        service = StoreService()
+        stores = service.get_stores_with_params(
+            limit=query.limit,
+            sort_by=query.sort_by,
+            order=query.order
+        )
+        return {
+            'stores': [
+                {
+                    'id': store.id,
+                    'name': store.name,
+                    'description': store.description[:100] if store.description else '',  # 限制描述最多100字
+                    'budget': store.budget,
+                    'rating': store.rating,
+                    'review_number': store.review_number,
+                    'hero_image': store.hero_image,
+                    'hero_listing_image': store.hero_listing_image,
+                    'created_at': store.created_at,
+                    'updated_at': store.updated_at
+                }
+                for store in stores
+            ]
+        }
+    except Exception as e:
+        return {'message': f'查詢店家列表失敗: {str(e)}'}, 500 

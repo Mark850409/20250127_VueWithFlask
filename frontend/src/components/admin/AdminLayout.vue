@@ -1,32 +1,34 @@
 <template>
-  <div class="min-h-screen bg-gray-100 flex">
+  <div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex">
     <!-- 側邊欄 -->
     <aside :class="[
-      'fixed top-0 left-0 h-full bg-white border-r z-30 flex flex-col transition-all duration-300',
+      'fixed top-0 left-0 h-full bg-white dark:bg-gray-800 border-r dark:border-gray-700 z-30 flex flex-col transition-all duration-300',
       isSidebarCollapsed ? 'w-0' : 'w-64'
     ]">
       <!-- Logo -->
-      <div class="flex-shrink-0 flex items-center justify-center h-16 border-b px-6 overflow-hidden">
+      <div class="flex-shrink-0 flex items-center justify-center h-16 border-b dark:border-gray-700 px-6 overflow-hidden">
         <div class="flex items-center">
-          <img src="https://api.dicebear.com/7.x/bottts/svg?seed=food" 
-               alt="Logo" 
-               class="h-8 w-8">
-          <span class="ml-3 text-xl font-semibold whitespace-nowrap">
-            推薦系統
+          <i class="fas fa-utensils text-2xl text-indigo-600 dark:text-indigo-400"></i>
+          <span class="ml-3 text-xl font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+            點餐系統後台
           </span>
         </div>
       </div>
 
       <!-- 使用者資訊 -->
-      <div class="flex-shrink-0 p-4 border-b overflow-hidden">
-        <div class="flex items-center space-x-3">
+      <div class="flex-shrink-0 p-6 border-b dark:border-gray-700 overflow-hidden">
+        <div class="flex flex-col items-center text-center">
           <img :src="getAvatarUrl"
                alt="User Avatar" 
-               class="w-10 h-10 rounded-full flex-shrink-0"
+               class="w-20 h-20 rounded-full mb-3"
                @error="handleAvatarError">
-          <div class="overflow-hidden">
-            <div class="font-medium text-gray-700 truncate">{{ userInfo.username }}</div>
-            <div class="text-sm text-gray-500 truncate">{{ userInfo.email }}</div>
+          <div class="overflow-hidden w-full">
+            <div class="text-lg font-medium text-indigo-600 dark:text-indigo-400 mb-1">
+              Hello ! {{ userInfo.username }}
+            </div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+              Welcome To Your Dashboard
+            </div>
           </div>
         </div>
       </div>
@@ -36,7 +38,7 @@
         <div class="space-y-4 overflow-hidden">
           <!-- Navigation 分類標題 -->
           <div v-if="!isSidebarCollapsed" class="px-4 pt-2">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">ADMIN</h3>
+            <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">ADMIN</h3>
           </div>
 
           <!-- Dashboard -->
@@ -44,8 +46,8 @@
             class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-150"
             :class="[
               $route.path === '/admin' 
-                ? 'text-blue-600 bg-blue-50' 
-                : 'text-gray-700 hover:bg-gray-100'
+                ? 'text-indigo-700 bg-gradient-to-r from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100' 
+                : 'text-gray-700 hover:bg-gray-50'
             ]">
             <div class="flex-shrink-0 w-6">
               <i class="fas fa-home text-lg"></i>
@@ -57,7 +59,7 @@
 
           <!-- Apps 分類標題 -->
           <div v-if="!isSidebarCollapsed" class="px-4 pt-4">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Apps</h3>
+            <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Apps</h3>
           </div>
 
           <!-- 動態生成的選單 -->
@@ -67,8 +69,8 @@
               <div class="flex items-center px-4 py-3 text-sm font-medium rounded-lg cursor-pointer"
                    :class="[
                      sortedMenus(category).some(menu => $route.path.includes(menu.path)) || openMenus[category]
-                       ? 'text-blue-600 bg-blue-50' 
-                       : 'text-gray-700 hover:bg-gray-100'
+                       ? 'text-indigo-700 bg-gradient-to-r from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100' 
+                       : 'text-gray-700 hover:bg-gray-50'
                    ]"
                    @click="toggleMenu(category)">
                 <div class="flex-shrink-0 w-6">
@@ -88,14 +90,18 @@
                 <router-link v-for="menu in sortedMenus(category)"
                             :key="menu.id"
                             :to="menu.path"
-                            class="flex items-center px-4 py-2.5 text-sm rounded-lg transition-colors duration-150"
+                            class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-150"
                             :class="[
-                              $route.path === menu.path
-                                ? 'text-blue-600 bg-blue-50'
-                                : 'text-gray-600 hover:bg-gray-100'
+                              $route.path.includes(menu.path)
+                                ? 'text-indigo-700 bg-gradient-to-r from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100 shadow-sm' 
+                                : 'text-gray-700 hover:bg-gray-50'
                             ]">
-                  <i :class="[menu.icon, 'text-lg w-6']"></i>
-                  <span class="ml-3">{{ menu.name }}</span>
+                  <div class="flex-shrink-0 w-6">
+                    <i :class="['text-lg', menu.icon]"></i>
+                  </div>
+                  <div class="ml-3 flex-1" v-if="!isSidebarCollapsed">
+                    <div>{{ menu.name }}</div>
+                  </div>
                 </router-link>
               </div>
             </div>
@@ -104,9 +110,9 @@
       </div>
 
       <!-- 登出按鈕 -->
-      <div v-show="!isSidebarCollapsed" class="flex-shrink-0 p-3 border-t">
+      <div v-show="!isSidebarCollapsed" class="flex-shrink-0 p-3 border-t dark:border-gray-700">
         <button @click="logout" 
-          class="flex items-center justify-center w-full px-4 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg">
+          class="flex items-center justify-center w-full px-4 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
           <i class="fas fa-sign-out-alt text-lg w-6"></i>
           <span class="ml-3">登出</span>
         </button>
@@ -131,12 +137,15 @@
         <!-- Banner -->
         <div class="bg-white shadow-sm rounded-lg overflow-hidden mb-6">
           <div class="relative banner-bg">
-            <div class="absolute inset-0 bg-gradient-to-r from-gray-900/80 to-gray-800/80"></div>
+            <!-- 半透明遮罩 -->
+            <div class="absolute inset-0 bg-black/30"></div>
+            
+            <!-- Banner 內容 -->
             <div class="relative px-8 py-16">
-              <h1 class="text-3xl font-bold text-white mb-3">
+              <h1 class="text-3xl font-bold text-white mb-3 drop-shadow-lg">
                 {{ getBannerTitle }}
               </h1>
-              <p class="text-gray-200 text-lg">
+              <p class="text-white text-lg drop-shadow-md">
                 {{ getBannerDescription }}
               </p>
             </div>
@@ -158,9 +167,10 @@ import AdminNavbar from './common/AdminNavbar.vue'
 import AdminFooter from './common/AdminFooter.vue'
 import axios from '@/utils/axios'
 import Swal from 'sweetalert2'
-import { onBeforeMount, onMounted, ref } from 'vue'
+import { onBeforeMount, onMounted, ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { menuAPI } from '@/api'
+import os from 'os'
 
 export default {
   name: 'AdminLayout',
@@ -173,17 +183,22 @@ export default {
     const tokenExpireTime = ref(null)
     const remainingTime = ref(0)
     let timerInterval = null
+    let tokenCheckInterval = null
     const menus = ref([])
     const loading = ref(false)
 
     // 開始計時器
     const startExpirationTimer = () => {
-      const expiresIn = parseInt(import.meta.env.VITE_JWT_EXPIRES_IN || '10') // 從環境變數讀取，預設10秒
+      // 從 .env 檔案讀取過期時間，預設一天
+      const expiresIn = parseInt(import.meta.env.VITE_JWT_EXPIRES_IN || '86400')
+      console.log('Token 過期時間設定為:', expiresIn, '秒')
+      
       tokenExpireTime.value = Date.now() + (expiresIn * 1000)
       remainingTime.value = expiresIn
 
       // 清除舊的計時器
       if (timerInterval) clearInterval(timerInterval)
+      if (tokenCheckInterval) clearInterval(tokenCheckInterval)
 
       // 設置新的計時器
       timerInterval = setInterval(() => {
@@ -196,6 +211,16 @@ export default {
           handleTokenExpiration()
         }
       }, 1000)
+
+      // 設置 token 檢查計時器 (每分鐘檢查一次)
+      tokenCheckInterval = setInterval(async () => {
+        try {
+          await axios.get('/users/verify')
+        } catch (error) {
+          console.error('Token 驗證失敗:', error)
+          await handleTokenExpiration()
+        }
+      }, 60000) // 改為每分鐘檢查一次
     }
 
     // 格式化時間
@@ -215,6 +240,8 @@ export default {
     // 處理 token 過期
     const handleTokenExpiration = async () => {
       clearInterval(timerInterval)
+      clearInterval(tokenCheckInterval)
+      
       await Swal.fire({
         icon: 'warning',
         title: '登入已過期',
@@ -222,6 +249,7 @@ export default {
         confirmButtonText: '確定',
         allowOutsideClick: false
       })
+      
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       router.push('/login')
@@ -251,16 +279,7 @@ export default {
         return true
       } catch (error) {
         console.error('Token 驗證失敗:', error)
-        await Swal.fire({
-          icon: 'error',
-          title: '登入已過期',
-          text: '請重新登入',
-          confirmButtonText: '確定',
-          allowOutsideClick: false
-        })
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        router.push('/login')
+        await handleTokenExpiration()
         return false
       }
     }
@@ -270,8 +289,9 @@ export default {
     })
 
     // 組件卸載時清理計時器
-    onMounted(() => {
+    onUnmounted(() => {
       if (timerInterval) clearInterval(timerInterval)
+      if (tokenCheckInterval) clearInterval(tokenCheckInterval)
     })
 
     return {
@@ -353,39 +373,40 @@ export default {
     }
   },
   methods: {
-    toggleMenu(menu) {
-      const newOpenMenus = { ...this.openMenus }
+    updateMenuState() {
+      const currentPath = this.$route.path
+      const newOpenMenus = {}
       
-      // 切換當前選單的狀態
-      newOpenMenus[menu] = !newOpenMenus[menu]
+      // 先將所有選單設為關閉狀態
+      this.menuCategories.forEach(category => {
+        newOpenMenus[category] = false
+      })
       
-      // 如果是打開當前選單，則關閉其他選單
-      if (newOpenMenus[menu]) {
+      // 找到當前路徑所屬的類別
+      for (const category of this.menuCategories) {
+        const categoryMenus = this.sortedMenus(category)
+        if (categoryMenus.some(menu => currentPath.includes(menu.path))) {
+          // 只打開當前路徑所屬的類別
+          newOpenMenus[category] = true
+          break // 找到後就跳出循環
+        }
+      }
+      
+      // 特殊處理：如果是儀表板，則全部折疊
+      if (currentPath === '/admin') {
         Object.keys(newOpenMenus).forEach(key => {
-          if (key !== menu) {
-            newOpenMenus[key] = false
-          }
+          newOpenMenus[key] = false
         })
       }
       
       this.openMenus = newOpenMenus
     },
-    // 根據當前路由自動展開對應的選單
-    updateMenuState() {
-      const path = this.$route.path
-      const newOpenMenus = { ...this.openMenus }
-      
-      // 根據路徑決定要展開哪個選單
-      if (path.includes('/admin/system') || path.includes('/admin/accounts') || 
-          path.includes('/admin/logs') || path.includes('/admin/menus') ||
-          path.includes('/admin/git')) {
-        newOpenMenus['系統管理'] = true
-      } else if (path.includes('/admin/shops') || path.includes('/admin/ratings') || 
-                path.includes('/admin/comments')) {
-        newOpenMenus['點餐管理'] = true
-      } else if (path.includes('/admin/users') || path.includes('/admin/favorites')) {
-        newOpenMenus['個人設定管理'] = true
-      }
+    toggleMenu(category) {
+      // 關閉其他所有選單
+      const newOpenMenus = {}
+      this.menuCategories.forEach(cat => {
+        newOpenMenus[cat] = cat === category ? !this.openMenus[category] : false
+      })
       
       this.openMenus = newOpenMenus
     },
@@ -504,45 +525,29 @@ export default {
 </script>
 
 <style scoped>
-/* 自定義滾動條樣式 */
-nav::-webkit-scrollbar {
-  width: 3px;
-}
-
-nav::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-nav::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.3);
-  border-radius: 3px;
-}
-
-nav::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(156, 163, 175, 0.5);
-}
-
 .banner-bg {
-  background-image: url('https://images.unsplash.com/photo-1499638673689-79a0b5115d87?w=1000');
-  background-size: cover;
+  background-image: url('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1920&auto=format&fit=crop');
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   background-position: center;
-  min-height: 240px; /* 增加最小高度 */
+  background-size: cover;
+  min-height: 240px;
+  position: relative;
 }
 
-/* 移除之前的 Banner 相關樣式 */
-.relative.px-8.py-8,
-.flex-1.p-6.mt-16,
-.bg-white.shadow-sm.rounded-lg.overflow-hidden.mb-6 {
-  /* 移除這些樣式，改用直接在元素上設置 class */
+/* 文字陰影效果 */
+.text-white {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 移除原有的動態光影效果 */
+.banner-bg::after {
+  display: none;
 }
 
 /* 可以根據需要調整以下樣式 */
 .text-gray-200 {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.text-white {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* 添加過渡效果 */

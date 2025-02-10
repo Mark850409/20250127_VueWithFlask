@@ -18,7 +18,9 @@
     "axios": "^1.6.2",
     "element-plus": "^2.4.4",
     "echarts": "^5.4.3",
-    "vue-star-rating": "^2.1.0"
+    "vue-star-rating": "^2.1.0",
+    "js-cookie": "^3.0.5",
+    "pinia": "^2.1.7"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.7",

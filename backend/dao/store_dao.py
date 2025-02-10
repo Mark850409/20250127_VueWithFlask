@@ -1,7 +1,8 @@
 from typing import List, Optional
 from models.store import Store, db
-from sqlalchemy import desc
+from sqlalchemy import desc, asc
 from datetime import datetime
+from schemas.store_schema import SortField, SortOrder
 
 class StoreDAO:
     @staticmethod
@@ -68,4 +69,30 @@ class StoreDAO:
             return False
         except Exception as e:
             db.session.rollback()
-            raise Exception(f'更新瀏覽次數失敗: {str(e)}') 
+            raise Exception(f'更新瀏覽次數失敗: {str(e)}')
+    
+    @staticmethod
+    def get_stores_with_params(
+        limit: Optional[int] = None,
+        sort_by: SortField = SortField.DEFAULT,
+        order: SortOrder = SortOrder.DESC
+    ) -> List[Store]:
+        """獲取排序後的店家列表"""
+        query = Store.query
+
+        # 根據排序欄位和方向進行排序
+        if sort_by != SortField.DEFAULT:
+            # 使用 review_number 替代 views
+            sort_column = getattr(Store, sort_by.value)
+            if order == SortOrder.DESC:
+                query = query.order_by(desc(sort_column))
+            else:
+                query = query.order_by(asc(sort_column))
+        else:
+            query = query.order_by(desc(Store.created_at))
+
+        # 限制返回筆數
+        if limit:
+            query = query.limit(limit)
+
+        return query.all() 

@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
 from flask_openapi3 import FileStorage
+from enum import Enum
 
 class StoreBaseSchema(BaseModel):
     """店家基礎數據"""
@@ -151,3 +152,36 @@ class UploadFileForm(BaseModel):
         ...,
         description='圖片文件 (支援 jpg、png、gif、webp 格式，最大 5MB)',
     )
+
+class SortField(str, Enum):
+    """排序欄位選項"""
+    RATING = "rating"
+    REVIEW_NUMBER = "review_number"
+    CREATED_AT = "created_at"
+    DEFAULT = "default"
+
+class SortOrder(str, Enum):
+    """排序方向"""
+    ASC = "asc"
+    DESC = "desc"
+
+class StoreQuerySchema(BaseModel):
+    """查詢參數"""
+    limit: int = Field(..., description='返回筆數限制', ge=1, le=50)
+    sort_by: Optional[SortField] = Field(
+        default=SortField.DEFAULT,
+        description='排序欄位'
+    )
+    order: Optional[SortOrder] = Field(
+        default=SortOrder.DESC,
+        description='排序方向'
+    )
+
+    class Config:
+        schema_extra = {
+            'example': {
+                'limit': 12,
+                'sort_by': 'rating',
+                'order': 'desc'
+            }
+        }

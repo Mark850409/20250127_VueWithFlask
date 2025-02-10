@@ -1,72 +1,77 @@
 <template>
-  <nav class="bg-white border-b z-40 transition-all duration-300">
+  <nav class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 z-40 shadow-sm">
     <div class="mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
-         <!-- 左側區域：漢堡選單 + Logo -->
+        <!-- 左側區域：漢堡選單 + Logo -->
         <div class="flex items-center">
           <!-- 漢堡選單按鈕 -->
           <button @click="$emit('toggle-sidebar')" 
-                  class="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-            <i class="fas fa-bars text-gray-600"></i>
+                  class="p-2 rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-700 transition-colors duration-200">
+            <i class="fas fa-bars text-xl"></i>
           </button>
           
           <!-- Logo -->
-          <div class="ml-4 font-semibold text-lg text-gray-800">
-            點餐推薦後台系統
+          <div class="ml-4 flex items-center">
+            <i class="fas fa-utensils text-2xl text-indigo-600 dark:text-indigo-400"></i>
+            <span class="ml-3 font-semibold text-lg text-gray-900 dark:text-white">
+              基於文字探勘與情感分析的推薦系統後台
+            </span>
           </div>
         </div>
 
         <!-- 中間區域：計時器 -->
         <div class="flex-1 flex justify-center items-center">
           <div v-if="remainingTime > 0" 
-               class="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 
-                      text-white rounded-full shadow-lg transition-all duration-300 
-                      hover:shadow-indigo-500/30">
-            <i class="fas fa-clock text-sm"></i>
-            <span class="text-sm font-medium">
+               class="inline-flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-indigo-500 to-blue-500 dark:from-indigo-400 dark:to-blue-400 
+                      text-white rounded-full shadow-md transition-all duration-300 
+                      hover:shadow-lg hover:from-indigo-600 hover:to-blue-600 dark:hover:from-indigo-500 dark:hover:to-blue-500">
+            <i class="fas fa-clock"></i>
+            <span class="font-medium">
               登入時效：{{ formatTime(remainingTime) }}
             </span>
           </div>
         </div>
 
         <!-- 右側功能區 -->
-        <div class="flex items-center">
-          <!-- 深色模式切換 - 保持不變 -->
-          <button @click="toggleDarkMode" class="p-2 text-gray-500 hover:text-gray-600">
+        <div class="flex items-center space-x-4">
+          <!-- 深色模式切換 -->
+          <button @click="handleDarkModeToggle" 
+                  class="p-2 rounded-lg transition-colors duration-200"
+                  :class="[
+                    isDarkMode 
+                      ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ]">
             <i :class="['text-xl', isDarkMode ? 'fas fa-sun' : 'fas fa-moon']"></i>
           </button>
 
-          <!-- 用戶選單 - 修改這部分 -->
-          <Menu as="div" class="ml-3 relative">
-            <div>
-              <MenuButton class="flex items-center text-sm rounded-full focus:outline-none">
-                <img
-                  :src="userInfo.avatar || defaultAvatar"
-                  alt="User Avatar"
-                  class="h-8 w-8 rounded-full"
-                >
-                <span class="hidden md:block ml-2 text-gray-700">
-                  {{ userInfo.username }}
-                </span>
-                <i class="fas fa-chevron-down ml-2 text-gray-400"></i>
-              </MenuButton>
-            </div>
+          <!-- 用戶選單 -->
+          <Menu as="div" class="relative">
+            <MenuButton class="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-indigo-50 transition-all duration-200">
+              <img :src="userInfo.avatar || defaultAvatar"
+                   alt="User Avatar"
+                   class="h-8 w-8 rounded-full ring-2 ring-indigo-100">
+              <span class="hidden md:block font-medium text-gray-700">
+                {{ userInfo.username }}
+              </span>
+              <i class="fas fa-chevron-down text-indigo-400"></i>
+            </MenuButton>
 
             <transition
-              enter-active-class="transition ease-out duration-100"
+              enter-active-class="transition ease-out duration-200"
               enter-from-class="transform opacity-0 scale-95"
               enter-to-class="transform opacity-100 scale-100"
-              leave-active-class="transition ease-in duration-75"
+              leave-active-class="transition ease-in duration-150"
               leave-from-class="transform opacity-100 scale-100"
               leave-to-class="transform opacity-0 scale-95"
             >
-              <MenuItems class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none">
-                <!-- 簡化選單，只保留登出 -->
+              <MenuItems class="absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none">
                 <div class="py-1">
                   <MenuItem v-slot="{ active }">
-                    <a @click="handleLogout" :class="menuItemClass(active)">
-                      <i class="fas fa-sign-out-alt mr-3"></i>
-                      登出
+                    <a @click="handleLogout" 
+                       class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 cursor-pointer">
+                      <i class="fas fa-sign-out-alt w-5 text-indigo-500"></i>
+                      <span>登出</span>
                     </a>
                   </MenuItem>
                 </div>
@@ -81,7 +86,7 @@
 
 <script>
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, inject } from 'vue'
 import axios from '@/utils/axios'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
@@ -110,7 +115,8 @@ export default {
   },
   setup() {
     const router = useRouter()
-    const isDarkMode = ref(false)
+    const isDarkMode = inject('isDarkMode', ref(false))
+    const toggleDarkMode = inject('toggleDarkMode', () => {})
     const userInfo = ref({
       username: '',
       avatar: '',
@@ -187,6 +193,14 @@ export default {
       }
     }
 
+    // 處理深色模式切換
+    const handleDarkModeToggle = () => {
+      console.log('Toggling dark mode') // 用於調試
+      if (toggleDarkMode) {
+        toggleDarkMode()
+      }
+    }
+
     return {
       isDarkMode,
       userInfo,
@@ -198,10 +212,7 @@ export default {
           'group flex items-center w-full px-4 py-2 text-sm cursor-pointer'
         ]
       },
-      toggleDarkMode() {
-        isDarkMode.value = !isDarkMode.value
-        // 實現深色模式切換邏輯
-      }
+      handleDarkModeToggle
     }
   }
 }
