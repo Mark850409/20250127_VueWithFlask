@@ -55,7 +55,11 @@ class RecommendService:
             'review_number': self.restaurants_df['review_number'],
             'distance': self.restaurants_df['distance'],
             'rating': self.restaurants_df['rating'],
-            'description': self.restaurants_df['description']
+            'description': self.restaurants_df['description'],
+            'address': self.restaurants_df['address'],
+            'customer_phone': self.restaurants_df['customer_phone'],
+            'budget': self.restaurants_df['budget'],
+            'id': self.restaurants_df['id']
         }
         self.restaurants_df = pd.DataFrame(restaurants_data)
         
@@ -223,20 +227,24 @@ class RecommendService:
                 if city not in processed_cities:
                     recommended_restaurants.append({
                         'name': restaurant_info['name'],
-                        'latitude': float(restaurant_info['latitude']),
-                        'longitude': float(restaurant_info['longitude']),
+                        'latitude': float(str(restaurant_info['latitude'])),
+                        'longitude': float(str(restaurant_info['longitude'])),
                         'redirection_url': restaurant_info['redirection_url'],
                         'navigation_url': restaurant_info['navigation_url'],
                         'city': city,
                         'city_CN': restaurant_info['city_CN'],
-                        'distance': float(restaurant_info['distance']),
-                        'rating': float(restaurant_info['rating']),
-                        'review_number': int(restaurant_info['review_number']),
+                        'distance': float(str(restaurant_info['distance'])),
+                        'rating': float(str(restaurant_info['rating'])),
+                        'review_number': int(str(restaurant_info['review_number'])),
                         'hero_image': restaurant_info['hero_image'],
                         'hero_listing_image': restaurant_info['hero_listing_image'],
                         'tag': restaurant_info['tag'],
                         'is_new_until': restaurant_info['is_new_until'],
-                        'description': restaurant_info['description']
+                        'description': restaurant_info['description'],
+                        'address': restaurant_info['address'],
+                        'customer_phone': restaurant_info['customer_phone'],
+                        'budget': restaurant_info['budget'],
+                        'id': int(str(restaurant_info['id']))
                     })
                     recommended_ids.add(restaurant_id)
                     processed_cities.add(city)
@@ -256,20 +264,24 @@ class RecommendService:
                     restaurant_info, restaurant_id = rec
                     recommended_restaurants.append({
                         'name': restaurant_info['name'],
-                        'latitude': float(restaurant_info['latitude']),
-                        'longitude': float(restaurant_info['longitude']),
+                        'latitude': float(str(restaurant_info['latitude'])),
+                        'longitude': float(str(restaurant_info['longitude'])),
                         'redirection_url': restaurant_info['redirection_url'],
                         'navigation_url': restaurant_info['navigation_url'],
                         'city': restaurant_info['city'],
                         'city_CN': restaurant_info['city_CN'],
-                        'distance': float(restaurant_info['distance']),
-                        'rating': float(restaurant_info['rating']),
-                        'review_number': int(restaurant_info['review_number']),
+                        'distance': float(str(restaurant_info['distance'])),
+                        'rating': float(str(restaurant_info['rating'])),
+                        'review_number': int(str(restaurant_info['review_number'])),
                         'hero_image': restaurant_info['hero_image'],
                         'hero_listing_image': restaurant_info['hero_listing_image'],
                         'tag': restaurant_info['tag'],
                         'is_new_until': restaurant_info['is_new_until'],
-                        'description': restaurant_info['description']
+                        'description': restaurant_info['description'],
+                        'address': restaurant_info['address'],
+                        'customer_phone': restaurant_info['customer_phone'],
+                        'budget': restaurant_info['budget'],
+                        'id': int(str(restaurant_info['id']))
                     })
                     recommended_ids.add(restaurant_id)
             
@@ -359,20 +371,24 @@ class RecommendService:
                 if city not in processed_cities:
                     recommended_restaurants.append({
                         'name': restaurant_info['name'],
-                        'latitude': float(restaurant_info['latitude']),
-                        'longitude': float(restaurant_info['longitude']),
+                        'latitude': float(str(restaurant_info['latitude'])),
+                        'longitude': float(str(restaurant_info['longitude'])),
                         'redirection_url': restaurant_info['redirection_url'],
                         'navigation_url': restaurant_info['navigation_url'],
                         'city': city,
                         'city_CN': restaurant_info['city_CN'],
-                        'distance': float(restaurant_info['distance']),
-                        'rating': float(restaurant_info['rating']),
-                        'review_number': int(restaurant_info['review_number']),
+                        'distance': float(str(restaurant_info['distance'])),
+                        'rating': float(str(restaurant_info['rating'])),
+                        'review_number': int(str(restaurant_info['review_number'])),
                         'hero_image': restaurant_info['hero_image'],
                         'hero_listing_image': restaurant_info['hero_listing_image'],
                         'tag': restaurant_info['tag'],
                         'is_new_until': restaurant_info['is_new_until'],
-                        'description': restaurant_info['description']
+                        'description': restaurant_info['description'],
+                        'address': restaurant_info['address'],
+                        'customer_phone': restaurant_info['customer_phone'],
+                        'budget': restaurant_info['budget'],
+                        'id': int(str(restaurant_info['id']))
                     })
                     processed_cities.add(city)
             
@@ -400,20 +416,24 @@ class RecommendService:
                     restaurant_info = random.choice(city_restaurants)
                     recommended_restaurants.append({
                         'name': restaurant_info['name'],
-                        'latitude': float(restaurant_info['latitude']),
-                        'longitude': float(restaurant_info['longitude']),
+                        'latitude': float(str(restaurant_info['latitude'])),
+                        'longitude': float(str(restaurant_info['longitude'])),
                         'redirection_url': restaurant_info['redirection_url'],
                         'navigation_url': restaurant_info['navigation_url'],
                         'city': city,
                         'city_CN': restaurant_info['city_CN'],
-                        'distance': float(restaurant_info['distance']),
-                        'rating': float(restaurant_info['rating']),
-                        'review_number': int(restaurant_info['review_number']),
+                        'distance': float(str(restaurant_info['distance'])),
+                        'rating': float(str(restaurant_info['rating'])),
+                        'review_number': int(str(restaurant_info['review_number'])),
                         'hero_image': restaurant_info['hero_image'],
                         'hero_listing_image': restaurant_info['hero_listing_image'],
                         'tag': restaurant_info['tag'],
                         'is_new_until': restaurant_info['is_new_until'],
-                        'description': restaurant_info['description']
+                        'description': restaurant_info['description'],
+                        'address': restaurant_info['address'],
+                        'customer_phone': restaurant_info['customer_phone'],
+                        'budget': restaurant_info['budget'],
+                        'id': int(str(restaurant_info['id']))
                     })
                     processed_cities.add(city)
             
@@ -484,7 +504,11 @@ class RecommendService:
                             'hero_listing_image': rec['hero_listing_image'],
                             'tag': rec['tag'],
                             'is_new_until': rec['is_new_until'],
-                            'description': rec['description']
+                            'description': rec['description'],
+                            'address': rec['address'],
+                            'customer_phone': rec['customer_phone'],
+                            'budget': rec['budget'],
+                            'id': rec['id']
                         }
                         unique_recommendations.append(recommendation)
                         city_count[city] = city_count.get(city, 0) + 1

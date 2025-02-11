@@ -11,7 +11,9 @@
         :class="[
           'bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transform transition-all duration-300',
           viewMode === 'grid' ? 'hover:scale-105' : 'hover:shadow-xl'
-        ]">
+        ]"
+        @click="showDrinkDetail(drink)"
+        class="cursor-pointer">
       <!-- 網格視圖 -->
       <template v-if="viewMode === 'grid'">
         <img 
@@ -20,18 +22,27 @@
           class="w-full h-48 object-cover"
           @error="handleImageError"
         >
-        <div class="p-4">
-          <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-white">{{ drink.name }}</h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-2 line-clamp-3">{{ drink.description || '暫無描述' }}</p>
-          <div class="flex items-center mb-2">
-            <span class="text-yellow-500 mr-1">★</span>
-            <span class="text-gray-600 dark:text-gray-300">{{ drink.rating }}</span>
-            <span class="ml-2 text-gray-600 dark:text-gray-400">({{ drink.review_number }}次瀏覽)</span>
+        <div class="p-5">
+          <div class="flex justify-between items-start mb-2">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ drink.name }}</h3>
+            <button @click.stop="toggleFavorite(drink)" 
+                    class="text-2xl focus:outline-none transition-colors duration-300">
+              <i class="fas fa-heart" 
+                :class="{ 'text-red-500': favoriteStates[drink.id], 'text-gray-300': !favoriteStates[drink.id] }">
+              </i>
+            </button>
           </div>
-          <div class="mt-4 flex justify-between items-center">
+          <p class="text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{{ drink.description || '暫無描述' }}</p>
+          <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center">
+              <span class="text-yellow-500 mr-1">★</span>
+              <span class="text-gray-600 dark:text-gray-300">{{ drink.rating }}</span>
+              <span class="ml-2 text-gray-600 dark:text-gray-400">({{ drink.review_number }}次瀏覽)</span>
+            </div>
             <span class="text-gray-600 dark:text-gray-400">{{ drink.city_CN || drink.city }}</span>
           </div>
-          <div class="mt-4 flex justify-end space-x-3">
+          <div class="h-px bg-gray-200 dark:bg-gray-700 my-4"></div>
+          <div class="flex justify-end space-x-4">
             <a 
               :href="drink.foodpanda_url" 
               target="_blank"
@@ -62,7 +73,15 @@
             @error="handleImageError"
           >
           <div class="ml-4 flex-grow">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ drink.name }}</h3>
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ drink.name }}</h3>
+              <button @click.stop="toggleFavorite(drink)" 
+                      class="text-2xl focus:outline-none transition-colors duration-300">
+                <i class="fas fa-heart" 
+                  :class="{ 'text-red-500': favoriteStates[drink.id], 'text-gray-300': !favoriteStates[drink.id] }">
+                </i>
+              </button>
+            </div>
             <p class="text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">{{ drink.description || '暫無描述' }}</p>
             <div class="flex items-center my-1">
               <span class="text-yellow-500 mr-1">★</span>
@@ -95,11 +114,261 @@
       </template>
     </div>
   </transition-group>
+
+  <!-- 飲料店詳細資訊彈窗 -->
+  <div v-if="selectedDrink" 
+       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+       @click.self="closeDetailModal">
+    <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-4xl mx-4 overflow-hidden">
+      <div class="relative">
+        <!-- 店家圖片 -->
+        <img :src="selectedDrink.image_url" 
+             :alt="selectedDrink.name"
+             class="w-full h-64 object-cover"
+             @error="handleImageError">
+        
+        <!-- 關閉按鈕 -->
+        <button @click="closeDetailModal"
+                class="absolute top-4 right-4 bg-black bg-opacity-50 text-white rounded-full p-2 hover:bg-opacity-70">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- 店家資訊 -->
+      <div class="p-6">
+        <!-- 頁籤選項 -->
+        <div class="border-b border-gray-200 dark:border-gray-700">
+          <nav class="flex space-x-4 px-4">
+            <button 
+              @click="activeTab = 'info'"
+              :class="[
+                'py-4 px-2 font-medium border-b-2 transition-colors',
+                activeTab === 'info' 
+                  ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' 
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+              ]"
+            >
+              基本資訊
+            </button>
+            <button 
+              @click="activeTab = 'description'"
+              :class="[
+                'py-4 px-2 font-medium border-b-2 transition-colors',
+                activeTab === 'description' 
+                  ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' 
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+              ]"
+            >
+              店家介紹
+            </button>
+            <button 
+              @click="activeTab = 'reviews'"
+              :class="[
+                'py-4 px-2 font-medium border-b-2 transition-colors',
+                activeTab === 'reviews' 
+                  ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' 
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+              ]"
+            >
+              顧客評論
+            </button>
+          </nav>
+        </div>
+
+        <!-- 頁籤內容 -->
+        <div class="p-6">
+          <!-- 基本資訊 -->
+          <div v-if="activeTab === 'info'" class="space-y-6">
+            <!-- 店家名稱和評分 -->
+            <div class="mb-6">
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                {{ selectedDrink.name }}
+              </h2>
+              <div class="flex items-center">
+                <span class="text-yellow-500 mr-1">★</span>
+                <span class="text-gray-600 dark:text-gray-300">{{ selectedDrink.rating }}</span>
+                <span class="ml-2 text-gray-600 dark:text-gray-400">
+                  ({{ selectedDrink.review_number }}次瀏覽)
+                </span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 class="font-semibold text-gray-900 dark:text-white mb-2">飲料店資訊</h3>
+                <div class="space-y-2 text-gray-600 dark:text-gray-400">
+                  <p><i class="fas fa-map w-6"></i> 縣市：{{ selectedDrink.city_CN || selectedDrink.city }}</p>
+                  <p><i class="fas fa-map-marker-alt w-6"></i> 地址：{{ selectedDrink.address }}</p>
+                  <p><i class="fas fa-phone w-6"></i> 電話：{{ selectedDrink.phone }}</p>
+                  <p><i class="fas fa-clock w-6"></i> 開始營業時間：{{ formatDateTime(selectedDrink.start_time) || '暫無資訊' }}</p>
+                </div>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900 dark:text-white mb-2">店家標籤</h3>
+                <div class="text-gray-600 dark:text-gray-400">
+                  {{ selectedDrink.tags || '暫無標籤' }}
+                </div>
+              </div>
+            </div>
+            
+            <!-- 操作按鈕 -->
+            <div class="mt-6 flex justify-end space-x-4">
+              <a :href="selectedDrink.navigation_url" 
+                 target="_blank"
+                 class="p-2 text-gray-600 hover:text-indigo-500 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors duration-300"
+                 title="查看地圖">
+                <i class="fas fa-map-marker-alt text-xl"></i>
+              </a>
+              <a :href="selectedDrink.foodpanda_url" 
+                 target="_blank"
+                 class="p-2 text-gray-600 hover:text-pink-500 dark:text-gray-400 dark:hover:text-pink-400 transition-colors duration-300"
+                 title="前往點餐">
+                <i class="fas fa-utensils text-xl"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- 店家介紹 -->
+          <div v-else-if="activeTab === 'description'" class="space-y-6">
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                店家介紹
+              </h3>
+              <div class="text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                {{ formatDescription(selectedDrink.description) }}
+              </div>
+            </div>
+          </div>
+
+          <!-- 顧客評論 -->
+          <div v-else-if="activeTab === 'reviews'" class="space-y-6">
+            <!-- 評論統計 -->
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center space-x-4">
+                <div class="text-3xl font-bold text-gray-900 dark:text-white">
+                  {{ selectedDrink.rating }}
+                </div>
+                <div class="flex items-center text-yellow-400">
+                  <i class="fas fa-star"></i>
+                </div>
+                <div class="text-gray-500">
+                  {{ selectedDrink.review_number }} 次瀏覽
+                </div>
+              </div>
+              <button 
+                @click="showReviewForm = true"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                撰寫評論
+              </button>
+            </div>
+
+            <!-- 評論列表 -->
+            <div class="max-h-[400px] overflow-y-auto pr-2">
+              <div v-if="selectedDrink.reviews && selectedDrink.reviews.length > 0" 
+                   class="space-y-4">
+                <div v-for="review in selectedDrink.reviews" 
+                     :key="review.id" 
+                     class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
+                  <div class="flex items-start">
+                    <img :src="review.user_avatar || defaultAvatar" 
+                         :alt="review.username"
+                         class="w-10 h-10 rounded-full">
+                    <div class="ml-4 flex-1">
+                      <div class="flex items-center justify-between">
+                        <h4 class="font-medium text-gray-900 dark:text-white">
+                          {{ review.username }}
+                        </h4>
+                        <span class="text-sm text-gray-500">
+                          {{ formatDate(review.created_at) }}
+                        </span>
+                      </div>
+                      <div class="flex items-center mt-1">
+                        <div class="flex items-center text-yellow-400">
+                          <span v-for="i in 5" :key="i">
+                            <i :class="[
+                              'fas',
+                              i <= review.rating ? 'fa-star' : 'fa-star-o'
+                            ]"></i>
+                          </span>
+                        </div>
+                      </div>
+                      <p class="mt-2 text-gray-600 dark:text-gray-400">
+                        {{ review.content }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="text-center text-gray-500 py-8">
+                暫無評論，成為第一個評論的人吧！
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 評論表單彈窗 -->
+  <div v-if="showReviewForm" 
+       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+       @click.self="closeReviewForm">
+    <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-lg mx-4 p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+          撰寫評論
+        </h3>
+        <button @click="closeReviewForm" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          評分
+        </label>
+        <div class="flex items-center space-x-1">
+          <template v-for="star in 5" :key="star">
+            <button 
+              @click="newReview.rating = star"
+              class="text-2xl focus:outline-none"
+              :class="star <= newReview.rating ? 'text-yellow-400' : 'text-gray-300'"
+            >
+              <i class="fas fa-star"></i>
+            </button>
+          </template>
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          評論內容
+        </label>
+        <textarea 
+          v-model="newReview.content"
+          rows="4"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          placeholder="分享您的用餐體驗..."
+        ></textarea>
+      </div>
+      <div class="flex justify-end">
+        <button 
+          @click="submitReview"
+          class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          :disabled="isSubmitting"
+        >
+          {{ isSubmitting ? '提交中...' : '提交評論' }}
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
 import { ref, onMounted, watch } from 'vue'
 import { recommendAPI } from '@/api'
+import favoriteAPI from '@/api/modules/favorite'
+import axios from 'axios'
+import Swal from 'sweetalert2'
 
 export default {
   name: 'DrinkShopList',
@@ -115,6 +384,10 @@ export default {
     userId: {
       type: Number,
       required: true
+    },
+    drinks: {
+      type: Array,
+      required: true
     }
   },
   setup(props) {
@@ -123,9 +396,181 @@ export default {
     const loading = ref(false)
     const error = ref(null)
     const defaultImage = 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=500'
+    const selectedDrink = ref(null)
+    const activeTab = ref('info')
+    const isSubmitting = ref(false)
+    const showReviewForm = ref(false)
+    const newReview = ref({
+      rating: 0,
+      content: ''
+    })
+    const favoriteStates = ref({})
+    const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
 
     const handleImageError = (event) => {
       event.target.src = defaultImage
+    }
+
+    const showDrinkDetail = (drink) => {
+      console.log('選擇的店家:', drink)
+      if (!drink.id) {
+        console.error('店家ID不存在:', drink)
+        Swal.fire({
+          icon: 'error',
+          title: '系統錯誤',
+          text: '無法取得店家資訊'
+        })
+        return
+      }
+      selectedDrink.value = drink
+      const storeId = Number(drink.id)
+      console.log('準備檢查最愛狀態，店家ID:', storeId)
+      checkFavoriteStatus(storeId)
+    }
+
+    const checkFavoriteStatus = async (storeId) => {
+      try {
+        const response = await favoriteAPI.checkFavorite(storeId)
+        if (response.data.favorites && response.data.favorites.length > 0) {
+          favoriteStates.value[storeId] = true
+        } else {
+          favoriteStates.value[storeId] = false
+        }
+      } catch (error) {
+        console.error('檢查收藏狀態失敗:', error)
+        favoriteStates.value[storeId] = false
+      }
+    }
+
+    const toggleFavorite = async (drink) => {
+      try {
+        const isFavorited = favoriteStates.value[drink.id]
+        // 從 localStorage 獲取用戶資訊
+        const userInfo = JSON.parse(localStorage.getItem('user'))
+        if (!userInfo || !userInfo.username) {
+          throw new Error('請先登入')
+        }
+        
+        if (isFavorited) {
+          const response = await favoriteAPI.checkFavorite(drink.id)
+          if (response.data.favorites && response.data.favorites.length > 0) {
+            await favoriteAPI.deleteFavorite(response.data.favorites[0].id)
+            favoriteStates.value[drink.id] = false
+          }
+          Swal.fire({
+            icon: 'success',
+            title: '已取消收藏',
+            showConfirmButton: false,
+            timer: 1500
+          })
+        } else {
+          const response = await favoriteAPI.addFavorite({
+            store_id: drink.id,
+            store_name: drink.name,
+            store_image: drink.image_url || '',
+            username: userInfo.username  // 使用 localStorage 中的用戶名
+          })
+          favoriteStates.value[drink.id] = true
+          Swal.fire({
+            icon: 'success',
+            title: '已加入收藏',
+            showConfirmButton: false,
+            timer: 1500
+          })
+        }
+      } catch (error) {
+        console.error('切換收藏狀態失敗:', error)
+        let errorMessage = '請稍後再試'
+        if (error.message === '請先登入') {
+          errorMessage = '請先登入後再收藏'
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message
+        }
+        Swal.fire({
+          icon: 'error',
+          title: '操作失敗',
+          text: errorMessage
+        })
+      }
+    }
+
+    const submitReview = async () => {
+      if (!newReview.value.rating || !newReview.value.content) {
+        Swal.fire({
+          icon: 'warning',
+          title: '請填寫完整評論',
+          text: '請選擇評分並填寫評論內容'
+        })
+        return
+      }
+
+      try {
+        isSubmitting.value = true
+        const response = await axios.post(`/api/reviews/${selectedDrink.value.id}`, {
+          rating: newReview.value.rating,
+          content: newReview.value.content
+        })
+
+        if (!selectedDrink.value.reviews) {
+          selectedDrink.value.reviews = []
+        }
+        selectedDrink.value.reviews.unshift(response.data)
+
+        newReview.value = {
+          rating: 0,
+          content: ''
+        }
+
+        Swal.fire({
+          icon: 'success',
+          title: '評論成功',
+          showConfirmButton: false,
+          timer: 1500
+        })
+      } catch (error) {
+        console.error('提交評論失敗:', error)
+        Swal.fire({
+          icon: 'error',
+          title: '評論失敗',
+          text: '請稍後再試'
+        })
+      } finally {
+        isSubmitting.value = false
+      }
+    }
+
+    const formatDate = (date) => {
+      return new Date(date).toLocaleDateString('zh-TW', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    }
+
+    const formatDateTime = (dateTime) => {
+      if (!dateTime) return '暫無資訊'
+      const date = new Date(dateTime)
+      if (isNaN(date.getTime())) return '暫無資訊'
+      
+      return date.toLocaleString('zh-TW', {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      })
+    }
+
+    const formatDescription = (description) => {
+      if (!description) return '暫無店家介紹'
+      
+      // 處理換行符
+      return description
+        .replace(/\\n/g, '\n')  // 處理 JSON 字符串中的換行符
+        .replace(/\n\n+/g, '\n\n')  // 將多個連續換行減少為最多兩個
+        .trim()  // 移除首尾空白
     }
 
     const fetchRecommendations = async () => {
@@ -166,25 +611,25 @@ export default {
 
         // 統一數據格式
         drinks.value = storesData.map(shop => ({
-          id: shop.id || shop.store_id,
+          id: shop.store_id || shop.id,
           name: shop.name || shop.store_name,
           rating: shop.rating || 0,
           review_number: shop.review_number || 0,
           city: shop.city || '',
           city_CN: shop.city_CN || '',
-          description: shop.description ? 
-            (shop.description.length > 100 ? 
-              shop.description.substring(0, 100) + '...' : 
-              shop.description) : 
-            '暫無描述',
           navigation_url: shop.navigation_url || '#',
           foodpanda_url: shop.redirection_url || '#',
-          image_url: shop.hero_image || shop.hero_listing_image || defaultImage
+          image_url: shop.hero_image || shop.hero_listing_image || defaultImage,
+          address: shop.address || '暫無地址資訊',
+          phone: shop.customer_phone || '暫無電話資訊',
+          start_time: shop.is_new_until || '暫無營業時間資訊',
+          tags: shop.tag || '暫無標籤',
+          description: shop.description || '暫無店家介紹',
         }))
 
-        console.log('推薦數據:', {
-          sortBy: props.sortBy,
-          responseData: response.data,
+        // 檢查數據
+        console.log('店家數據:', {
+          originalData: storesData,
           processedData: drinks.value
         })
       } catch (err) {
@@ -204,11 +649,44 @@ export default {
       fetchRecommendations()
     })
 
+    const closeReviewForm = () => {
+      showReviewForm.value = false
+      newReview.value = {
+        rating: 0,
+        content: ''
+      }
+    }
+
+    const closeDetailModal = () => {
+      selectedDrink.value = null
+      activeTab.value = 'info'
+      showReviewForm.value = false
+      newReview.value = {
+        rating: 0,
+        content: ''
+      }
+    }
+
     return {
       drinks,
       loading,
       error,
-      handleImageError
+      handleImageError,
+      selectedDrink,
+      showDrinkDetail,
+      activeTab,
+      newReview,
+      isSubmitting,
+      favoriteStates,
+      toggleFavorite,
+      submitReview,
+      defaultAvatar,
+      formatDate,
+      formatDateTime,
+      showReviewForm,
+      closeReviewForm,
+      closeDetailModal,
+      formatDescription
     }
   }
 }
@@ -280,5 +758,22 @@ a:hover::after {
 .dark a:hover::after {
   background-color: rgba(255, 255, 255, 0.9);
   color: black;
+}
+
+/* 添加彈窗動畫 */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+/* 添加懸停效果 */
+.cursor-pointer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 </style> 

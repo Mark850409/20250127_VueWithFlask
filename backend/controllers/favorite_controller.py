@@ -94,4 +94,65 @@ def delete_favorite(path: FavoritePath):
         return {'message': str(e)}, 400
     except Exception as e:
         logger.error(f"刪除最愛錯誤: {str(e)}", exc_info=True)
-        return {'message': '刪除最愛失敗'}, 500 
+        return {'message': '刪除最愛失敗'}, 500
+
+@favorite_bp.get('/check/<int:store_id>', tags=[favorite_tag])
+@jwt_required()
+def check_favorite_status(path: FavoriteCheckPath):
+    """檢查指定店家是否已收藏
+    
+    Args:
+        path (FavoriteCheckPath): 路徑參數，包含店家ID
+    
+    Returns:
+        200: 
+            is_favorite (bool): 是否已收藏
+            favorite_id (int): 最愛ID(如果已收藏)
+        401: 未登入
+        500: 服務器錯誤
+    """
+    try:
+        user_id = get_jwt_identity()
+        if not user_id:
+            logger.error("未獲取到用戶ID")
+            return {'message': '請先登入'}, 401
+            
+        logger.info(f"開始檢查最愛狀態 - 用戶ID: {user_id}, 店家ID: {path.store_id}")
+        
+        if not path.store_id or path.store_id <= 0:
+            logger.error(f"無效的店家ID: {path.store_id}")
+            return {'message': '無效的店家ID'}, 400
+        
+        service = FavoriteService()
+        result = service.check_favorite_status(user_id, path.store_id)
+        logger.info(f"檢查最愛狀態結果: {result}")
+        
+        if not isinstance(result, dict) or 'is_favorite' not in result:
+            logger.error(f"服務返回無效的結果格式: {result}")
+            return {'message': '服務器內部錯誤'}, 500
+        
+        response_data = {
+            'favorites': [{
+                'id': result['favorite_id'],
+                'user_id': user_id,
+                'store_id': path.store_id,
+                'is_favorite': result['is_favorite']
+            }] if result['is_favorite'] else []
+        }
+        logger.info(f"返回的資料: {response_data}")
+        
+        return response_data, 200
+        
+    except ValueError as e:
+        error_msg = f"參數錯誤: {str(e)}"
+        logger.error(error_msg)
+        return {'message': error_msg}, 400
+        
+    except Exception as e:
+        error_msg = f"檢查最愛狀態錯誤: {str(e)}"
+        logger.error(error_msg, exc_info=True)
+        return {
+            'message': '檢查最愛狀態失敗',
+            'error': str(e),
+            'status': 'error'
+        }, 500 

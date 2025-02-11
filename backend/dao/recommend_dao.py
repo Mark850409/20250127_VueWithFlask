@@ -26,25 +26,29 @@ class RecommendDAO:
     def get_restaurants_data(self):
         """獲取餐廳資料集"""
         return pd.read_sql('''
-            SELECT 
-                g.place_id,
-                g.latitude,
-                g.longitude,
-                g.place_names,
-                g.redirection_url,
-                g.navigation_url,
-                g.city,
-                g.city_CN,
-                s.hero_image,
-                s.hero_listing_image,
-                s.tag,
-                s.is_new_until,
-                s.review_number,
-                s.distance,
-                s.rating,
-                s.description
+            SELECT DISTINCT
+            s.id,
+            g.place_id,
+            g.latitude,
+            g.longitude,
+            g.place_names,
+            g.redirection_url,
+            g.navigation_url,
+            g.city,
+            g.city_CN,
+            s.hero_image,
+            s.hero_listing_image,
+            s.tag,
+            s.is_new_until,
+            s.review_number,
+            s.distance,
+            s.rating,
+            s.description,
+            s.address,
+            s.customer_phone,
+            s.budget
             FROM googlemaps_info g
-            JOIN stores s ON s.id = g.id
+            JOIN stores s ON s.normalized_name=g.place_names
             ORDER BY RAND()
         ''', con=self.engine)
     

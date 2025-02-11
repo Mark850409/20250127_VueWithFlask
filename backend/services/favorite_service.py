@@ -69,4 +69,26 @@ class FavoriteService:
             return self.dao.delete_favorite(favorite_id)
         except Exception as e:
             logger.error(f"刪除最愛錯誤: {str(e)}", exc_info=True)
+            raise
+    
+    def check_favorite_status(self, user_id: int, store_id: int) -> dict:
+        """檢查最愛狀態"""
+        try:
+            logger.info(f"[Service] 開始檢查最愛狀態: user_id={user_id}, store_id={store_id}")
+            favorite = self.dao.check_exists(user_id, store_id)
+            
+            if favorite:
+                logger.info(f"[Service] 找到收藏記錄: id={favorite.id}, store_id={favorite.store_id}")
+                return {
+                    'is_favorite': True,
+                    'favorite_id': favorite.id
+                }
+                
+            logger.info(f"[Service] 未找到收藏記錄: user_id={user_id}, store_id={store_id}")
+            return {
+                'is_favorite': False,
+                'favorite_id': None
+            }
+        except Exception as e:
+            logger.error(f"檢查最愛狀態錯誤: {str(e)}", exc_info=True)
             raise 

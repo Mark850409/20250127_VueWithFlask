@@ -83,11 +83,23 @@ class StoreUpdateSchema(BaseModel):
 class StoreResponseSchema(StoreBaseSchema):
     """店家響應數據"""
     id: int = Field(..., description='店家ID')
+    city: str = Field(..., description='所在城市(英文)', max_length=50)
+    city_CN: str = Field(..., description='所在城市(中文)', max_length=50)
     created_at: datetime = Field(..., description='創建時間')
     updated_at: datetime = Field(..., description='更新時間')
 
     class Config:
         orm_mode = True
+        schema_extra = {
+            'example': {
+                'id': 1,
+                'name': '春水堂',
+                'city': 'Taipei',
+                'city_CN': '台北市',
+                'created_at': '2024-01-31T10:00:00',
+                'updated_at': '2024-01-31T10:00:00'
+            }
+        }
 
 class StoreCrawlerResponse(BaseModel):
     """爬蟲響應數據"""

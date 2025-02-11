@@ -345,6 +345,8 @@ def query_stores(query: StoreQuerySchema):
                     'review_number': store.review_number,
                     'hero_image': store.hero_image,
                     'hero_listing_image': store.hero_listing_image,
+                    'city': store.city,  # 添加 city
+                    'city_CN': store.city_CN,  # 添加 city_CN
                     'created_at': store.created_at,
                     'updated_at': store.updated_at
                 }

@@ -156,18 +156,9 @@ export default {
 
       try {
         // 驗證 token 有效性
-        const response = await axios.get('/users/verify', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
-        
+        const response = await axios.get('/users/verify')
         if (response.status === 200) {
           authStore.isLoggedIn = true
-        } else {
-          // token 無效或過期
-          localStorage.removeItem('token')
-          authStore.isLoggedIn = false
         }
       } catch (error) {
         console.error('Token 驗證失敗:', error)
@@ -180,8 +171,8 @@ export default {
       // 初始檢查
       checkLoginStatus()
       
-      // 設定定時檢查 (每10秒檢查一次)
-      tokenCheckInterval = setInterval(checkLoginStatus, 10000)
+      // 設定每小時檢查一次
+      tokenCheckInterval = setInterval(checkLoginStatus, 3600000)
       
       // 監聽 localStorage 變化
       window.addEventListener('storage', checkLoginStatus)

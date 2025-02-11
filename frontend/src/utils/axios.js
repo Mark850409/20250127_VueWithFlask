@@ -37,22 +37,29 @@ const instance = axios.create({
   maxBodyLength: Infinity
 })
 
+// 添加一個變數來追蹤上次驗證時間
+let lastVerifyTime = 0
+const VERIFY_INTERVAL = 3600000 // 1小時
+
 // 請求攔截器
 instance.interceptors.request.use(
   config => {
     const token = localStorage.getItem('token')
+    // 每個請求都要帶上 token
     if (token) {
-      // 確保使用正確的 Authorization 格式
       config.headers.Authorization = `Bearer ${token}`
     }
+
     // 如果是文件上傳，不要修改 Content-Type
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type']
     }
+    
     // 添加時間戳防止緩存
     if (config.method === 'get') {
       config.params = { ...config.params, _t: Date.now() }
     }
+    
     return config
   },
   error => {

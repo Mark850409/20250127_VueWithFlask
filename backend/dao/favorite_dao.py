@@ -65,10 +65,29 @@ class FavoriteDAO:
     def check_exists(user_id: int, store_id: int) -> bool:
         """檢查是否已收藏"""
         try:
-            result = db.session.query(Favorite.id).filter(
-                Favorite.user_id == user_id,
-                Favorite.store_id == store_id
-            ).limit(1).scalar() is not None
+            logger.info(f"檢查收藏: user_id={user_id}, store_id={store_id}")
+            print(f"檢查收藏: user_id={user_id}, store_id={store_id}")
+            
+            # 使用 query 和 filter_by 進行查詢
+            result = Favorite.query.filter_by(
+                user_id=user_id,
+                store_id=store_id
+            ).order_by(Favorite.created_at.desc()).first()
+            
+            if not result:
+                # 如果找不到，嘗試查詢所有該用戶的收藏並打印出來
+                all_favorites = Favorite.query.filter_by(
+                    user_id=user_id
+                ).order_by(Favorite.created_at.desc()).all()
+                print(f"該用戶所有收藏: {[(f.id, f.store_id, f.store_name) for f in all_favorites]}")
+
+                # 再次確認 store_id 的類型和值
+                print(f"輸入的 store_id 類型: {type(store_id)}, 值: {store_id}")
+                for fav in all_favorites:
+                    print(f"資料庫中的 store_id 類型: {type(fav.store_id)}, 值: {fav.store_id}")
+
+            logger.info(f"檢查結果: {result}")
+            print(f"檢查結果: {result}")
             db.session.commit()
             return result
         except Exception as e:

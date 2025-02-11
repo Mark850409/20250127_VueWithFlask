@@ -14,6 +14,7 @@ const pinia = createPinia()
 app.use(ElementPlus)
 app.use(pinia)
 app.use(router)
+
 app.mount('#app')
 
 console.log('Environment Variables in main.js:', import.meta.env) 

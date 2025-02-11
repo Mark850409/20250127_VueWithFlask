@@ -200,7 +200,7 @@ export default {
       if (timerInterval) clearInterval(timerInterval)
       if (tokenCheckInterval) clearInterval(tokenCheckInterval)
 
-      // 設置新的計時器
+      // 設置倒數計時器
       timerInterval = setInterval(() => {
         const now = Date.now()
         const timeLeft = Math.max(0, Math.ceil((tokenExpireTime.value - now) / 1000))
@@ -212,15 +212,17 @@ export default {
         }
       }, 1000)
 
-      // 設置 token 檢查計時器 (每分鐘檢查一次)
+      // 設置 token 檢查計時器 (每小時檢查一次)
       tokenCheckInterval = setInterval(async () => {
         try {
+          console.log('執行每小時 token 檢查...')
           await axios.get('/users/verify')
+          console.log('Token 驗證成功')
         } catch (error) {
           console.error('Token 驗證失敗:', error)
           await handleTokenExpiration()
         }
-      }, 60000) // 改為每分鐘檢查一次
+      }, 3600000) // 3600000 毫秒 = 1 小時
     }
 
     // 格式化時間
@@ -273,9 +275,11 @@ export default {
       }
 
       try {
-        // 驗證 token 是否有效
-        await axios.get('/users/verify')
-        startExpirationTimer() // 驗證成功後開始計時
+        // 只在初始化時進行一次驗證，之後由計時器定期檢查
+        const response = await axios.get('/users/verify')
+        if (response.status === 200) {
+          startExpirationTimer() // 驗證成功後開始計時
+        }
         return true
       } catch (error) {
         console.error('Token 驗證失敗:', error)
@@ -290,8 +294,15 @@ export default {
 
     // 組件卸載時清理計時器
     onUnmounted(() => {
-      if (timerInterval) clearInterval(timerInterval)
-      if (tokenCheckInterval) clearInterval(tokenCheckInterval)
+      console.log('組件卸載，清理計時器')
+      if (timerInterval) {
+        clearInterval(timerInterval)
+        timerInterval = null
+      }
+      if (tokenCheckInterval) {
+        clearInterval(tokenCheckInterval)
+        tokenCheckInterval = null
+      }
     })
 
     return {
