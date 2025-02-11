@@ -87,6 +87,7 @@ class StoreResponseSchema(StoreBaseSchema):
     city_CN: str = Field(..., description='所在城市(中文)', max_length=50)
     created_at: datetime = Field(..., description='創建時間')
     updated_at: datetime = Field(..., description='更新時間')
+    tag: Optional[str] = Field(None, description='標籤', max_length=255)
 
     class Config:
         orm_mode = True
@@ -97,7 +98,8 @@ class StoreResponseSchema(StoreBaseSchema):
                 'city': 'Taipei',
                 'city_CN': '台北市',
                 'created_at': '2024-01-31T10:00:00',
-                'updated_at': '2024-01-31T10:00:00'
+                'updated_at': '2024-01-31T10:00:00',
+                'tag': 'drinks,tea'
             }
         }
 
@@ -171,6 +173,7 @@ class SortField(str, Enum):
     REVIEW_NUMBER = "review_number"
     CREATED_AT = "created_at"
     DEFAULT = "default"
+    DISTANCE = "distance"
 
 class SortOrder(str, Enum):
     """排序方向"""
@@ -180,6 +183,7 @@ class SortOrder(str, Enum):
 class StoreQuerySchema(BaseModel):
     """查詢參數"""
     limit: int = Field(..., description='返回筆數限制', ge=1, le=50)
+    city: Optional[str] = Field(None, description='城市名稱(支持中英文)')
     sort_by: Optional[SortField] = Field(
         default=SortField.DEFAULT,
         description='排序欄位'
@@ -193,6 +197,7 @@ class StoreQuerySchema(BaseModel):
         schema_extra = {
             'example': {
                 'limit': 12,
+                'city': '台北市',
                 'sort_by': 'rating',
                 'order': 'desc'
             }

@@ -173,28 +173,22 @@ export default {
         icon: 'fas fa-star'
       },
       { 
-        label: '瀏覽次數', 
+        label: '瀏覽次數排序', 
         value: 'review_number',
         icon: 'fas fa-eye'
+      },
+      { 
+        label: '距離排序', 
+        value: 'distance',
+        icon: 'fas fa-route'
       }
     ]
 
     const recommendSortOptions = [
-      { 
-        label: '預設排序', 
-        value: 'default',
-        icon: 'fas fa-sort'
-      },
-      { 
-        label: '評分排序', 
-        value: 'rating',
-        icon: 'fas fa-star'
-      },
-      { 
-        label: '好感度排序', 
-        value: 'preference',
-        icon: 'fas fa-heart'
-      }
+      { label: '預設排序', value: 'default', icon: 'fas fa-sort' },
+      { label: '評分排序', value: 'rating', icon: 'fas fa-star' },
+      { label: '好感度排序', value: 'preference', icon: 'fas fa-thumbs-up' },
+      { label: '最愛排序', value: 'favorite', icon: 'fas fa-heart' },
     ]
 
     return {

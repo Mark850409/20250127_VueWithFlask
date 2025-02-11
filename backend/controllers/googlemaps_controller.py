@@ -131,4 +131,35 @@ def get_distance_matrix(query: DistanceMatrixQuery):
         return jsonify({'error': str(e)}), 400
     except Exception as e:
         logger.error(f"獲取距離矩陣失敗: {str(e)}")
+        return jsonify({'error': '服務器錯誤'}), 500
+
+@googlemaps_bp.get(
+    '/geocode/reverse',
+    tags=[googlemaps_tag],
+    responses={"200": ReverseGeocodeResponse, "400": ErrorResponse, "500": ErrorResponse}
+)
+def reverse_geocode(query: ReverseGeocodeQuery):
+    """
+    將經緯度轉換為地址
+    
+    Args:
+        query (ReverseGeocodeQuery): 包含經緯度的查詢參數
+    
+    Returns:
+        200: 成功獲取地址
+        400: 參數錯誤
+        500: 服務器錯誤
+    """
+    try:
+        service = GoogleMapsService(current_app.config['GOOGLE_MAPS_API_KEY'])
+        result = service.reverse_geocode(
+            latitude=query.latitude,
+            longitude=query.longitude,
+            language=query.language
+        )
+        return jsonify(result)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        logger.error(f"地理編碼失敗: {str(e)}")
         return jsonify({'error': '服務器錯誤'}), 500 

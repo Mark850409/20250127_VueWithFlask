@@ -317,6 +317,7 @@ def query_stores(query: StoreQuerySchema):
     Args:
         query (StoreQuerySchema): 查詢參數
             limit (int, optional): 返回筆數限制 (1-50)
+            city (str, optional): 城市名稱(支持中英文)
             sort_by (SortField, optional): 排序欄位 (rating/views/created_at/default)
             order (SortOrder, optional): 排序方向 (asc/desc)
     
@@ -332,21 +333,35 @@ def query_stores(query: StoreQuerySchema):
         stores = service.get_stores_with_params(
             limit=query.limit,
             sort_by=query.sort_by,
-            order=query.order
+            order=query.order,
+            city=query.city
         )
         return {
             'stores': [
                 {
                     'id': store.id,
                     'name': store.name,
-                    'description': store.description[:100] if store.description else '',  # 限制描述最多100字
+                    'description': store.description[:100] if store.description else '',
                     'budget': store.budget,
                     'rating': store.rating,
                     'review_number': store.review_number,
                     'hero_image': store.hero_image,
                     'hero_listing_image': store.hero_listing_image,
-                    'city': store.city,  # 添加 city
-                    'city_CN': store.city_CN,  # 添加 city_CN
+                    'distance': store.distance if hasattr(store, 'distance') else None,
+                    'is_new_until': store.is_new_until,
+                    'latitude': store.latitude,
+                    'longitude': store.longitude,
+                    'minimum_delivery_fee': store.minimum_delivery_fee,
+                    'minimum_delivery_time': store.minimum_delivery_time,
+                    'minimum_order_amount': store.minimum_order_amount,
+                    'minimum_pickup_time': store.minimum_pickup_time,
+                    'primary_cuisine_id': store.primary_cuisine_id,
+                    'city': store.city,
+                    'city_CN': store.city_CN,
+                    'customer_phone': store.customer_phone,
+                    'tag': store.tag,
+                    'address': store.address,
+                    'redirection_url': store.redirection_url,
                     'created_at': store.created_at,
                     'updated_at': store.updated_at
                 }

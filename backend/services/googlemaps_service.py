@@ -87,4 +87,18 @@ class GoogleMapsService:
             return result
         except Exception as e:
             logger.error(f"獲取距離矩陣失敗: {str(e)}")
+            raise ValueError(str(e))
+    
+    def reverse_geocode(
+        self,
+        latitude: float,
+        longitude: float,
+        language: str = 'zh-TW'
+    ) -> Dict:
+        """將經緯度轉換為地址"""
+        try:
+            result = self.dao.reverse_geocode(latitude, longitude, language)
+            return result
+        except Exception as e:
+            logger.error(f"地理編碼失敗: {str(e)}")
             raise ValueError(str(e)) 

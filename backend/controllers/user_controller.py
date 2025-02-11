@@ -182,7 +182,7 @@ def register(body: UserRegisterSchema):
         else:
             data['avatar'] = ''
 
-        print('data', data)
+        #print('data', data)
         
         service = UserService()
         user = service.register(data)
@@ -347,7 +347,7 @@ def logout():
     try:
         # 獲取當前用戶信息
         current_user_id = get_jwt_identity()
-        print(f"用戶 {current_user_id} 登出")
+        logger.info(f"用戶 {current_user_id} 登出")
         
         return {'message': '登出成功'}, 200
     except Exception as e:

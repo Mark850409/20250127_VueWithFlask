@@ -1,6 +1,47 @@
 import axios from '@/utils/axios'
 
 export default {
+  // 計算路線距離
+  calculateDistance(params) {
+    return axios.get('/v1/maps/distance-matrix', {
+      params: {
+        origins: [params.origin],  // 改為陣列格式
+        destinations: [params.destination],  // 改為陣列格式
+        mode: 'driving',
+        language: 'zh-TW'
+      }
+    }).catch(error => {
+      console.error('Calculate Distance Error:', error)
+      if (error.response) {
+        // 伺服器回應錯誤
+        console.error('Response Error:', error.response.data)
+        throw new Error(error.response.data.message || '計算距離失敗')
+      } else if (error.request) {
+        // 請求發送失敗
+        console.error('Request Error:', error.request)
+        throw new Error('網路連接失敗')
+      } else {
+        // 其他錯誤
+        console.error('Error:', error.message)
+        throw new Error('發生未知錯誤')
+      }
+    })
+  },
+
+  // 經緯度轉地址
+  reverseGeocode(params) {
+    return axios.get('/v1/maps/geocode/reverse', {
+      params: {
+        latitude: params.latitude,
+        longitude: params.longitude,
+        language: params.language || 'zh-TW'
+      }
+    }).catch(error => {
+      console.error('ReverseGeocode Error:', error.response?.data || error.message)
+      throw error
+    })
+  },
+
   // 獲取熱門飲料店列表
   getPopularDrinks(params) {
     const sortBy = params.sort_by === 'default' ? 'review_number' : params.sort_by
@@ -8,7 +49,8 @@ export default {
       params: {
         limit: params.limit || 12,
         sort_by: sortBy,
-        order: 'desc'
+        order: 'desc',
+        city: params.city
       }
     }).catch(error => {
       console.error('GetPopularDrinks Error:', error.response?.data || error.message)

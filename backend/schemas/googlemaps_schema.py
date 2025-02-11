@@ -86,4 +86,17 @@ class DistanceMatrixResponse(BaseModel):
     destination_addresses: List[str] = Field(..., description='目的地地址列表')
     origin_addresses: List[str] = Field(..., description='起點地址列表')
     rows: List[DistanceMatrixRow] = Field(..., description='距離矩陣數據')
-    status: str = Field(..., description='響應狀態') 
+    status: str = Field(..., description='響應狀態')
+
+class ReverseGeocodeQuery(BaseModel):
+    """經緯度轉地址查詢參數"""
+    latitude: float = Field(..., description='緯度', example=25.033964)
+    longitude: float = Field(..., description='經度', example=121.564468)
+    language: str = Field('zh-TW', description='語言代碼')
+
+class ReverseGeocodeResponse(BaseModel):
+    """地理編碼響應"""
+    formatted_address: str = Field(..., description='格式化地址')
+    city: str = Field(..., description='城市名稱')
+    city_district: Optional[str] = Field(None, description='行政區')
+    postal_code: Optional[str] = Field(None, description='郵遞區號') 

@@ -2,6 +2,10 @@ from typing import List, Optional
 from models.store import Store
 from dao.store_dao import StoreDAO
 from schemas.store_schema import SortField, SortOrder
+from sqlalchemy import desc, asc
+import logging
+
+logger = logging.getLogger(__name__)
 
 class StoreService:
     def __init__(self):
@@ -53,7 +57,29 @@ class StoreService:
         self,
         limit: Optional[int] = None,
         sort_by: SortField = SortField.DEFAULT,
-        order: SortOrder = SortOrder.DESC
+        order: SortOrder = SortOrder.DESC,
+        city: Optional[str] = None
     ) -> List[Store]:
         """獲取排序後的店家列表"""
-        return self.dao.get_stores_with_params(limit, sort_by, order) 
+        try:
+            query = Store.query
+
+            if city:
+                query = query.filter(Store.city_CN == city)
+
+            # 根據排序參數設置排序
+            if sort_by == SortField.RATING:
+                query = query.order_by(desc(Store.rating) if order == SortOrder.DESC else asc(Store.rating))
+            elif sort_by == SortField.REVIEW_NUMBER:
+                query = query.order_by(desc(Store.review_number) if order == SortOrder.DESC else asc(Store.review_number))
+            elif sort_by == SortField.DISTANCE:
+                # 距離排序在前端處理，這裡返回未排序的結果
+                pass
+            elif sort_by == SortField.DEFAULT:
+                query = query.order_by(desc(Store.rating))
+
+            stores = query.limit(limit).all()
+            return stores
+        except Exception as e:
+            logger.error(f"獲取店家列表失敗: {str(e)}")
+            raise 

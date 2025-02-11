@@ -75,10 +75,18 @@ class StoreDAO:
     def get_stores_with_params(
         limit: Optional[int] = None,
         sort_by: SortField = SortField.DEFAULT,
-        order: SortOrder = SortOrder.DESC
+        order: SortOrder = SortOrder.DESC,
+        city: Optional[str] = None
     ) -> List[Store]:
         """獲取排序後的店家列表"""
         query = Store.query
+
+        # 添加城市過濾
+        if city:
+            query = query.filter(
+                # 同時匹配中文或英文城市名
+                (Store.city_CN == city) | (Store.city == city)
+            )
 
         # 根據排序欄位和方向進行排序
         if sort_by != SortField.DEFAULT:
@@ -95,4 +103,25 @@ class StoreDAO:
         if limit:
             query = query.limit(limit)
 
+        return query.all()
+
+    def get_stores_with_params(self, limit=None, sort_by=None, order='desc', city=None):
+        """根據參數獲取店家列表"""
+        query = self.db.session.query(Store)
+        
+        if city:
+            query = query.filter(Store.city_CN == city)
+            
+        if sort_by:
+            if sort_by == 'rating':
+                query = query.order_by(desc(Store.rating) if order == 'desc' else asc(Store.rating))
+            elif sort_by == 'review_number':
+                query = query.order_by(desc(Store.review_number) if order == 'desc' else asc(Store.review_number))
+            elif sort_by == 'distance':
+                # 距離排序在前端處理
+                pass
+            
+        if limit:
+            query = query.limit(limit)
+            
         return query.all() 

@@ -7,111 +7,93 @@
       'space-y-4': viewMode === 'list'
     }"
   >
-    <div v-for="drink in drinks" :key="drink.name" 
-        :class="[
-          'bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transform transition-all duration-300',
-          viewMode === 'grid' ? 'hover:scale-105' : 'hover:shadow-xl'
-        ]"
-        @click="showDrinkDetail(drink)"
-        class="cursor-pointer">
-      <!-- 網格視圖 -->
-      <template v-if="viewMode === 'grid'">
+    <div v-for="drink in drinks" :key="drink.id" 
+        class="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer"
+        @click="showDrinkDetail(drink)">
+      <!-- 店家圖片 -->
+      <div class="relative">
         <img 
           :src="drink.image_url" 
           :alt="drink.name" 
           class="w-full h-48 object-cover"
           @error="handleImageError"
         >
-        <div class="p-5">
-          <div class="flex justify-between items-start mb-2">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ drink.name }}</h3>
-            <button @click.stop="toggleFavorite(drink)" 
-                    class="text-2xl focus:outline-none transition-colors duration-300">
-              <i class="fas fa-heart" 
-                :class="{ 'text-red-500': favoriteStates[drink.id], 'text-gray-300': !favoriteStates[drink.id] }">
-              </i>
-            </button>
+        <!-- 商品標籤 -->
+        <div v-if="drink.tag" class="absolute top-4 left-4">
+          <span class="px-3 py-1 text-sm bg-purple-500 text-white rounded-full flex items-center shadow-md">
+            <i class="fas fa-tag text-xs mr-1.5"></i>
+            {{ drink.tag }}
+          </span>
+        </div>
+      </div>
+
+      <!-- 店家資訊 -->
+      <div class="p-6">
+        <!-- 店家名稱 -->
+        <div class="flex justify-between items-start mb-4">
+          <h3 class="text-xl font-bold text-gray-900">{{ drink.name }}</h3>
+          <button @click.stop="toggleFavorite(drink)" 
+                  class="text-2xl focus:outline-none transition-colors duration-300">
+            <i class="fas fa-heart" 
+              :class="{ 'text-red-500': favoriteStates[drink.id], 'text-gray-400': !favoriteStates[drink.id] }">
+            </i>
+          </button>
+        </div>
+
+        <!-- 縣市和評分資訊 -->
+        <div class="flex justify-between items-center mb-3">
+          <div class="flex items-center text-gray-600">
+            <i class="fas fa-map-marker-alt mr-2"></i>
+            <span>{{ drink.city_CN }}</span>
           </div>
-          <p class="text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{{ drink.description || '暫無描述' }}</p>
-          <div class="flex justify-between items-center mb-4">
-            <div class="flex items-center">
-              <span class="text-yellow-500 mr-1">★</span>
-              <span class="text-gray-600 dark:text-gray-300">{{ drink.rating }}</span>
-              <span class="ml-2 text-gray-600 dark:text-gray-400">({{ drink.review_number }}次瀏覽)</span>
-            </div>
-            <span class="text-gray-600 dark:text-gray-400">{{ drink.city_CN || drink.city }}</span>
-          </div>
-          <div class="h-px bg-gray-200 dark:bg-gray-700 my-4"></div>
-          <div class="flex justify-end space-x-4">
-            <a 
-              :href="drink.foodpanda_url" 
-              target="_blank"
-              class="p-2 text-gray-600 hover:text-pink-500 dark:text-gray-400 dark:hover:text-pink-400 transition-colors duration-300"
-              title="前往點餐"
-            >
-              <i class="fas fa-utensils text-xl"></i>
-            </a>
-            <a 
-              :href="drink.navigation_url" 
-              target="_blank"
-              class="p-2 text-gray-600 hover:text-indigo-500 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors duration-300"
-              title="查看地圖"
-            >
-              <i class="fas fa-map-marker-alt text-xl"></i>
-            </a>
+          <div class="flex items-center">
+            <span class="text-yellow-400 mr-1"><i class="fas fa-star"></i></span>
+            <span class="font-bold">{{ drink.rating }}</span>
+            <span class="text-gray-500 ml-1">({{ drink.review_number }}次瀏覽)</span>
           </div>
         </div>
-      </template>
-      
-      <!-- 列表視圖 -->
-      <template v-else>
-        <div class="flex items-center p-4">
-          <img 
-            :src="drink.image_url" 
-            :alt="drink.name" 
-            class="w-24 h-24 object-cover rounded"
-            @error="handleImageError"
+
+        <!-- 店家標籤 -->
+        <div v-if="drink.tag" class="mb-3">
+          <div class="flex flex-wrap gap-2">
+            <span v-for="(tag, index) in drink.tag.split(',')" :key="index"
+                  class="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-full flex items-center">
+              <i class="fas fa-tag text-xs mr-1.5"></i>
+              {{ tag.trim() }}
+            </span>
+          </div>
+        </div>
+
+        <!-- 店家描述 -->
+        <p class="text-gray-600 mb-4 line-clamp-2">
+          {{ truncateDescription(drink.description) }}
+        </p>
+
+        <!-- 分隔線 -->
+        <div class="h-px bg-gray-200 dark:bg-gray-700 mb-4"></div>
+
+        <!-- 功能按鈕 -->
+        <div class="flex justify-end space-x-4">
+          <a 
+            :href="drink.foodpanda_url" 
+            target="_blank"
+            @click.stop
+            class="p-2 text-gray-600 hover:text-pink-500 transition-colors duration-300"
+            title="前往點餐"
           >
-          <div class="ml-4 flex-grow">
-            <div class="flex justify-between items-start mb-2">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ drink.name }}</h3>
-              <button @click.stop="toggleFavorite(drink)" 
-                      class="text-2xl focus:outline-none transition-colors duration-300">
-                <i class="fas fa-heart" 
-                  :class="{ 'text-red-500': favoriteStates[drink.id], 'text-gray-300': !favoriteStates[drink.id] }">
-                </i>
-              </button>
-            </div>
-            <p class="text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">{{ drink.description || '暫無描述' }}</p>
-            <div class="flex items-center my-1">
-              <span class="text-yellow-500 mr-1">★</span>
-              <span class="text-gray-600 dark:text-gray-300">{{ drink.rating }}</span>
-              <span class="ml-2 text-gray-600 dark:text-gray-400">({{ drink.review_number }}次瀏覽)</span>
-            </div>
-            <div class="flex items-center text-gray-600 dark:text-gray-400">
-              <span>{{ drink.city_CN || drink.city }}</span>
-            </div>
-          </div>
-          <div class="flex items-center space-x-3">
-            <a 
-              :href="drink.foodpanda_url" 
-              target="_blank"
-              class="p-2 text-gray-600 hover:text-pink-500 dark:text-gray-400 dark:hover:text-pink-400 transition-colors duration-300"
-              title="前往點餐"
-            >
-              <i class="fas fa-utensils text-xl"></i>
-            </a>
-            <a 
-              :href="drink.navigation_url" 
-              target="_blank"
-              class="p-2 text-gray-600 hover:text-indigo-500 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors duration-300"
-              title="查看地圖"
-            >
-              <i class="fas fa-map-marker-alt text-xl"></i>
-            </a>
-          </div>
+            <i class="fas fa-utensils text-xl"></i>
+          </a>
+          <a 
+            :href="drink.navigation_url" 
+            target="_blank"
+            @click.stop
+            class="p-2 text-gray-600 hover:text-indigo-500 transition-colors duration-300"
+            title="查看地圖"
+          >
+            <i class="fas fa-map-marker-alt text-xl"></i>
+          </a>
         </div>
-      </template>
+      </div>
     </div>
   </transition-group>
 
@@ -142,35 +124,38 @@
             <button 
               @click="activeTab = 'info'"
               :class="[
-                'py-4 px-2 font-medium border-b-2 transition-colors',
+                'py-4 px-2 font-medium border-b-2 transition-colors flex items-center space-x-2',
                 activeTab === 'info' 
                   ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' 
                   : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
               ]"
             >
-              基本資訊
+              <i class="fas fa-info-circle"></i>
+              <span>基本資訊</span>
             </button>
             <button 
               @click="activeTab = 'description'"
               :class="[
-                'py-4 px-2 font-medium border-b-2 transition-colors',
+                'py-4 px-2 font-medium border-b-2 transition-colors flex items-center space-x-2',
                 activeTab === 'description' 
                   ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' 
                   : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
               ]"
             >
-              店家介紹
+              <i class="fas fa-store"></i>
+              <span>店家介紹</span>
             </button>
             <button 
               @click="activeTab = 'reviews'"
               :class="[
-                'py-4 px-2 font-medium border-b-2 transition-colors',
+                'py-4 px-2 font-medium border-b-2 transition-colors flex items-center space-x-2',
                 activeTab === 'reviews' 
                   ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' 
                   : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
               ]"
             >
-              顧客評論
+              <i class="fas fa-comments"></i>
+              <span>顧客評論</span>
             </button>
           </nav>
         </div>
@@ -204,9 +189,12 @@
                 </div>
               </div>
               <div>
-                <h3 class="font-semibold text-gray-900 dark:text-white mb-2">店家標籤</h3>
-                <div class="text-gray-600 dark:text-gray-400">
-                  {{ selectedDrink.tags || '暫無標籤' }}
+                <h3 class="font-semibold text-gray-900 dark:text-white mb-2">店家標誌</h3>
+                <div v-if="selectedDrink.tag" class="flex flex-wrap gap-2">
+                  <span class="px-3 py-1 text-sm bg-purple-500 text-white rounded-full flex items-center shadow-md">
+                    <i class="fas fa-tag text-xs mr-1.5"></i>
+                    {{ selectedDrink.tag }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -573,6 +561,23 @@ export default {
         .trim()  // 移除首尾空白
     }
 
+    const truncateDescription = (description) => {
+      if (!description) return '暫無店家介紹'
+      
+      // 處理換行符
+      const truncatedDescription = description
+        .replace(/\\n/g, '\n')  // 處理 JSON 字符串中的換行符
+        .replace(/\n\n+/g, '\n\n')  // 將多個連續換行減少為最多兩個
+        .trim()  // 移除首尾空白
+      
+      // 限制描述長度
+      const maxLength = 100
+      if (truncatedDescription.length > maxLength) {
+        return truncatedDescription.slice(0, maxLength) + '...'
+      }
+      return truncatedDescription
+    }
+
     const fetchRecommendations = async () => {
       try {
         loading.value = true
@@ -592,6 +597,9 @@ export default {
               user_id: props.userId
             })
             break
+          case 'favorite':
+            response = await favoriteAPI.getFavorites()
+            break
           default:
             response = await recommendAPI.getHybridRecommendations({
               limit: 10,
@@ -602,7 +610,21 @@ export default {
         // 統一處理不同 API 的回傳格式
         let storesData = []
         if (response.data) {
-          if (response.data.stores) {
+          if (props.sortBy === 'favorite') {
+            console.log('收藏列表資料:', response.data)
+            // 處理收藏列表的資料格式
+            storesData = response.data.favorites.map(favorite => ({
+              store_id: favorite.store_id,
+              name: favorite.store_name,
+              image_url: favorite.store_image,
+              // 其他必要欄位設置預設值
+              rating: 0,
+              review_number: 0,
+              city: '',
+              city_CN: '',
+              description: '暫無店家介紹'
+            }))
+          } else if (response.data.stores) {
             storesData = response.data.stores
           } else if (response.data.data) {
             storesData = response.data.data
@@ -619,19 +641,21 @@ export default {
           city_CN: shop.city_CN || '',
           navigation_url: shop.navigation_url || '#',
           foodpanda_url: shop.redirection_url || '#',
-          image_url: shop.hero_image || shop.hero_listing_image || defaultImage,
+          image_url: shop.hero_image || shop.hero_listing_image || shop.store_image || defaultImage,
           address: shop.address || '暫無地址資訊',
           phone: shop.customer_phone || '暫無電話資訊',
           start_time: shop.is_new_until || '暫無營業時間資訊',
-          tags: shop.tag || '暫無標籤',
           description: shop.description || '暫無店家介紹',
+          tag: shop.tag || '',
         }))
 
-        // 檢查數據
-        console.log('店家數據:', {
-          originalData: storesData,
-          processedData: drinks.value
-        })
+        // 如果是最愛排序，設置所有店家的收藏狀態為 true
+        if (props.sortBy === 'favorite') {
+          drinks.value.forEach(drink => {
+            favoriteStates.value[drink.id] = true
+          })
+        }
+
       } catch (err) {
         error.value = err.message
         console.error('獲取推薦飲料店失敗:', err)
@@ -686,7 +710,8 @@ export default {
       showReviewForm,
       closeReviewForm,
       closeDetailModal,
-      formatDescription
+      formatDescription,
+      truncateDescription
     }
   }
 }

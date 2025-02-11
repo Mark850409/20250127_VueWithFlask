@@ -65,7 +65,7 @@ def get_place_review(place_name):
              'redirection_url': redirection_url,
              'navigation_url': navigation_url})
         df = pd.DataFrame(mydata)
-        print(data)
+        #print(data)
     try:
         create_table_if_not_exists()
 

@@ -195,4 +195,65 @@ class GoogleMapsDAO:
                 
             return result
         except Exception as e:
-            raise ValueError(f'獲取距離矩陣失敗: {str(e)}') 
+            raise ValueError(f'獲取距離矩陣失敗: {str(e)}')
+
+    def reverse_geocode(
+        self,
+        latitude: float,
+        longitude: float,
+        language: str = 'zh-TW'
+    ) -> Dict:
+        """
+        將經緯度轉換為地址
+        
+        Args:
+            latitude: 緯度
+            longitude: 經度
+            language: 語言代碼
+            
+        Returns:
+            Dict: 包含地址信息的字典
+            
+        Raises:
+            ValueError: 轉換失敗時拋出
+        """
+        try:
+            result = self.gmaps.reverse_geocode(
+                (latitude, longitude),
+                language=language
+            )
+            
+            if not result:
+                raise ValueError('無法獲取地址信息')
+                
+            address_components = result[0]['address_components']
+            formatted_address = result[0]['formatted_address']
+            
+            # 解析地址組件
+            city = next(
+                (comp['long_name'] for comp in address_components 
+                 if 'administrative_area_level_1' in comp['types']),
+                None
+            )
+            
+            city_district = next(
+                (comp['long_name'] for comp in address_components 
+                 if 'administrative_area_level_2' in comp['types']),
+                None
+            )
+            
+            postal_code = next(
+                (comp['long_name'] for comp in address_components 
+                 if 'postal_code' in comp['types']),
+                None
+            )
+            
+            return {
+                'formatted_address': formatted_address,
+                'city': city,
+                'city_district': city_district,
+                'postal_code': postal_code
+            }
+            
+        except Exception as e:
+            raise ValueError(f'地理編碼失敗: {str(e)}') 
