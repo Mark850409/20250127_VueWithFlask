@@ -7,7 +7,15 @@
       'space-y-4': viewMode === 'list'
     }"
   >
-    <div v-for="drink in drinks" :key="drink.id" 
+    <!-- 當是最愛排序且沒有資料時顯示提示 -->
+    <div v-if="sortBy === 'favorite' && (!drinks || drinks.length === 0)"
+         class="col-span-full flex flex-col items-center justify-center py-12 bg-white rounded-lg shadow">
+      <i class="fas fa-heart text-6xl text-gray-300 mb-4"></i>
+      <p class="text-xl text-gray-600 mb-2">目前尚未加入最愛</p>
+      <p class="text-gray-500">趕快新增一個吧！</p>
+    </div>
+
+    <div v-else v-for="drink in drinks" :key="drink.id" 
         class="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer"
         @click="showDrinkDetail(drink)">
       <!-- 店家圖片 -->
@@ -236,11 +244,20 @@
                 <div class="text-3xl font-bold text-gray-900 dark:text-white">
                   {{ selectedDrink.rating }}
                 </div>
-                <div class="flex items-center text-yellow-400">
-                  <i class="fas fa-star"></i>
+                <div class="flex items-center text-yellow-400 cursor-pointer">
+                  <i v-for="n in 5" :key="n"
+                     @click="setRating(n)"
+                     @mouseover="hoverRating = n"
+                     @mouseleave="hoverRating = 0"
+                     :class="[
+                       'fas',
+                       'fa-star',
+                       (hoverRating || selectedDrink.rating) >= n ? 'text-yellow-400' : 'text-gray-200'
+                     ]">
+                  </i>
                 </div>
                 <div class="text-gray-500">
-                  {{ selectedDrink.review_number }} 次瀏覽
+                  {{ getReviewCount }} 次瀏覽
                 </div>
               </div>
               <button 
@@ -253,9 +270,15 @@
 
             <!-- 評論列表 -->
             <div class="max-h-[400px] overflow-y-auto pr-2">
-              <div v-if="selectedDrink.reviews && selectedDrink.reviews.length > 0" 
+              <div v-if="getReviewCount > 0" 
                    class="space-y-4">
-                <div v-for="review in selectedDrink.reviews" 
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="text-lg font-medium text-gray-900">最新評論</h3>
+                  <span class="text-sm text-gray-500">
+                    (顯示最新 3 則評論)
+                  </span>
+                </div>
+                <div v-for="review in displayedReviews" 
                      :key="review.id" 
                      class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
                   <div class="flex items-start">
@@ -287,6 +310,10 @@
                     </div>
                   </div>
                 </div>
+                <div v-if="getReviewCount > 3" 
+                     class="text-center text-gray-500 mt-4">
+                  僅顯示最新 3 則評論
+                </div>
               </div>
               <div v-else class="text-center text-gray-500 py-8">
                 暫無評論，成為第一個評論的人吧！
@@ -311,40 +338,38 @@
           <i class="fas fa-times"></i>
         </button>
       </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          評分
-        </label>
-        <div class="flex items-center space-x-1">
-          <template v-for="star in 5" :key="star">
-            <button 
-              @click="newReview.rating = star"
-              class="text-2xl focus:outline-none"
-              :class="star <= newReview.rating ? 'text-yellow-400' : 'text-gray-300'"
-            >
-              <i class="fas fa-star"></i>
+      <div class="rating mb-4">
+        <div class="flex items-center mb-2">
+          <span class="mr-2">評分：</span>
+          <div class="flex text-2xl text-yellow-400">
+            <button v-for="n in 5"
+                    :key="n"
+                    @click="setRating(n)"
+                    @mouseover="hoverRating = n"
+                    @mouseleave="hoverRating = 0"
+                    class="focus:outline-none mr-1">
+              <i class="fas fa-star" 
+               :class="{
+                 'text-yellow-400': hoverRating >= n || (!hoverRating && rating >= n),
+                 'text-gray-300': (hoverRating && hoverRating < n) || (!hoverRating && rating < n)
+               }">
+              </i>
             </button>
-          </template>
+          </div>
+          <span class="ml-2 text-sm text-gray-600">{{ rating }} 分</span>
         </div>
-      </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          評論內容
-        </label>
-        <textarea 
-          v-model="newReview.content"
-          rows="4"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-          placeholder="分享您的用餐體驗..."
-        ></textarea>
-      </div>
-      <div class="flex justify-end">
-        <button 
-          @click="submitReview"
-          class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-          :disabled="isSubmitting"
-        >
-          {{ isSubmitting ? '提交中...' : '提交評論' }}
+        
+        <div class="mb-4">
+          <textarea v-model="comment"
+                    placeholder="請寫下您的評論..."
+                    class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    rows="4">
+          </textarea>
+        </div>
+        
+        <button @click="handleSubmitComment"
+                 class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+          發布評論
         </button>
       </div>
     </div>
@@ -352,11 +377,11 @@
 </template>
 
 <script>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { recommendAPI } from '@/api'
 import favoriteAPI from '@/api/modules/favorite'
-import axios from 'axios'
 import Swal from 'sweetalert2'
+import { messageAPI } from '@/api'
 
 export default {
   name: 'DrinkShopList',
@@ -394,6 +419,9 @@ export default {
     })
     const favoriteStates = ref({})
     const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
+    const rating = ref(0)
+    const hoverRating = ref(0)
+    const comment = ref('')
 
     const handleImageError = (event) => {
       event.target.src = defaultImage
@@ -455,7 +483,7 @@ export default {
           const response = await favoriteAPI.addFavorite({
             store_id: drink.id,
             store_name: drink.name,
-            store_image: drink.image_url || '',
+            store_image: drink.store_image || defaultImage,
             username: userInfo.username  // 使用 localStorage 中的用戶名
           })
           favoriteStates.value[drink.id] = true
@@ -482,48 +510,89 @@ export default {
       }
     }
 
-    const submitReview = async () => {
-      if (!newReview.value.rating || !newReview.value.content) {
+    const setRating = (value) => {
+      rating.value = value
+    }
+
+    const handleSubmitComment = async () => {
+      if (!props.userId) {
         Swal.fire({
           icon: 'warning',
-          title: '請填寫完整評論',
-          text: '請選擇評分並填寫評論內容'
+          title: '請先登入',
+          text: '發布評論前請先登入系統',
+          confirmButtonText: '確定'
         })
         return
       }
-
-      try {
-        isSubmitting.value = true
-        const response = await axios.post(`/api/reviews/${selectedDrink.value.id}`, {
-          rating: newReview.value.rating,
-          content: newReview.value.content
+      
+      if (!rating.value) {
+        Swal.fire({
+          icon: 'warning',
+          title: '請選擇評分',
+          text: '評分為必填項目',
+          confirmButtonText: '確定'
         })
-
+        return
+      }
+      
+      if (!comment.value.trim()) {
+        Swal.fire({
+          icon: 'warning',
+          title: '請填寫評論內容',
+          text: '評論內容不能為空',
+          confirmButtonText: '確定'
+        })
+        return
+      }
+      
+      try {
+        const commentData = {
+          content: comment.value.trim(),
+          store_id: selectedDrink.value.id,
+          rating: rating.value
+        }
+        
+        const response = await messageAPI.createMessage(commentData)
+        
+        // 關閉評論表單
+        showReviewForm.value = false
+        
+        // 更新評論列表
         if (!selectedDrink.value.reviews) {
           selectedDrink.value.reviews = []
         }
-        selectedDrink.value.reviews.unshift(response.data)
-
-        newReview.value = {
-          rating: 0,
-          content: ''
-        }
-
+        
+        // 添加新評論到列表開頭
+        selectedDrink.value.reviews.unshift({
+          id: response.data.id,
+          content: comment.value.trim(),
+          rating: rating.value,
+          created_at: new Date().toISOString(),
+          username: JSON.parse(localStorage.getItem('user')).username,
+          user_avatar: `${import.meta.env.VITE_BACKEND_URL}/api/users/avatar/${JSON.parse(localStorage.getItem('user')).avatar.split('/').pop()}`
+        })
+        
+        // 清空表單
+        rating.value = 0
+        comment.value = ''
+        
+        // 切換到評論頁籤
+        activeTab.value = 'reviews'
+        
         Swal.fire({
           icon: 'success',
-          title: '評論成功',
-          showConfirmButton: false,
-          timer: 1500
+          title: '評論發布成功',
+          text: '您的評論已送出審核',
+          confirmButtonText: '確定'
         })
       } catch (error) {
-        console.error('提交評論失敗:', error)
+        console.error('發布評論失敗:', error)
         Swal.fire({
           icon: 'error',
-          title: '評論失敗',
-          text: '請稍後再試'
+          title: '發布失敗',
+          text: error.response?.data?.message || '請稍後再試',
+          confirmButtonText: '確定'
         })
-      } finally {
-        isSubmitting.value = false
       }
     }
 
@@ -599,6 +668,7 @@ export default {
             break
           case 'favorite':
             response = await favoriteAPI.getFavorites()
+            console.log('收藏列表資料:', response.data)
             break
           default:
             response = await recommendAPI.getHybridRecommendations({
@@ -616,13 +686,15 @@ export default {
             storesData = response.data.favorites.map(favorite => ({
               store_id: favorite.store_id,
               name: favorite.store_name,
-              image_url: favorite.store_image,
+              store_image: favorite.store_image,
               // 其他必要欄位設置預設值
-              rating: 0,
-              review_number: 0,
-              city: '',
-              city_CN: '',
-              description: '暫無店家介紹'
+              rating: favorite.rating,
+              review_number: favorite.review_number,
+              city: favorite.city,
+              city_CN: favorite.city_CN,
+              description: favorite.description,
+              navigation_url: favorite.navigation_url,
+              redirection_url: favorite.redirection_url
             }))
           } else if (response.data.stores) {
             storesData = response.data.stores
@@ -641,7 +713,7 @@ export default {
           city_CN: shop.city_CN || '',
           navigation_url: shop.navigation_url || '#',
           foodpanda_url: shop.redirection_url || '#',
-          image_url: shop.hero_image || shop.hero_listing_image || shop.store_image || defaultImage,
+          image_url: shop.hero_image || shop.hero_listing_image || shop.store_image,
           address: shop.address || '暫無地址資訊',
           phone: shop.customer_phone || '暫無電話資訊',
           start_time: shop.is_new_until || '暫無營業時間資訊',
@@ -675,21 +747,32 @@ export default {
 
     const closeReviewForm = () => {
       showReviewForm.value = false
-      newReview.value = {
-        rating: 0,
-        content: ''
-      }
+      rating.value = 0
+      comment.value = ''
     }
 
     const closeDetailModal = () => {
       selectedDrink.value = null
       activeTab.value = 'info'
       showReviewForm.value = false
-      newReview.value = {
-        rating: 0,
-        content: ''
-      }
+      rating.value = 0
+      comment.value = ''
     }
+
+    const displayedReviews = computed(() => {
+      if (!selectedDrink.value?.reviews) return []
+      // 只顯示狀態為 approved 的評論，並取前3筆
+      const approvedReviews = selectedDrink.value.reviews
+        .filter(review => review.status === 'approved')
+        .slice(0, 3)
+      return approvedReviews
+    })
+
+    // 修改評論列表顯示邏輯
+    const getReviewCount = computed(() => {
+      if (!selectedDrink.value?.reviews) return 0
+      return selectedDrink.value.reviews.filter(review => review.status === 'approved').length
+    })
 
     return {
       drinks,
@@ -703,7 +786,6 @@ export default {
       isSubmitting,
       favoriteStates,
       toggleFavorite,
-      submitReview,
       defaultAvatar,
       formatDate,
       formatDateTime,
@@ -711,7 +793,14 @@ export default {
       closeReviewForm,
       closeDetailModal,
       formatDescription,
-      truncateDescription
+      truncateDescription,
+      rating,
+      hoverRating,
+      comment,
+      setRating,
+      handleSubmitComment,
+      displayedReviews,
+      getReviewCount
     }
   }
 }

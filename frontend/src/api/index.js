@@ -5,6 +5,7 @@ import favoriteAPI from './modules/favorite'
 import menuAPI from './modules/menu'
 import dashboardAPI from './modules/dashboard'
 import recommendAPI from './modules/recommend'
+import messageAPI from './modules/message'
 
 export {
   accountAPI,
@@ -13,5 +14,6 @@ export {
   favoriteAPI,
   menuAPI,
   dashboardAPI,
-  recommendAPI
+  recommendAPI,
+  messageAPI
 } 

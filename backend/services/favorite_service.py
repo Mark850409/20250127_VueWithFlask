@@ -2,6 +2,7 @@ from typing import List, Optional
 from models.favorite import Favorite
 from models.store import Store
 from models.user import User
+from models.googlemaps_info import GoogleMapsInfo
 from dao.favorite_dao import FavoriteDAO
 import logging
 
@@ -26,25 +27,41 @@ class FavoriteService:
     def create_favorite(self, user_id: int, store_id: int) -> Favorite:
         """創建最愛"""
         try:
-            # 檢查店家是否存在
+            # 先檢查店家是否存在
             store = Store.query.get(store_id)
             if not store:
                 raise ValueError('店家不存在')
-                
-            # 檢查是否已收藏
-            if self.dao.check_exists(user_id, store_id):
-                raise ValueError('已收藏此店家')
-                
+            
+            # 檢查是否已經收藏
+            existing = self.dao.check_exists(user_id, store_id)
+            if existing:
+                raise ValueError('已經收藏過此店家')
+            
             # 獲取用戶資訊
             user = User.query.get(user_id)
             if not user:
                 raise ValueError('用戶不存在')
             
+            # 獲取 Google Maps 資訊
+            maps_info = GoogleMapsInfo.query.filter_by(id=store_id).first()
+            navigation_url = maps_info.navigation_url if maps_info else None
+            
+            # 創建收藏資料
             favorite_data = {
                 'user_id': user_id,
                 'store_id': store_id,
                 'store_name': store.name,
                 'store_image': store.hero_image,
+                'address': store.address,
+                'city': store.city,
+                'city_CN': store.city_CN,
+                'customer_phone': store.customer_phone,
+                'description': store.description,
+                'is_new_until': store.is_new_until,
+                'redirection_url': store.redirection_url,
+                'navigation_url': navigation_url,
+                'rating': store.rating,
+                'review_number': store.review_number,
                 'username': user.username
             }
             

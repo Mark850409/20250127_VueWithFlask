@@ -27,7 +27,7 @@
       </div>
 
       <!-- 店家資訊 -->
-      <div class="p-4">
+        <div class="p-4">
         <!-- 店家名稱 -->
         <div class="flex justify-between items-start mb-4">
           <h3 class="text-lg font-bold text-gray-900">{{ drink.name }}</h3>
@@ -61,7 +61,7 @@
 
         <!-- 店家描述 -->
         <p class="text-gray-600 mb-4 line-clamp-2">
-          {{ truncateDescription(drink.description) }}
+            {{ truncateDescription(drink.description) }}
         </p>
 
         <!-- 分隔線 -->
@@ -219,88 +219,117 @@
           </p>
         </div>
       </div>
-
+      
+      <!-- 顧客評論 -->
       <div v-if="activeTab === 'reviews'" class="p-6">
-        <div class="flex justify-between items-center mb-6">
-          <div class="flex items-center">
-            <span class="text-3xl font-bold mr-3">{{ selectedDrink.rating }}</span>
-            <div class="flex flex-col">
-              <div class="flex text-yellow-400">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star-half-alt"></i>
+        <!-- 評論統計 -->
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center space-x-4">
+            <div class="text-center">
+              <div class="text-3xl font-bold text-gray-900">{{ selectedDrink.rating }}</div>
+              <div class="flex text-yellow-400 mt-1">
+                <i v-for="n in 5" :key="n" 
+                   :class="['fas', n <= selectedDrink.rating ? 'fa-star' : 'fa-star-o']">
+                </i>
               </div>
-              <span class="text-sm text-gray-500">{{ selectedDrink.review_number }}次瀏覽</span>
+              <div class="text-sm text-gray-500 mt-1">{{ selectedDrink.review_number }}次瀏覽</div>
             </div>
           </div>
-          <!-- 撰寫評論按鈕 -->
-          <button 
-            @click="showReviewModal"
-            class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-300"
-          >
+          <button @click="showReviewForm = true" 
+                  class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-300">
             撰寫評論
           </button>
         </div>
 
-        <!-- 暫無評價時的顯示 -->
-        <div class="text-center py-12 bg-gray-50 rounded-lg">
-          <p class="text-xl font-bold text-gray-400 mb-2">5</p>
-          <div class="flex justify-center text-yellow-400 mb-2">
-            <i class="fas fa-star"></i>
+        <!-- 評論列表 -->
+        <div class="max-h-[400px] overflow-y-auto pr-2">
+          <div v-if="displayedReviews.length > 0" 
+                class="space-y-4">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-medium text-gray-900">最新評論</h3>
+              <span class="text-sm text-gray-500">
+                (顯示最新 3 則評論)
+              </span>
+            </div>
+            <!-- 評論內容 -->
+            <div v-for="review in displayedReviews" 
+                 :key="review.id" 
+                 class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
+              <div class="flex items-start">
+                <img :src="review.user_avatar || defaultAvatar" 
+                     :alt="review.username"
+                     class="w-10 h-10 rounded-full">
+                <div class="ml-4 flex-1">
+                  <div class="flex items-center justify-between">
+                    <h4 class="font-medium text-gray-900">{{ review.username }}</h4>
+                    <span class="text-sm text-gray-500">{{ formatDate(review.created_at) }}</span>
+                  </div>
+                  <div class="flex text-yellow-400 my-1">
+                    <i v-for="n in 5" :key="n" 
+                       :class="['fas', n <= review.rating ? 'fa-star' : 'fa-star-o']">
+                    </i>
+                  </div>
+                  <p class="text-gray-600 mt-1">{{ review.content }}</p>
+                </div>
+              </div>
+            </div>
+            <div v-if="selectedDrink.reviews.length > 3" 
+                 class="text-center text-gray-500 mt-4">
+              僅顯示最新 3 則評論
+            </div>
           </div>
-          <p class="text-gray-400 mb-4">411 次瀏覽</p>
-          <p class="text-gray-500">暫無評論，成為第一個評論的人吧！</p>
+          <div v-else class="text-center text-gray-500 py-8">
+            暫無評論，成為第一個評論的人吧！
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 添加評論彈窗 -->
-  <div v-if="showingReviewModal" 
+  <!-- 評論表單彈窗 -->
+  <div v-if="showReviewForm" 
        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-       @click.self="closeReviewModal">
+       @click.self="closeReviewForm">
     <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-lg mx-4 p-6">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-bold">撰寫評論</h3>
-        <button @click="closeReviewModal" class="text-gray-500 hover:text-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+          撰寫評論
+        </h3>
+        <button @click="closeReviewForm" class="text-gray-500 hover:text-gray-700">
           <i class="fas fa-times"></i>
         </button>
       </div>
-      
-      <div class="mb-4">
-        <label class="block text-gray-700 mb-2">評分</label>
-        <div class="flex text-yellow-400 text-2xl">
-          <button 
-            v-for="star in 5" 
-            :key="star"
-            @click="setRating(star)"
-            class="focus:outline-none"
-          >
-            <i :class="[
-              'fas',
-              userRating >= star ? 'fa-star' : 'fa-star text-gray-300'
-            ]"></i>
-          </button>
+      <div class="rating mb-4">
+        <div class="flex items-center mb-2">
+          <span class="mr-2">評分：</span>
+          <div class="flex text-2xl text-yellow-400">
+            <button v-for="n in 5"
+                    :key="n"
+                    @click="setRating(n)"
+                    @mouseover="hoverRating = n"
+                    @mouseleave="hoverRating = 0"
+                    class="focus:outline-none mr-1">
+              <i class="fas fa-star" 
+               :class="{
+                 'text-yellow-400': hoverRating >= n || (!hoverRating && rating >= n),
+                 'text-gray-300': (hoverRating && hoverRating < n) || (!hoverRating && rating < n)
+               }">
+              </i>
+            </button>
+          </div>
+          <span class="ml-2 text-sm text-gray-600">{{ rating }} 分</span>
         </div>
-      </div>
-
-      <div class="mb-4">
-        <label class="block text-gray-700 mb-2">評論內容</label>
-        <textarea 
-          v-model="reviewContent"
-          rows="4"
-          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          placeholder="分享您的用餐體驗..."
-        ></textarea>
-      </div>
-
-      <div class="flex justify-end">
-        <button 
-          @click="submitReview"
-          class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-300"
-        >
+        
+        <div class="mb-4">
+          <textarea v-model="comment"
+                    placeholder="請寫下您的評論..."
+                    class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    rows="4">
+          </textarea>
+        </div>
+        
+        <button @click="handleSubmitComment"
+                 class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
           發布評論
         </button>
       </div>
@@ -309,10 +338,11 @@
 </template>
 
 <script>
-import { ref, onMounted, watch, onUnmounted } from 'vue'
+import { ref, onMounted, watch, onUnmounted, computed } from 'vue'
 import { recommendAPI } from '@/api'
 import favoriteAPI from '@/api/modules/favorite'
 import Swal from 'sweetalert2'
+import messageAPI from '@/api/modules/message'
 
 export default {
   name: 'PopularDrinkList',
@@ -327,6 +357,10 @@ export default {
       validator: function(value) {
         return ['default', 'rating', 'review_number', 'distance'].includes(value)
       }
+    },
+    userId: {
+      type: String,
+      default: null
     }
   },
   setup(props) {
@@ -344,6 +378,11 @@ export default {
     const userRating = ref(0)
     const reviewContent = ref('')
     const selectedCity = ref('')
+    const showReviewForm = ref(false)
+    const comment = ref('')
+    const rating = ref(null)
+    const hoverRating = ref(0)
+    const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
     let cityChangeHandler = null
 
     const getStoredCity = () => {
@@ -527,8 +566,12 @@ export default {
       showingReviewModal.value = false
     }
 
-    const setRating = (rating) => {
-      userRating.value = rating
+    const setRating = (value) => {
+      if (value === rating.value) {
+        rating.value = null
+      } else {
+        rating.value = value
+      }
     }
 
     const submitReview = () => {
@@ -555,8 +598,98 @@ export default {
         const remainingMinutes = minutes % 60
         return `${hours} 小時 ${remainingMinutes} 分鐘`
       }
-      return `${minutes} 分鐘`
+      return `${minutes} 分鐘`    }
+
+    const formatDate = (date) => {
+      return new Date(date).toLocaleDateString('zh-TW', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
     }
+
+    const handleSubmitComment = async () => {
+      const userInfo = JSON.parse(localStorage.getItem('user'))
+      if (!userInfo || !userInfo.id) {
+        Swal.fire({
+          icon: 'warning',
+          title: '請先登入',
+          text: '發布評論前請先登入系統',
+          confirmButtonText: '確定'
+        })
+        return
+      }
+      
+      if (!rating.value) {
+        Swal.fire({
+          icon: 'warning',
+          title: '請選擇評分',
+          text: '評分為必填項目',
+          confirmButtonText: '確定'
+        })
+        return
+      }
+      
+      if (!comment.value.trim()) {
+        Swal.fire({
+          icon: 'warning',
+          title: '請填寫評論內容',
+          text: '評論內容不能為空',
+          confirmButtonText: '確定'
+        })
+        return
+      }
+      
+      try {
+        const commentData = {
+          content: comment.value.trim(),
+          store_id: selectedDrink.value.id,
+          rating: rating.value,
+          user_id: userInfo.id
+        }
+        
+        await messageAPI.createMessage(commentData)
+        showReviewForm.value = false
+        rating.value = null
+        comment.value = ''
+        
+        Swal.fire({
+          icon: 'success',
+          title: '評論發布成功',
+          text: '您的評論已送出審核',
+          confirmButtonText: '確定'
+        })
+      } catch (error) {
+        console.error('發布評論失敗:', error)
+        Swal.fire({
+          icon: 'error',
+          title: '發布失敗',
+          text: error.response?.data?.message || '請稍後再試',
+          confirmButtonText: '確定'
+        })
+      }
+    }
+
+    const closeReviewForm = () => {
+      showReviewForm.value = false
+      rating.value = null
+      comment.value = ''
+      hoverRating.value = 0
+    }
+
+    const displayedReviews = computed(() => {
+      if (!selectedDrink.value?.reviews) return []
+      // 只顯示狀態為 approved 的評論，並取前3筆
+      const approvedReviews = selectedDrink.value.reviews
+        .filter(review => review.status === 'approved')
+        .slice(0, 3)
+      return approvedReviews
+    })
+
+    const getReviewCount = computed(() => {
+      if (!selectedDrink.value?.reviews) return 0
+      return selectedDrink.value.reviews.filter(review => review.status === 'approved').length
+    })
 
     watch(() => props.sortBy, () => {
       if (props.sortBy === 'distance') {
@@ -590,7 +723,7 @@ export default {
         localStorage.setItem('selectedCity', event.detail)
         distanceCalculated.value = false
         storesWithDistance.value = []
-        fetchPopularDrinks()
+      fetchPopularDrinks()
       }
       
       window.addEventListener('cityChanged', cityChangeHandler)
@@ -627,7 +760,16 @@ export default {
       formatDuration,
       distanceCalculated,
       currentCity,
-      storesWithDistance
+      storesWithDistance,
+      showReviewForm,
+      comment,
+      rating,
+      hoverRating,
+      formatDate,
+      handleSubmitComment,
+      closeReviewForm,
+      displayedReviews,
+      getReviewCount
     }
   }
 }

@@ -16,6 +16,16 @@ class Favorite(db.Model):
     store_id = db.Column(db.Integer, db.ForeignKey('stores.id'), nullable=False)
     store_name = db.Column(db.String(100), nullable=False)
     store_image = db.Column(db.String(255), nullable=True)
+    address = db.Column(db.String(255), nullable=True)
+    city = db.Column(db.String(50), nullable=True)
+    city_CN = db.Column(db.String(50), nullable=True)
+    customer_phone = db.Column(db.String(20), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    is_new_until = db.Column(db.String(100), nullable=True)
+    redirection_url = db.Column(db.String(255), nullable=True)
+    navigation_url = db.Column(db.String(255), nullable=True)
+    rating = db.Column(db.Float, nullable=True, default=0)
+    review_number = db.Column(db.Integer, nullable=True, default=0)
     username = db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(tw_tz))
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(tw_tz), onupdate=lambda: datetime.now(tw_tz))
@@ -34,6 +44,16 @@ class Favorite(db.Model):
                 'store_id': self.store_id,
                 'store_name': self.store_name,
                 'store_image': self.store_image,
+                'address': self.address,
+                'city': self.city,
+                'city_CN': self.city_CN,
+                'customer_phone': self.customer_phone,
+                'description': self.description,
+                'is_new_until': self.is_new_until,
+                'redirection_url': self.redirection_url,
+                'navigation_url': self.navigation_url,
+                'rating': self.rating,
+                'review_number': self.review_number,
                 'username': self.username,
                 'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
                 'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -45,6 +65,16 @@ class Favorite(db.Model):
             'store_id': self.store_id,
             'store_name': self.store.name,
             'store_image': self.store.hero_image,
+            'address': self.address,
+            'city': self.city,
+            'city_CN': self.city_CN,
+            'customer_phone': self.customer_phone,
+            'description': self.description,
+            'is_new_until': self.is_new_until,
+            'redirection_url': self.redirection_url,
+            'navigation_url': self.navigation_url,
+            'rating': self.rating,
+            'review_number': self.review_number,
             'username': self.user.username,
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
             'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')

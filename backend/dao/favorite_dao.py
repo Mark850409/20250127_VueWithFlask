@@ -41,6 +41,16 @@ class FavoriteDAO:
                 store_id=favorite_data['store_id'],
                 store_name=favorite_data['store_name'],
                 store_image=favorite_data['store_image'],
+                address=favorite_data.get('address'),
+                city=favorite_data.get('city'),
+                city_CN=favorite_data.get('city_CN'),
+                customer_phone=favorite_data.get('customer_phone'),
+                description=favorite_data.get('description'),
+                is_new_until=favorite_data.get('is_new_until'),
+                redirection_url=favorite_data.get('redirection_url'),
+                navigation_url=favorite_data.get('navigation_url'),
+                rating=favorite_data.get('rating', 0),
+                review_number=favorite_data.get('review_number', 0),
                 username=favorite_data['username']
             )
             db.session.add(favorite)

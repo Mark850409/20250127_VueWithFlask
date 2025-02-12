@@ -5,13 +5,15 @@ from sqlalchemy import desc
 class MessageDAO:
     @staticmethod
     def get_all_messages() -> List[Message]:
-        """獲取所有留言"""
+        """獲取所有評論"""
         return Message.query.order_by(desc(Message.created_at)).all()
     
     @staticmethod
     def get_user_messages(user_id: int) -> List[Message]:
-        """獲取用戶的所有留言"""
-        return Message.query.filter_by(user_id=user_id).order_by(desc(Message.created_at)).all()
+        """獲取用戶的所有評論"""
+        return Message.query.filter_by(user_id=user_id)\
+            .order_by(desc(Message.created_at))\
+            .all()
     
     @staticmethod
     def get_message(message_id: int) -> Optional[Message]:
@@ -20,7 +22,11 @@ class MessageDAO:
     
     @staticmethod
     def create_message(message_data: dict) -> Message:
-        """創建留言"""
+        """創建評論"""
+        # 設置初始狀態為待審核
+        message_data['status'] = 'pending'
+        # 初始化回覆列表
+        message_data['replies'] = []
         message = Message(**message_data)
         db.session.add(message)
         db.session.commit()
@@ -31,7 +37,10 @@ class MessageDAO:
         """更新留言"""
         message = Message.query.get(message_id)
         if message:
-            for key, value in message_data.items():
+            # 只更新允許的欄位
+            allowed_fields = {'content', 'status', 'rating'}
+            update_data = {k: v for k, v in message_data.items() if k in allowed_fields}
+            for key, value in update_data.items():
                 setattr(message, key, value)
             db.session.commit()
         return message
@@ -44,4 +53,24 @@ class MessageDAO:
             db.session.delete(message)
             db.session.commit()
             return True
-        return False 
+        return False
+
+    @staticmethod
+    def add_reply(message_id: int, reply_data: dict) -> Message:
+        """添加回覆"""
+        message = Message.query.get(message_id)
+        if message:
+            if not message.replies:
+                message.replies = []
+            message.replies.append(reply_data)
+            db.session.commit()
+        return message
+
+    @staticmethod
+    def delete_reply(message_id: int, reply_id: int) -> Message:
+        """刪除回覆"""
+        message = Message.query.get(message_id)
+        if message and message.replies:
+            message.replies = [r for r in message.replies if r['id'] != reply_id]
+            db.session.commit()
+        return message 
