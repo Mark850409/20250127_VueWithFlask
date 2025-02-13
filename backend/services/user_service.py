@@ -4,6 +4,8 @@ from dao.user_dao import UserDAO
 from utils.password_util import hash_password
 import bcrypt
 import logging
+from services.mail_service import MailService
+from flask import current_app
 
 logger = logging.getLogger(__name__)
 
@@ -96,4 +98,55 @@ class UserService:
             
         except Exception as e:
             logger.error(f"更新頭像服務錯誤: {str(e)}", exc_info=True)
+            raise 
+
+    def request_password_reset(self, email: str) -> bool:
+        """請求重設密碼"""
+        try:
+            user = self.dao.get_user_by_email(email)
+            if not user:
+                raise ValueError('找不到此 email 的用戶')
+
+            # 生成重設密碼 token
+            token = self.dao.create_reset_token(user)
+
+            # 發送重設密碼郵件
+            MailService.send_reset_password_email(user, token)
+
+            return True
+        except Exception as e:
+            logger.error(f"請求重設密碼錯誤: {str(e)}")
+            raise
+
+    def reset_password(self, token: str, new_password: str) -> bool:
+        """重設密碼"""
+        try:
+            # 驗證 token
+            user = self.dao.verify_reset_token(token)
+            if not user:
+                raise ValueError('無效的重設密碼連結或已過期')
+
+            # 檢查新密碼是否與歷史密碼重複
+            if not user.check_password_history(new_password):
+                raise ValueError('新密碼不能與最近5次使用過的密碼相同')
+
+            # 密碼加密
+            password = new_password.encode('utf-8')
+            salt = bcrypt.gensalt()
+            hashed = bcrypt.hashpw(password, salt)
+            new_password = hashed.decode('utf-8')
+
+            # 更新密碼
+            return self.dao.reset_password(user, new_password)
+        except Exception as e:
+            logger.error(f"重設密碼錯誤: {str(e)}")
+            raise 
+
+    def verify_reset_token(self, token: str) -> bool:
+        """驗證重設密碼 token"""
+        try:
+            user = self.dao.verify_reset_token(token)
+            return user is not None
+        except Exception as e:
+            logger.error(f"驗證重設密碼 token 錯誤: {str(e)}")
             raise 

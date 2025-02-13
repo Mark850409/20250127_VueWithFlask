@@ -1,9 +1,12 @@
 import os
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
+from flask_mail import Mail
 from models.database import db
 from extensions import jwt
 from services.googlemaps_service import GoogleMapsService
 from config.config import GOOGLE_MAPS_API_KEY
+from services.mail_service import mail
 
 def init_app(app):
     """初始化應用配置"""
@@ -33,6 +36,9 @@ def init_app(app):
     
     # 配置 Google Maps Service
     GoogleMapsService(GOOGLE_MAPS_API_KEY)
+
+    # 初始化 Mail
+    mail.init_app(app)
 
 def setup_cors(app):
     """設置 CORS"""

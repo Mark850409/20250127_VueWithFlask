@@ -29,14 +29,14 @@ class Message(db.Model):
         return {
             'id': self.id,
             'user_id': self.user_id,
+            'user': self.user.username if self.user else '已刪除用戶',
             'store_id': self.store_id,
-            'user': self.user.username,  # 添加用戶名
-            'store_name': self.store_name,  # 使用存儲的店家名稱
-            'store_image': self.store_image,  # 使用存儲的店家圖片
+            'store_name': self.store_name,
+            'store_image': self.store_image,
             'content': self.content,
             'rating': self.rating,
             'status': self.status,
             'replies': self.replies or [],
-            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-            'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+            'created_at': self.created_at.replace(tzinfo=pytz.UTC).astimezone(tw_tz).strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
+            'updated_at': self.updated_at.replace(tzinfo=pytz.UTC).astimezone(tw_tz).strftime('%Y-%m-%d %H:%M:%S') if self.updated_at else None
         } 

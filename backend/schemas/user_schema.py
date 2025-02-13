@@ -3,6 +3,7 @@ from typing import Optional
 from datetime import datetime
 from dataclasses import dataclass
 from flask_openapi3 import FileStorage
+from pydantic import field_validator
 
 class UserBaseSchema(BaseModel):
     """用戶基礎數據"""
@@ -177,5 +178,64 @@ class UploadFileForm(BaseModel):
         ...,
         description='圖片文件 (支援 jpg、png、gif、webp 格式，最大 5MB)',
     )
+
+class ForgotPasswordSchema(BaseModel):
+    """忘記密碼請求參數"""
+    email: EmailStr = Field(..., description='電子郵件')
+
+    class Config:
+        schema_extra = {
+            'example': {
+                'email': 'test@example.com'
+            }
+        }
+
+class ResetPasswordSchema(BaseModel):
+    """重設密碼請求參數"""
+    token: str = Field(..., description='重設密碼 token')
+    password: str = Field(
+        ..., 
+        description='新密碼 (需包含大小寫字母、數字和特殊符號)',
+        min_length=6,
+        max_length=12,
+    )
+
+    @field_validator('password')
+    def validate_password(cls, v):
+        """驗證密碼複雜度"""
+        if not any(c.islower() for c in v):
+            raise ValueError('密碼必須包含小寫字母')
+        if not any(c.isupper() for c in v):
+            raise ValueError('密碼必須包含大寫字母')
+        if not any(c.isdigit() for c in v):
+            raise ValueError('密碼必須包含數字')
+        if not any(c in '!@#$%^&*' for c in v):
+            raise ValueError('密碼必須包含特殊符號(!@#$%^&*)')
+        return v
+
+    class Config:
+        schema_extra = {
+            'example': {
+                'token': 'reset_password_token',
+                'password': 'Mark@8504091'
+            }
+        }
+
+class VerifyResetTokenParams(BaseModel):
+    """驗證重設密碼 token 路徑參數"""
+    token: str = Field(..., description='重設密碼 token')
+
+class VerifyResetTokenResponse(BaseModel):
+    """驗證重設密碼 token 響應"""
+    success: bool = Field(..., description='是否成功')
+    message: Optional[str] = Field(None, description='錯誤訊息')
+
+    class Config:
+        schema_extra = {
+            'example': {
+                'success': True,
+                'message': None
+            }
+        }
 
 

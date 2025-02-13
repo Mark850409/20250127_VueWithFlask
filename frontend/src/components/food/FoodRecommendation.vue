@@ -148,6 +148,9 @@
       </div>
 
     </div>
+
+    <!-- 在最外層 div 結尾前添加 AI 聊天助手 -->
+    <AIChatAssistant v-if="isLoggedIn" />
   </div>
 </template>
 
@@ -160,6 +163,7 @@ import Footer from '../common/Footer.vue'
 import Features from './Features.vue'
 import Learning from './Learning.vue'
 import Pricing from './Pricing.vue'
+import AIChatAssistant from '../chat/AIChatAssistant.vue'  // 引入 AI 聊天助手組件
 import axios from '@/utils/axios'
 import { useAuthStore } from '@/stores/auth'
 import Swal from 'sweetalert2'
@@ -173,7 +177,8 @@ export default {
     Footer,
     Features,
     Learning,
-    Pricing
+    Pricing,
+    AIChatAssistant  // 註冊組件
   },
   setup() {
     const authStore = useAuthStore()

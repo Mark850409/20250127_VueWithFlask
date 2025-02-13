@@ -1,0 +1,12 @@
+2025-02-12 12:17:30,375 - INFO - API queries_quota: 60
+2025-02-12 12:17:31,658 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.122:5000
+2025-02-12 12:17:31,659 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-12 12:17:31,662 - INFO -  * Restarting with stat
+2025-02-12 12:17:35,269 - INFO - API queries_quota: 60
+2025-02-12 12:17:35,274 - WARNING -  * Debugger is active!
+2025-02-12 12:17:35,276 - INFO -  * Debugger PIN: 611-006-232
+2025-02-12 12:17:53,685 - INFO - API queries_quota: 60
+2025-02-12 12:18:31,742 - INFO - API queries_quota: 60

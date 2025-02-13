@@ -4,7 +4,13 @@ from typing import List, Optional
 from services.user_service import UserService
 from datetime import datetime, timedelta
 import pytz
-from schemas.user_schema import *
+from schemas.user_schema import (
+    UserRegisterSchema, UserLoginSchema, UserUpdateSchema, UserResponseSchema,
+    UserPath, UserRegisterFileSchema, UserRegisterFormSchema, UserAvatarParamsSchema,
+    UserAvatarSchema, FileUploadResponse, UserRegisterResponse,
+    UserRegisterMultipartSchema, UploadFileForm, ForgotPasswordSchema,
+    ResetPasswordSchema, VerifyResetTokenResponse, VerifyResetTokenParams
+)
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 from werkzeug.utils import secure_filename
 from flask import request, send_from_directory, send_file, jsonify, current_app
@@ -14,6 +20,8 @@ from PIL import Image
 import io
 from flask_cors import cross_origin
 import logging
+from services.mail_service import MailService
+from models.user import User, db
 
 logger = logging.getLogger(__name__)
 
@@ -432,4 +440,194 @@ def update_avatar(form: UploadFileForm):
     except Exception as e:
         logger.error(f"更新頭像錯誤: {str(e)}", exc_info=True)
         return {'message': '更新頭像失敗'}, 500 
+
+@user_bp.post(
+    '/forgot-password',
+    tags=[user_tag],
+    responses={
+        "200": {
+            "description": "重設密碼郵件已發送",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "success": {"type": "boolean"},
+                            "message": {"type": "string"}
+                        }
+                    }
+                }
+            }
+        },
+        "404": {
+            "description": "用戶不存在",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "success": {"type": "boolean"},
+                            "message": {"type": "string"}
+                        }
+                    }
+                }
+            }
+        }
+    }
+)
+def forgot_password(body: ForgotPasswordSchema):
+    """處理忘記密碼請求
+    
+    Args:
+        body (ForgotPasswordSchema): 包含用戶 email
+            
+    Returns:
+        200: 重設密碼郵件已發送
+        400: 參數錯誤
+        404: 用戶不存在
+        500: 服務器錯誤
+    """
+    try:
+        service = UserService()
+        service.request_password_reset(body.email)
+        
+        return jsonify({
+            'success': True,
+            'message': '重設密碼郵件已發送'
+        })
+        
+    except ValueError as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 404
+        
+    except Exception as e:
+        logger.error(f"忘記密碼錯誤: {str(e)}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'message': '發送重設密碼郵件失敗'
+        }), 500
+
+@user_bp.post(
+    '/reset-password',
+    tags=[user_tag],
+    responses={
+        "200": {
+            "description": "密碼重設成功",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "success": {"type": "boolean"},
+                            "message": {"type": "string"}
+                        }
+                    }
+                }
+            }
+        },
+        "400": {
+            "description": "參數錯誤或密碼不符合規則",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "success": {"type": "boolean"},
+                            "message": {"type": "string"}
+                        },
+                        "example": {
+                            "success": False,
+                            "message": "新密碼不能與最近5次使用過的密碼相同"
+                        }
+                    }
+                }
+            }
+        }
+    }
+)
+def reset_password(body: ResetPasswordSchema):
+    """重設密碼
+    
+    Args:
+        body (ResetPasswordSchema): 包含重設密碼 token 和新密碼
+            
+    Returns:
+        200: 密碼重設成功
+        400: 參數錯誤或密碼不符合規則
+        500: 服務器錯誤
+    """
+    try:
+        service = UserService()
+        service.reset_password(body.token, body.password)
+        
+        return jsonify({
+            'success': True,
+            'message': '密碼重設成功'
+        })
+        
+    except ValueError as e:
+        return jsonify({
+            'success': False,
+            'message': str(e) if '新密碼不能與最近' in str(e) else '無效的重設密碼連結或已過期'
+        }), 400
+        
+    except Exception as e:
+        logger.error(f"重設密碼錯誤: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': '重設密碼失敗'
+        }), 500
+
+@user_bp.get(
+    '/verify-reset-token/<token>',
+    tags=[user_tag],
+    responses={
+        "200": {
+            "description": "Token 有效",
+            "content": {
+                "application/json": {
+                    "schema": VerifyResetTokenResponse.schema()
+                }
+            }
+        },
+        "400": {
+            "description": "Token 無效或已過期",
+            "content": {
+                "application/json": {
+                    "schema": VerifyResetTokenResponse.schema()
+                }
+            }
+        }
+    }
+)
+def verify_reset_token(path: VerifyResetTokenParams):
+    """驗證重設密碼 token
+    
+    Args:
+        token (str): 重設密碼 token
+        
+    Returns:
+        200: Token 有效
+        400: Token 無效或已過期
+    """
+    try:
+        service = UserService()
+        if service.verify_reset_token(path.token):
+            return jsonify({
+                'success': True
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': '無效的重設密碼連結或已過期'
+            }), 400
+            
+    except Exception as e:
+        logger.error(f"驗證重設密碼 token 錯誤: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': '驗證 token 失敗'
+        }), 500
 

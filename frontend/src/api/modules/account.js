@@ -1,6 +1,18 @@
 import axios from '@/utils/axios'
 
 export default {
+  // 登入
+  login(data) {
+    return axios.post('/users/login', {
+      email: data.email,
+      password: data.password
+    })
+    .catch(error => {
+      console.error('Login Error:', error.response?.data || error.message)
+      throw error
+    })
+  },
+
   // 獲取帳號列表
   getAccounts() {
     console.log('Calling getAccounts API')
@@ -48,5 +60,32 @@ export default {
         'Authorization': `Bearer ${token}`
       }
     })
+  },
+
+  // 請求重設密碼
+  requestPasswordReset(email) {
+    return axios.post('/users/forgot-password', { email })
+      .catch(error => {
+        console.error('Request Password Reset Error:', error.response?.data || error.message)
+        throw error
+      })
+  },
+
+  // 驗證重設密碼 token
+  verifyResetToken(token) {
+    return axios.get(`/users/verify-reset-token/${token}`)
+      .catch(error => {
+        console.error('Verify Reset Token Error:', error.response?.data || error.message)
+        throw error
+      })
+  },
+
+  // 重設密碼
+  resetPassword(token, newPassword) {
+    return axios.post(`/users/reset-password`, { password: newPassword })
+      .catch(error => {
+        console.error('Reset Password Error:', error.response?.data || error.message)
+        throw error
+      })
   }
 } 

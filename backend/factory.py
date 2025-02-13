@@ -8,9 +8,8 @@ from controllers import (
     message_bp, admin_bp, favorite_bp, foodpanda_core_bp,
     foodpanda_vendors_bp, foodpanda_menu_bp, foodpanda_feed_bp,
     googlemaps_bp, system_bp, googlemaps_info_bp, dashboard_bp,
-    recommend_bp
+    recommend_bp, bot_bp
 )
-
 
 def create_app():
     """創建應用實例"""
@@ -19,13 +18,14 @@ def create_app():
     # 載入配置
     app.config.from_object(Config)
     
+    
     # 註冊所有藍圖
     blueprints = [
         user_bp, git_bp, log_bp, menu_bp, store_bp, rating_bp,
         message_bp, admin_bp, favorite_bp, foodpanda_core_bp,
         foodpanda_vendors_bp, foodpanda_menu_bp, foodpanda_feed_bp,
         googlemaps_bp, system_bp, googlemaps_info_bp, dashboard_bp,
-        recommend_bp
+        recommend_bp, bot_bp
     ]
     
 

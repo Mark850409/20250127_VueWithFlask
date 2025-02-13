@@ -73,4 +73,36 @@ class MessageDAO:
         if message and message.replies:
             message.replies = [r for r in message.replies if r['id'] != reply_id]
             db.session.commit()
-        return message 
+        return message
+
+    @staticmethod
+    def get_messages(page=1, per_page=10):
+        """獲取留言列表"""
+        try:
+            # 分頁查詢
+            pagination = Message.query.order_by(Message.created_at.desc()).paginate(
+                page=page, per_page=per_page, error_out=False
+            )
+            
+            messages = pagination.items
+            total = pagination.total
+            
+            # 處理每條留言
+            message_list = []
+            for message in messages:
+                message_dict = message.to_dict()
+                if not message.user:
+                    message_dict['username'] = '已刪除用戶'
+                message_list.append(message_dict)
+            
+            return {
+                'messages': message_list,
+                'total': total,
+                'page': page,
+                'per_page': per_page,
+                'pages': pagination.pages
+            }
+            
+        except Exception as e:
+            print(f"獲取留言列表錯誤: {str(e)}")
+            raise 

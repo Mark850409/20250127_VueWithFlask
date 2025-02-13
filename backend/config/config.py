@@ -19,7 +19,7 @@ env_path = current_dir / env_file
 # 載入對應的 .env 文件
 if env_path.exists():
     print(f"Loading environment from: {env_path}")
-    load_dotenv(env_path)
+    load_dotenv(env_path, override=True)
 else:
     print(f"Warning: Environment file not found: {env_path}")
 
@@ -60,6 +60,7 @@ class Config:
 
     # API 配置
     API_URL = API_URL
+    FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 
     # 獲取 Google Maps API Key
     GOOGLE_MAPS_API_KEY = GOOGLE_MAPS_API_KEY
@@ -87,8 +88,24 @@ class Config:
         'http://127.0.0.1:5173'
     ]
 
+    # 郵件配置
+    MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+    MAIL_PORT = int(os.getenv('MAIL_PORT', 587))
+    MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'
+    MAIL_USERNAME = os.getenv('MAIL_USERNAME')
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER')
+    
+    # 重設密碼 token 配置
+    RESET_TOKEN_EXPIRE_TYPE = os.getenv('RESET_TOKEN_EXPIRE_TYPE', 'minutes')
+    RESET_TOKEN_EXPIRE_VALUE = int(os.getenv('RESET_TOKEN_EXPIRE_VALUE', 10))
+
 class DevelopmentConfig(Config):
+    """開發環境配置"""
     DEBUG = True
+    # 如果需要覆蓋基礎配置，可以在這裡設定
+    RESET_TOKEN_EXPIRE_TYPE = os.getenv('RESET_TOKEN_EXPIRE_TYPE', 'minutes')
+    RESET_TOKEN_EXPIRE_VALUE = int(os.getenv('RESET_TOKEN_EXPIRE_VALUE', 10))
     
 class ProductionConfig(Config):
     DEBUG = False

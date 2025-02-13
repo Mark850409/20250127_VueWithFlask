@@ -257,11 +257,12 @@
                  class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
               <div class="flex items-start">
                 <img :src="review.user_avatar || defaultAvatar" 
-                     :alt="review.username"
-                     class="w-10 h-10 rounded-full">
+                     :alt="review.user"
+                     class="w-10 h-10 rounded-full"
+                     @error="handleAvatarError">
                 <div class="ml-4 flex-1">
                   <div class="flex items-center justify-between">
-                    <h4 class="font-medium text-gray-900">{{ review.username }}</h4>
+                    <h4 class="font-medium text-gray-900">{{ review.user }}</h4>
                     <span class="text-sm text-gray-500">{{ formatDate(review.created_at) }}</span>
                   </div>
                   <div class="flex text-yellow-400 my-1">
@@ -382,7 +383,7 @@ export default {
     const comment = ref('')
     const rating = ref(null)
     const hoverRating = ref(0)
-    const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
+    const defaultAvatar = ref('https://api.dicebear.com/7.x/avataaars/svg?seed=default')
     let cityChangeHandler = null
 
     const getStoredCity = () => {
@@ -398,8 +399,33 @@ export default {
       event.target.src = defaultImage
     }
 
-    const showDrinkDetail = (drink) => {
-      selectedDrink.value = drink
+    const handleAvatarError = (event) => {
+      event.target.src = defaultAvatar.value
+    }
+
+    const showDrinkDetail = async (drink) => {
+      try {
+        // 獲取店家評論資訊
+        const response = await messageAPI.getMessages()
+        if (response.data && response.data.messages) {
+          // 過濾出當前店家的評論
+          const storeReviews = response.data.messages.filter(
+            message => message.store_id === drink.id
+          )
+          
+          selectedDrink.value = {
+            ...drink,
+            reviews: storeReviews
+          }
+          
+          console.log('Selected drink with reviews:', selectedDrink.value)
+        } else {
+          selectedDrink.value = drink
+        }
+      } catch (error) {
+        console.error('獲取店家評論失敗:', error)
+        selectedDrink.value = drink
+      }
     }
 
     const closeDetailModal = () => {
@@ -678,17 +704,43 @@ export default {
     }
 
     const displayedReviews = computed(() => {
-      if (!selectedDrink.value?.reviews) return []
-      // 只顯示狀態為 approved 的評論，並取前3筆
-      const approvedReviews = selectedDrink.value.reviews
+      // 檢查 selectedDrink 是否存在且有 reviews 屬性
+      if (!selectedDrink.value?.reviews) {
+        console.log('No reviews available for selected drink')
+        return []
+      }
+      
+      // 確保 reviews 是陣列
+      const reviews = Array.isArray(selectedDrink.value.reviews) 
+        ? selectedDrink.value.reviews 
+        : []
+      
+      // 過濾並排序評論
+      const approvedReviews = reviews
         .filter(review => review.status === 'approved')
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
         .slice(0, 3)
+      
+      console.log('Approved reviews:', approvedReviews)
       return approvedReviews
     })
 
     const getReviewCount = computed(() => {
-      if (!selectedDrink.value?.reviews) return 0
-      return selectedDrink.value.reviews.filter(review => review.status === 'approved').length
+      // 檢查 selectedDrink 是否存在且有 reviews 屬性
+      if (!selectedDrink.value?.reviews) {
+        console.log('No reviews available for review count')
+        return 0
+      }
+      
+      // 確保 reviews 是陣列
+      const reviews = Array.isArray(selectedDrink.value.reviews) 
+        ? selectedDrink.value.reviews 
+        : []
+      
+      // 計算審核通過的評論數量
+      const count = reviews.filter(review => review.status === 'approved').length
+      console.log('Approved review count:', count)
+      return count
     })
 
     watch(() => props.sortBy, () => {
@@ -769,7 +821,9 @@ export default {
       handleSubmitComment,
       closeReviewForm,
       displayedReviews,
-      getReviewCount
+      getReviewCount,
+      defaultAvatar,
+      handleAvatarError
     }
   }
 }

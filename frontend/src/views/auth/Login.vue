@@ -3,7 +3,7 @@
     <div class="max-w-md w-full mx-auto space-y-8 bg-white rounded-2xl shadow-xl p-8">
       <!-- Logo -->
       <div class="text-center">
-        <img class="mx-auto h-16 w-auto" src="https://api.dicebear.com/7.x/bottts/svg?seed=food" alt="Logo">
+        <i class="fas fa-utensils text-6xl text-indigo-600"></i>
         <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
           {{ isLogin ? '歡迎回來' : '建立新帳號' }}
         </h2>
@@ -110,7 +110,8 @@
           </div>
 
           <div class="text-sm" v-if="isLogin">
-            <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">
+            <a @click="showForgotPasswordModal = true" 
+               class="font-medium text-indigo-600 hover:text-indigo-500 cursor-pointer">
               忘記密碼？
             </a>
           </div>
@@ -164,6 +165,36 @@
           {{ isLogin ? '還沒有帳號？立即註冊' : '已有帳號？立即登入' }}
         </button>
       </div>
+
+      <!-- 忘記密碼 Modal -->
+      <div v-if="showForgotPasswordModal" 
+           class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+          <h3 class="text-xl font-bold mb-4">重設密碼</h3>
+          <p class="text-gray-600 mb-4">請輸入您的 Email，我們將發送重設密碼連結給您。</p>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Email
+            </label>
+            <input type="email" 
+                   v-model="forgotPasswordEmail"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                   placeholder="請輸入您的 Email">
+          </div>
+          
+          <div class="flex justify-end space-x-3">
+            <button @click="showForgotPasswordModal = false"
+                    class="px-4 py-2 text-gray-600 hover:text-gray-800">
+              取消
+            </button>
+            <button @click="handleForgotPassword"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+              發送重設連結
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -171,8 +202,8 @@
 <script>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from '@/utils/axios'
 import Swal from 'sweetalert2'
+import accountApi from '@/api/modules/account'
 
 export default {
   name: 'Login',
@@ -199,6 +230,9 @@ export default {
       confirmPassword: '',
       avatar: ''
     })
+
+    const showForgotPasswordModal = ref(false)
+    const forgotPasswordEmail = ref('')
 
     const validatePassword = (password) => {
       // 密碼驗證規則
@@ -340,7 +374,7 @@ export default {
 
         if (!isLogin.value) {
           // 先進行用戶註冊
-          const registerResponse = await axios.post('/users/register', {
+          const registerResponse = await accountApi.createAccount({
             username: form.username,
             email: form.email,
             password: form.password,
@@ -361,12 +395,7 @@ export default {
             const token = localStorage.getItem('token')
             console.log('從 Login 獲取的 token:', token)
             
-            await axios.post('/users/avatar', formData, {
-              headers: {
-                'Content-Type': 'multipart/form-data',
-                'Authorization': `Bearer ${token}`
-              }
-            })
+            await accountApi.uploadAvatar(formData, token)
           }
           
           // 註冊成功
@@ -381,7 +410,7 @@ export default {
           form.confirmPassword = ''
         } else {
           // 處理登入
-          const response = await axios.post('/users/login', {
+          const response = await accountApi.login({
             email: form.email,
             password: form.password
           })
@@ -422,6 +451,40 @@ export default {
       }
     }
 
+    const handleForgotPassword = async () => {
+      try {
+        if (!forgotPasswordEmail.value) {
+          Swal.fire({
+            icon: 'warning',
+            title: '請輸入 Email',
+            text: 'Email 不能為空',
+            confirmButtonText: '確定'
+          })
+          return
+        }
+        
+        const response = await accountApi.requestPasswordReset(forgotPasswordEmail.value)
+        
+        if (response.data.success) {
+          showForgotPasswordModal.value = false
+          Swal.fire({
+            icon: 'success',
+            title: '重設密碼郵件已發送',
+            text: '請檢查您的信箱',
+            confirmButtonText: '確定'
+          })
+        }
+      } catch (error) {
+        console.error('忘記密碼錯誤:', error)
+        Swal.fire({
+          icon: 'error',
+          title: '發送失敗',
+          text: error.response?.data?.message || '請稍後再試',
+          confirmButtonText: '確定'
+        })
+      }
+    }
+
     return {
       isLogin,
       form,
@@ -431,7 +494,10 @@ export default {
       avatarFile,
       handleAvatarChange,
       handleSubmit,
-      socialLogin
+      socialLogin,
+      showForgotPasswordModal,
+      forgotPasswordEmail,
+      handleForgotPassword
     }
   }
 }

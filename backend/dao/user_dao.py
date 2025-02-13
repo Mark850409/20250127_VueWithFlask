@@ -1,10 +1,12 @@
 from typing import List, Optional
 from models.user import User, db
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 from werkzeug.utils import secure_filename
 from pathlib import Path
 import logging
+from flask import current_app
+import pytz
 logger = logging.getLogger(__name__)
 
 # 獲取當前文件的目錄
@@ -109,4 +111,60 @@ class UserDAO:
         except Exception as e:
             db.session.rollback()
             logger.error(f"更新頭像錯誤: {str(e)}", exc_info=True)
+            raise 
+
+    @staticmethod
+    def create_reset_token(user: User) -> str:
+        """創建重設密碼 token"""
+        try:
+            token = user.generate_reset_token()
+            db.session.commit()
+            return token
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"創建重設密碼 token 錯誤: {str(e)}")
+            raise
+
+    @staticmethod
+    def verify_reset_token(token: str) -> Optional[User]:
+        """驗證重設密碼 token"""
+        try:
+            user = User.query.filter_by(reset_password_token=token).first()
+            if not user:
+                logger.info(f"找不到對應的 token: {token}")
+                return None
+            
+            # 檢查 token 是否過期
+            now = datetime.utcnow()
+            logger.info(f"當前時間(UTC): {now}")
+            logger.info(f"Token 過期時間(UTC): {user.reset_password_expires}")
+            
+            # 如果現在時間超過過期時間，則 token 已過期
+            if now > user.reset_password_expires:
+                logger.info("Token 已過期")
+                return None
+            
+            logger.info("Token 驗證成功")
+            return user
+            
+        except Exception as e:
+            logger.error(f"驗證重設密碼 token 錯誤: {str(e)}")
+            raise
+
+    @staticmethod
+    def reset_password(user: User, new_password: str) -> bool:
+        """重設密碼"""
+        try:
+            # 更新密碼歷史
+            user.update_password_history(user.password)
+            
+            # 更新新密碼
+            user.password = new_password
+            user.reset_password_token = None
+            user.reset_password_expires = None
+            db.session.commit()
+            return True
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"重設密碼錯誤: {str(e)}")
             raise 
