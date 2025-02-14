@@ -1,13 +1,15 @@
 from flask_openapi3 import APIBlueprint, Tag
 from schemas.langflow_schema import *
 from services.langflow_service import LangflowService
-from flask import send_file, current_app
+from flask import send_file, request
 import logging
 from urllib.parse import unquote, quote
 import os
 import mimetypes
 import base64
 from datetime import datetime
+import io
+
 
 logger = logging.getLogger(__name__)
 langflow_tag = Tag(name='Langflow_knowledge', description='Langflow 知識庫相關操作')
@@ -19,8 +21,16 @@ service = LangflowService()
 def upload_file(path: LangflowUploadPath, form: LangflowUpload):
     """上傳檔案"""
     try:
-        result = service.upload_file(path.flow_id, form.file)
-        return {'message': '上傳成功', 'data': result.to_dict()}
+        if not form.file:
+            return {'message': '未選擇檔案'}, 400
+            
+        file = form.file
+        result = service.upload_file(
+            flow_id=path.flow_id,
+            file_data=file.read(),
+            file_name=file.filename
+        )
+        return result
     except Exception as e:
         logger.error(f"上傳檔案失敗: {str(e)}")
         return {'message': str(e)}, 400
@@ -29,43 +39,50 @@ def upload_file(path: LangflowUploadPath, form: LangflowUpload):
 def download_file(path: LangflowPath):
     """下載檔案"""
     try:
-        # URL decode 檔名
         decoded_file_name = unquote(path.file_name)
         file_info = service.download_file(path.flow_id, decoded_file_name)
         
         if not file_info:
             return {'message': '檔案不存在'}, 404
             
-        file_path = file_info['file_path']
-        original_name = file_info['file_name']
-        
-        # 設置正確的 MIME 類型
-        mime_type = mimetypes.guess_type(original_name)[0] or 'application/octet-stream'
-        
-        # 對中文檔名進行 URL 編碼
-        encoded_filename = quote(original_name)
-        
         response = send_file(
-            file_path,
+            io.BytesIO(file_info['file_data']),
+            mimetype=file_info['content_type'],
             as_attachment=True,
-            download_name=encoded_filename,  # 使用編碼後的檔名
-            mimetype=mime_type
+            download_name=file_info['file_name']
         )
         
-        # 設置 Content-Disposition 標頭
-        response.headers.set(
-            'Content-Disposition',
-            "attachment; filename*=utf-8''{}".format(encoded_filename)
-        )
-        
-        # 添加必要的 CORS 標頭
         response.headers.set('Access-Control-Allow-Origin', '*')
         response.headers.set('Access-Control-Expose-Headers', 'Content-Disposition')
         
         return response
-        
     except Exception as e:
         logger.error(f"下載檔案失敗: {str(e)}")
+        return {'message': str(e)}, 400
+
+@langflow_bp.post('/batch-download', tags=[langflow_tag])
+def batch_download():
+    """批次下載檔案"""
+    try:
+        # 從請求中獲取 flow_id 和檔案列表
+        data = request.get_json()
+        flow_id = data.get('flowId')
+        file_names = data.get('fileNames', [])
+        
+        if not flow_id or not file_names:
+            return {'message': '參數錯誤'}, 400
+        
+        # 呼叫 service 層的批次下載方法
+        memory_file, zip_filename = service.batch_download(flow_id, file_names)
+        
+        return send_file(
+            memory_file,
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name=zip_filename
+        )
+    except Exception as e:
+        logger.error(f"批次下載失敗: {str(e)}")
         return {'message': str(e)}, 400
 
 @langflow_bp.get('/list/<flow_id>', tags=[langflow_tag])
@@ -73,7 +90,7 @@ def list_files(path: LangflowQuery):
     """列出檔案"""
     try:
         files = service.list_files(path.flow_id)
-        return {'files': [f.to_dict() for f in files]}
+        return {'status': 'success', 'files': files}
     except Exception as e:
         logger.error(f"列出檔案失敗: {str(e)}")
         return {'message': str(e)}, 400
@@ -82,8 +99,9 @@ def list_files(path: LangflowQuery):
 def delete_file(path: LangflowPath):
     """刪除檔案"""
     try:
-        result = service.delete_file(path.flow_id, path.file_name)
-        return {'message': '刪除成功' if result else '刪除失敗'}
+        decoded_file_name = unquote(path.file_name)
+        result = service.delete_file(path.flow_id, decoded_file_name)
+        return result
     except Exception as e:
         logger.error(f"刪除檔案失敗: {str(e)}")
         return {'message': str(e)}, 400 

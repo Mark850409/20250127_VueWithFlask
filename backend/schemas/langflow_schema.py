@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 from flask_openapi3 import FileStorage
 
 class LangflowPath(BaseModel):
@@ -72,3 +72,16 @@ class FolderDownloadResponse(BaseModel):
         },
         description="回應內容"
     )
+
+class DeleteMessagesRequest(BaseModel):
+    """刪除對話請求參數"""
+    session_id: str = Field(..., description='對話 Session ID')
+
+class DeleteMessagesResponse(BaseModel):
+    """刪除對話響應"""
+    success: bool = Field(..., description='是否成功')
+    message: str = Field(..., description='結果訊息')
+
+class ErrorResponse(BaseModel):
+    """錯誤響應"""
+    message: str = Field(..., description='錯誤訊息')

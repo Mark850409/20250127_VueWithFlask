@@ -336,34 +336,38 @@ export default {
     getBannerTitle() {
       const route = this.$route.name
       const titles = {
-        'Dashboard': '儀表板管理',
-        'AccountManagement': '帳號管理',
-        'LogManagement': '日誌管理',
-        'MenuManagement': '選單管理',
-        'ShopManagement': '飲料店管理',
-        'RatingManagement': '評分管理',
-        'CommentManagement': '留言板管理',
-        'UserManagement': '管理員管理',
-        'FavoriteManagement': '最愛管理',
-        'GitManagement': '版控管理',
-        'BotManagement': '快速提問管理',
+        Dashboard: '儀表板管理',
+        AccountManagement: '帳號管理',
+        LogManagement: '日誌管理',
+        MenuManagement: '選單管理',
+        ShopManagement: '飲料店管理',
+        RatingManagement: '評分管理',
+        CommentManagement: '留言板管理',
+        UserManagement: '管理員管理',
+        FavoriteManagement: '最愛管理',
+        GitManagement: '版控管理',
+        BotManagement: '快速提問管理',
+        KnowledgeManagement: '知識庫管理',
+        MonitorManagement: '機器人監控管理'
       }
       return titles[route] || '後台管理系統'
     },
     getBannerDescription() {
       const route = this.$route.name
       const descriptions = {
-        'Dashboard': '查看系統整體運營狀況和關鍵指標',
-        'AccountManagement': '管理系統用戶帳號和權限設定',
-        'LogManagement': '查看系統操作日誌和異常記錄',
-        'MenuManagement': '管理系統選單結構和權限',
-        'ShopManagement': '管理合作飲料店資訊和狀態',
-        'RatingManagement': '管理用戶評分與評論內容',
-        'CommentManagement': '管理用戶留言與討論內容',
-        'UserManagement': '管理使用者個人資料設定',
-        'FavoriteManagement': '管理用戶收藏的飲品項目',
-        'GitManagement': '管理系統版本控制和代碼更新',
-        'BotManagement': '管理快速提問設定'
+        Dashboard: '查看系統整體運營狀況和關鍵指標',
+        AccountManagement: '管理系統用戶帳號和權限設定',
+        LogManagement: '查看系統操作日誌和異常記錄',
+        MenuManagement: '管理系統選單結構和權限',
+        ShopManagement: '管理合作飲料店資訊和狀態',
+        RatingManagement: '管理用戶評分與評論內容',
+        CommentManagement: '管理用戶留言與討論內容',
+        UserManagement: '管理使用者個人資料設定',
+        FavoriteManagement: '管理用戶收藏的飲品項目',
+        GitManagement: '管理系統版本控制和代碼更新',
+        BotManagement: '管理快速提問設定',
+        KnowledgeManagement: '管理知識庫設定',
+        MonitorManagement: '機器人監控管理'
       }
       return descriptions[route] || '歡迎使用後台管理系統'
     },

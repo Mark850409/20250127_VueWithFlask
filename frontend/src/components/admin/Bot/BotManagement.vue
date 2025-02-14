@@ -26,10 +26,12 @@
         :data="bots"
         :showAddButton="true"
         :selectable="true"
+        :showMoreActions="false"
         @add="showAddModal = true"
         @edit="editBot"
         @delete="deleteBot"
-        @batch-delete="batchDeleteBots">
+        @batch-delete="batchDeleteBots"
+        class="overflow-x-auto">
         <!-- 自定義狀態列 -->
         <template #is_active="{ item }">
           <span :class="[
@@ -59,10 +61,10 @@
 
     <!-- 新增/編輯彈窗 -->
     <div v-if="showAddModal" 
-         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-y-auto py-8">
-      <div class="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 relative">
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center pt-20 px-4 z-[9999]">
+      <div class="bg-white rounded-xl p-6 w-full max-w-2xl relative max-h-[90vh] flex flex-col">
         <!-- 標題列 -->
-        <div class="flex justify-between items-center mb-6 pb-4 border-b">
+        <div class="flex justify-between items-center mb-6 pb-4 border-b flex-shrink-0">
           <h2 class="text-xl font-bold">{{ editingBot ? '編輯問答' : '新增問答' }}</h2>
           <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
             <i class="fas fa-times text-xl"></i>
@@ -70,7 +72,7 @@
         </div>
 
         <!-- 表單內容區域 -->
-        <div class="max-h-[calc(100vh-200px)] overflow-y-auto pr-2">
+        <div class="overflow-y-auto flex-grow pr-2 mt-4">
           <div class="space-y-4">
             <!-- Icon 選擇器 -->
             <div>
@@ -157,13 +159,13 @@
         </div>
 
         <!-- 底部按鈕區域 -->
-        <div class="mt-6 pt-4 border-t flex justify-end space-x-4 bg-white">
-          <button @click="closeModal"
-                  class="px-4 py-2 text-gray-600 hover:text-gray-800 border rounded-lg">
+        <div class="mt-6 flex justify-end space-x-2 pt-4 border-t flex-shrink-0">
+          <button @click="closeModal" 
+                  class="px-4 py-2 text-gray-600 hover:text-gray-800">
             取消
           </button>
           <button @click="saveBot"
-                  class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
             確定
           </button>
         </div>
@@ -257,12 +259,12 @@ export default {
 
     // 在 columns 中加入 icon 列
     const columns = [
-      { key: 'icon', label: '圖示' },
-      { key: 'title', label: '快速問答名稱' },
-      { key: 'message', label: '訊息內容' },
-      { key: 'sort_order', label: '排序' },
-      { key: 'is_active', label: '狀態' },
-      { key: 'is_default', label: '類型' }
+      { key: 'icon', label: '圖示', width: '60px' },
+      { key: 'title', label: '快速問答名稱', width: '150px' },
+      { key: 'message', label: '訊息內容', width: '40%' },
+      { key: 'sort_order', label: '排序', width: '80px' },
+      { key: 'is_active', label: '狀態', width: '100px' },
+      { key: 'is_default', label: '類型', width: '100px' }
     ]
 
     // 獲取問答列表
@@ -285,6 +287,7 @@ export default {
       editingBot.value = bot
       botForm.value = { ...bot }
       showAddModal.value = true
+      logOperation('【快速提問管理】開始編輯問答', '編輯')
     }
 
     // 刪除問答
@@ -362,53 +365,76 @@ export default {
       try {
         // 驗證
         errors.value = {}
+        
+        // 驗證標題
         if (!botForm.value.title?.trim()) {
           errors.value.title = '請輸入快速問答名稱'
           return
         }
-        if (!botForm.value.message?.trim()) {
-          errors.value.message = '請輸入訊息內容'
-          return
-        }
+        
         // 驗證排序
         const sortOrder = parseInt(botForm.value.sort_order)
-        if (isNaN(sortOrder) || sortOrder < 1) {
+        if (!botForm.value.sort_order) {
           errors.value.sort_order = '排序必須大於等於1'
           return
         }
+        
+        // 驗證排序數字格式
+        if (isNaN(sortOrder) || sortOrder < 1) {
+          errors.value.sort_order = '排序必須為大於0的數字'
+          return
+        }
+        
         // 檢查排序是否重複
         const existingBot = bots.value.find(bot => 
           bot.sort_order === sortOrder && 
           (!editingBot.value || bot.id !== editingBot.value.id)
         )
         if (existingBot) {
-          errors.value.sort_order = '此排序已被使用'
+          errors.value.sort_order = `排序 ${sortOrder} 已被使用，請選擇其他數字`
+          return
+        }
+        
+        // 驗證圖示
+        if (!botForm.value.icon) {
+          errors.value.icon = '請選擇圖示'
           return
         }
 
+        // 準備要儲存的資料
+        const botData = {
+          title: botForm.value.title.trim(),
+          message: botForm.value.message?.trim() || '',  // 訊息內容可為空
+          sort_order: sortOrder,
+          is_active: botForm.value.is_active,
+          is_default: botForm.value.is_default,
+          icon: botForm.value.icon
+        }
+
         if (editingBot.value) {
-          await botAPI.updateBot(editingBot.value.id, botForm.value)
+          await botAPI.updateBot(editingBot.value.id, botData)
           await logOperation(`【快速提問管理】更新問答 ${editingBot.value.id}`, '修改')
         } else {
-            console.log(botForm.value)
-          await botAPI.createBot(botForm.value)
+          await botAPI.createBot(botData)
           await logOperation('【快速提問管理】新增問答', '新增')
         }
 
         await fetchBots()
         showAddModal.value = false
+        
+        // 顯示成功訊息
         Swal.fire({
           icon: 'success',
-          title: `${editingBot.value ? '更新' : '新增'}成功`,
-          timer: 1500,
-          showConfirmButton: false
+          title: `${editingBot.value ? '更新' : '新增'}成功！`,
+          showConfirmButton: false,
+          timer: 1500
         })
       } catch (error) {
         console.error('儲存失敗:', error)
         Swal.fire({
           icon: 'error',
-          title: '錯誤',
-          text: error.response?.data?.message || '儲存失敗'
+          title: '儲存失敗',
+          text: error.response?.data?.message || '請稍後再試'
         })
       }
     }
@@ -472,5 +498,73 @@ export default {
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* 控制訊息內容欄位寬度 */
+:deep(td[data-label="訊息內容"]) {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 滑鼠懸停時顯示完整內容 */
+:deep(td[data-label="訊息內容"]:hover) {
+  white-space: normal;
+  position: relative;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 10;
+}
+
+/* 確保表格容器可以水平滾動但不會超出視窗 */
+:deep(.table-container) {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* 設定表格最小寬度，避免內容擠壓 */
+:deep(table) {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+/* 確保表格不會超出容器 */
+:deep(.table-wrapper) {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* 調整各欄位的基本寬度 */
+:deep(th),
+:deep(td) {
+  padding: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 確保操作欄位的按鈕不會換行 */
+:deep(.actions-cell) {
+  white-space: nowrap;
+}
+
+/* 移除操作欄位的省略效果 */
+:deep(td[data-label="操作"]) {
+  white-space: nowrap;
+  overflow: visible;
+}
+
+/* 移除操作欄位的重複顯示 */
+:deep(th[data-label="操作"]:not(:last-child)),
+:deep(td[data-label="操作"]:not(:last-child)) {
+  display: none;
+}
+
+/* 確保操作欄位內容完整顯示 */
+:deep(td[data-label="操作"]) {
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
 }
 </style> 

@@ -7,12 +7,27 @@ import logging
 from urllib.parse import quote, unquote
 from datetime import datetime
 import unicodedata
+import requests
+from config.config import config
+import zipfile
+import io
 
+# 設定 logger
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 class LangflowService:
     def __init__(self):
         self.dao = LangflowDAO()
+        self.config = config['development']()
+        self.base_url = self.config.LANGFLOW_API_BASE_URL
+        self.headers = {
+            'Authorization': self.config.LANGFLOW_API_KEY,
+            'Content-Type': 'application/json'
+        }
     
     def normalize_filename(self, filename: str) -> str:
         """正規化檔名，保留中文字元"""
@@ -25,106 +40,100 @@ class LangflowService:
         # 重新組合檔名
         return f"{safe_name}{ext}"
     
-    def upload_file(self, flow_id: str, file) -> Langflow:
-        """上傳檔案"""
+    def upload_file(self, flow_id: str, file_data: bytes, file_name: str) -> dict:
+        """上傳檔案到 Langflow"""
         try:
-            # 處理原始檔名
-            original_filename = file.filename
-            
-            # 生成檔案 ID
-            file_id = datetime.now().strftime('%Y%m%d%H%M%S')
-            
-            # 建立儲存路徑
-            _, ext = os.path.splitext(original_filename)
-            storage_filename = f"{file_id}{ext}"
-            cache_dir = os.path.join(os.path.expanduser('~'), '.cache', 'langflow', flow_id)
-            file_path = os.path.join(cache_dir, storage_filename)
-            
-            # 確保目錄存在
-            os.makedirs(cache_dir, exist_ok=True)
-            
-            # 保存檔案
-            content = file.read()
-            with open(file_path, 'wb') as f:
-                f.write(content)
-            
-            # 創建記錄
-            data = {
-                'flow_id': flow_id,
-                'file_id': file_id,
-                'file_name': original_filename,
-                'file_path': file_path
+            url = f"{self.base_url}/api/v1/files/upload/{flow_id}"
+            files = {
+                'file': (file_name, file_data)
             }
-            return self.dao.create_langflow(data)
-        except Exception as e:
-            logger.error(f"上傳檔案失敗: {str(e)}")
-            raise
-    
-    def download_file_by_id(self, flow_id: str, file_id: str) -> Optional[dict]:
-        """根據 ID 下載檔案"""
-        try:
-            langflow = self.dao.get_by_flow_id_and_file_id(flow_id, file_id)
-            
-            if not langflow or langflow.status != 'active':
-                raise ValueError('檔案不存在')
-            
-            if not os.path.exists(langflow.file_path):
-                raise ValueError('檔案已被刪除')
-            
-            return {
-                'file_path': langflow.file_path,
-                'file_name': langflow.file_name
-            }
-        except Exception as e:
-            logger.error(f"下載檔案失敗: {str(e)}")
-            raise
-    
-    def list_files(self, flow_id: str) -> List[Langflow]:
-        """列出檔案"""
-        try:
-            return self.dao.get_files_by_flow_id(flow_id)
-        except Exception as e:
-            logger.error(f"列出檔案失敗: {str(e)}")
-            raise
-    
-    def delete_file(self, flow_id: str, file_name: str) -> bool:
-        """刪除檔案"""
-        try:
-            langflow = self.dao.get_by_flow_id_and_name(flow_id, file_name)
-            if not langflow:
-                raise ValueError('檔案不存在')
-                
-            # 刪除實體檔案
-            if os.path.exists(langflow.file_path):
-                os.remove(langflow.file_path)
-                
-            return self.dao.delete_langflow(langflow.id)
-        except Exception as e:
-            logger.error(f"刪除檔案失敗: {str(e)}")
-            raise
-    
-    def get_monitor_messages(self, flow_id: str, session_id: str = None,
-                            sender: str = None, sender_name: str = None,
-                            order_by: str = 'timestamp') -> List[dict]:
-        """獲取監控訊息"""
-        try:
-            messages = self.dao.get_monitor_messages(
-                flow_id=flow_id,
-                session_id=session_id,
-                sender=sender,
-                sender_name=sender_name,
-                order_by=order_by
+            response = requests.post(
+                url, 
+                files=files, 
+                headers={'Authorization': self.config.LANGFLOW_API_KEY}
             )
-            return [msg.to_dict() for msg in messages]
-        except Exception as e:
-            logger.error(f"獲取監控訊息失敗: {str(e)}")
-            raise
+            response.raise_for_status()
+            return {'status': 'success', 'message': '上傳成功'}
+        except requests.exceptions.RequestException as e:
+            logger.error(f"上傳檔案失敗: {str(e)}")
+            raise Exception(f"上傳檔案失敗: {str(e)}")
     
-    def create_monitor_message(self, data: dict) -> dict:
-        """創建監控訊息"""
+    def download_file(self, flow_id: str, file_name: str) -> dict:
+        """下載 Langflow 檔案"""
         try:
-            message = self.dao.create_monitor_message(data)
-            return message.to_dict()
+            url = f"{self.base_url}/api/v1/files/download/{flow_id}/{file_name}"
+            response = requests.get(url, headers=self.headers)
+            response.raise_for_status()
+            return {
+                'file_data': response.content,
+                'file_name': file_name,
+                'content_type': response.headers.get('Content-Type', 'application/octet-stream')
+            }
+        except requests.exceptions.RequestException as e:
+            logger.error(f"下載檔案失敗: {str(e)}")
+            raise Exception(f"下載檔案失敗: {str(e)}")
+    
+    def list_files(self, flow_id: str) -> List[dict]:
+        """列出 Langflow 檔案"""
+        try:
+            url = f"{self.base_url}/api/v1/files/list/{flow_id}"
+            logger.info(f"列出檔案 URL: {url}")
+            logger.info(f"Headers: {self.headers}")
+            
+            response = requests.get(url, headers=self.headers)
+            logger.info(f"Response status: {response.status_code}")
+            logger.info(f"Response content: {response.content}")
+            
+            response.raise_for_status()
+            data = response.json()
+            logger.info(f"Parsed JSON data: {data}")
+            
+            # 檢查回傳格式是否包含 'files' 鍵
+            if isinstance(data, dict) and 'files' in data:
+                return data['files']
+            # 如果直接是列表
+            elif isinstance(data, list):
+                return data
+            # 如果是其他格式，返回空列表
+            else:
+                logger.warning(f"Unexpected response format: {data}")
+                return []
+        except requests.exceptions.RequestException as e:
+            logger.error(f"列出檔案失敗: {str(e)}")
+            raise Exception(f"列出檔案失敗: {str(e)}")
+    
+    def delete_file(self, flow_id: str, file_name: str) -> dict:
+        """刪除 Langflow 檔案"""
+        try:
+            url = f"{self.base_url}/api/v1/files/delete/{flow_id}/{file_name}"
+            response = requests.delete(url, headers=self.headers)
+            response.raise_for_status()
+            return {'status': 'success', 'message': '刪除成功'}
+        except requests.exceptions.RequestException as e:
+            logger.error(f"刪除檔案失敗: {str(e)}")
+            raise Exception(f"刪除檔案失敗: {str(e)}")
+    
+    def batch_download(self, flow_id: str, file_names: List[str]) -> tuple:
+        """批次下載並打包檔案"""
+        try:
+            # 創建記憶體中的 ZIP 檔案
+            memory_file = io.BytesIO()
+            with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+                # 下載每個檔案並添加到 ZIP
+                for file_name in file_names:
+                    file_info = self.download_file(flow_id, file_name)
+                    if file_info:
+                        zf.writestr(file_name, file_info['file_data'])
+            
+            # 將指針移到開頭
+            memory_file.seek(0)
+            
+            # 生成下載檔名
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            zip_filename = f'knowledge_files_{timestamp}.zip'
+            
+            return memory_file, zip_filename
+            
         except Exception as e:
-            logger.error(f"創建監控訊息失敗: {str(e)}")
-            raise 
+            logger.error(f"批次下載失敗: {str(e)}")
+            raise Exception(f"批次下載失敗: {str(e)}")

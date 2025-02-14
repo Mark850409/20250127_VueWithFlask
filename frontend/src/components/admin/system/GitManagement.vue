@@ -346,6 +346,7 @@
 import axios from '@/utils/axios'
 import { ElMessage } from 'element-plus'
 import Swal from 'sweetalert2'
+import { useLogger } from '@/composables/useLogger'
 
 export default {
   name: 'GitManagement',
@@ -381,6 +382,10 @@ export default {
       sortOrder: 'desc',
       showRepoPathDialog: false
     }
+  },
+  setup() {
+    const { logOperation } = useLogger()
+    return { logOperation }
   },
   computed: {
     filteredCommits() {
@@ -439,6 +444,7 @@ export default {
 
       try {
         await axios.post('/init', { path: this.repoPath })
+        await this.logOperation('【Git管理】初始化倉庫', '新增')
         Swal.fire({
           icon: 'success',
           title: '倉庫初始化成功',
@@ -474,6 +480,7 @@ export default {
 
       try {
         await axios.post('/config', this.config)
+        await this.logOperation('【Git管理】更新Git配置', '修改')
         Swal.fire({
           icon: 'success',
           title: 'Git 配置已更新',
@@ -496,6 +503,7 @@ export default {
 
       try {
         await axios.post('/remote/add', this.remote)
+        await this.logOperation(`【Git管理】添加遠程倉庫 ${this.remote.name}`, '新增')
         Swal.fire({
           icon: 'success',
           title: '遠程倉庫已添加',
@@ -618,6 +626,7 @@ export default {
         await this.checkStatus()
         await this.getHistory()
         
+        await this.logOperation('【Git管理】提交更改', '新增')
         Swal.fire({
           icon: 'success',
           title: '更改已提交',
@@ -638,6 +647,7 @@ export default {
         await axios.post('/branch/create', { name: this.branchName })
         this.branchName = ''
         this.showBranchError = false
+        await this.logOperation(`【Git管理】創建分支 ${this.branchName}`, '新增')
       } catch (error) {
         // 錯誤處理已在 axios 攔截器中完成
       }
@@ -651,6 +661,7 @@ export default {
         this.branchName = ''
         this.showBranchError = false
         await this.checkStatus()
+        await this.logOperation(`【Git管理】切換到分支 ${this.branchName}`, '修改')
       } catch (error) {
         // 錯誤處理已在 axios 攔截器中完成
       }
@@ -669,7 +680,7 @@ export default {
         await this.checkStatus()
         await this.getHistory()
         
-        // 成功提示
+        await this.logOperation('【Git管理】拉取更新', '更新')
         Swal.fire({
           icon: 'success',
           title: '已成功拉取更新',
@@ -697,6 +708,7 @@ export default {
         await this.checkStatus()
         await this.getHistory()
         
+        await this.logOperation(`【Git管理】推送更改到 ${this.remote.name}/${this.currentBranch}`, '更新')
         Swal.fire({
           icon: 'success',
           title: '已成功推送更改',
@@ -746,6 +758,7 @@ export default {
           await this.checkStatus()
           await this.getHistory()
           
+          await this.logOperation(`【Git管理】強制推送到 ${this.remote.name}/${this.currentBranch}`, '更新')
           Swal.fire({
             icon: 'success',
             title: '已成功強制推送',
@@ -1028,6 +1041,9 @@ export default {
     pageSize() {
       this.currentPage = 1
     }
+  },
+  async mounted() {
+    await this.logOperation('【Git管理】訪問Git管理頁面', '查看')
   }
 }
 </script>

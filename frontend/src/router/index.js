@@ -10,7 +10,7 @@ import RatingManagement from '@/components/admin/order/RatingManagement.vue'
 import CommentManagement from '@/components/admin/order/CommentManagement.vue'
 import UserManagement from '@/components/admin/personal/UserManagement.vue'
 import FavoriteManagement from '@/components/admin/personal/FavoriteManagement.vue'
-import GitManagement from '@/views/admin/GitManagement.vue'
+import GitManagement from '@/components/admin/system/GitManagement.vue'
 import NotFound from '@/views/error/NotFound.vue'
 import Home from '@/components/food/FoodRecommendation.vue'
 import Features from '@/components/food/pages/Features.vue'
@@ -18,7 +18,9 @@ import Learning from '@/components/food/pages/Learning.vue'
 import Pricing from '@/components/food/pages/Pricing.vue'
 import Login from '@/views/auth/Login.vue'
 import ResetPassword from '@/views/auth/ResetPassword.vue'
-import BotManagement from '@/views/admin/BotManagement.vue'
+import BotManagement from '@/components/admin/Bot/BotManagement.vue'
+import KnowledgeManagement from '@/components/admin/knowledge/KnowledgeManagement.vue'
+import MonitorManagement from '@/components/admin/monitor/MonitorManagement.vue'
 
 const routes = [
   {
@@ -117,6 +119,24 @@ const routes = [
         meta: {
           requiresAuth: true,
           title: '快速提問&預設訊息管理'
+        }
+      },
+      {
+        path: 'knowledge',
+        name: 'KnowledgeManagement',
+        component: KnowledgeManagement,
+        meta: {
+          title: '知識庫管理',
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'monitor',
+        name: 'MonitorManagement',
+        component: MonitorManagement,
+        meta: {
+          title: '監控管理',
+          requiresAuth: true
         }
       }
     ]

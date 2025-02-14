@@ -85,7 +85,7 @@ class FolderService:
         try:
             # 呼叫外部 API
             logger.info(f"Downloading folder from: {self.config.LANGFLOW_API_BASE_URL}")
-            url = f"{self.config.LANGFLOW_API_BASE_URL}/download/{folder_id}"
+            url = f"{self.config.LANGFLOW_API_BASE_URL}{self.config.LANGFLOW_FOLDER_BASE_URL}/download/{folder_id}"
             logger.info(f"Downloading folder from: {url}")
 
             response = requests.get(

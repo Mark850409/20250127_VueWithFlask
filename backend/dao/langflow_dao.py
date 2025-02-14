@@ -1,6 +1,8 @@
 from typing import List, Optional
 from models.langflow import Langflow, db
 from models.monitor import LangflowMonitor
+from models.database import db
+from sqlalchemy import text
 
 class LangflowDAO:
     @staticmethod
@@ -82,4 +84,30 @@ class LangflowDAO:
         message = LangflowMonitor(**data)
         db.session.add(message)
         db.session.commit()
-        return message 
+        return message
+
+    def delete_messages_by_session(self, session_id: str) -> bool:
+        """根據 session_id 刪除對話記錄
+        
+        Args:
+            session_id: 對話 Session ID
+            
+        Returns:
+            bool: 是否刪除成功
+        """
+        try:
+            # 使用原生 SQL 執行刪除
+            sql = text("""
+                DELETE FROM langflow_messages 
+                WHERE session_id = :session_id
+            """)
+            
+            result = db.session.execute(sql, {'session_id': session_id})
+            db.session.commit()
+            
+            # 檢查是否有刪除記錄
+            return result.rowcount > 0
+            
+        except Exception as e:
+            db.session.rollback()
+            raise e 

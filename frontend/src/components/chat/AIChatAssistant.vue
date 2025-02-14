@@ -74,7 +74,7 @@
         </div>
 
         <!-- 快速問答區塊 -->
-        <div class="p-3 border-t border-gray-100 bg-gray-50">
+        <div v-if="quickQuestions.length > 0" class="p-3 border-t border-gray-100 bg-gray-50">
           <div class="flex items-center justify-between mb-2 px-2">
             <div class="text-sm font-medium text-gray-600">
               快速問答：
@@ -367,7 +367,7 @@ export default {
     const fetchDefaultMessage = async () => {
       try {
         const response = await botAPI.getBots({
-          is_active: true,
+          is_active: false,
           is_default: true
         })
         const data = response.data.bots

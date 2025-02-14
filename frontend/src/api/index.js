@@ -7,6 +7,7 @@ import dashboardAPI from './modules/dashboard'
 import recommendAPI from './modules/recommend'
 import messageAPI from './modules/message'
 import botAPI from './modules/bot'
+import knowledgeAPI from './modules/knowledge'
 
 export {
   accountAPI,
@@ -17,5 +18,6 @@ export {
   dashboardAPI,
   recommendAPI,
   messageAPI,
-  botAPI
+  botAPI,
+  knowledgeAPI
 } 
