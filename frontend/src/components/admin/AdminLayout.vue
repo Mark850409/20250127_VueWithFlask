@@ -346,6 +346,7 @@ export default {
         'UserManagement': '管理員管理',
         'FavoriteManagement': '最愛管理',
         'GitManagement': '版控管理',
+        'BotManagement': '快速提問管理',
       }
       return titles[route] || '後台管理系統'
     },
@@ -362,6 +363,7 @@ export default {
         'UserManagement': '管理使用者個人資料設定',
         'FavoriteManagement': '管理用戶收藏的飲品項目',
         'GitManagement': '管理系統版本控制和代碼更新',
+        'BotManagement': '管理快速提問設定'
       }
       return descriptions[route] || '歡迎使用後台管理系統'
     },

@@ -19,10 +19,13 @@ from controllers.googlemaps_info_controller import googlemaps_info_bp
 from controllers.dashboard_controller import dashboard_bp
 from controllers.recommend_controller import recommend_bp
 from controllers.bot_controller import bot_bp
+from controllers.langflows_knowledge_controller import langflow_bp
+from controllers.langflows_monitor_controller import monitor_bp
+from controllers.langflows_folder_controller import folder_bp
+
 __all__ = [
     'user_bp',
     'git_bp',
-
     'log_bp',
     'menu_bp',
     'store_bp',
@@ -39,5 +42,8 @@ __all__ = [
     'googlemaps_info_bp',
     'dashboard_bp',
     'recommend_bp',
-    'bot_bp'
+    'bot_bp',
+    'langflow_bp',
+    'monitor_bp',
+    'folder_bp'
 ] 

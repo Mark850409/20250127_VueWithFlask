@@ -10,3 +10,12 @@
 2025-02-12 12:17:35,276 - INFO -  * Debugger PIN: 611-006-232
 2025-02-12 12:17:53,685 - INFO - API queries_quota: 60
 2025-02-12 12:18:31,742 - INFO - API queries_quota: 60
+2025-02-13 14:02:11,866 - INFO - API queries_quota: 60
+2025-02-13 14:03:02,251 - INFO - API queries_quota: 60
+2025-02-13 14:06:58,526 - INFO - API queries_quota: 60
+2025-02-13 14:44:24,418 - INFO - API queries_quota: 60
+2025-02-13 14:45:03,166 - INFO - API queries_quota: 60
+2025-02-13 14:45:44,286 - INFO - API queries_quota: 60
+2025-02-13 14:49:02,506 - INFO - API queries_quota: 60
+2025-02-13 14:49:02,528 - ERROR - 下載資料夾失敗: 'NoneType' object has no attribute 'get'
+2025-02-13 14:50:32,297 - INFO - API queries_quota: 60

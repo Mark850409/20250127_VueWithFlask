@@ -18,6 +18,10 @@ servers = [
     Server(
         url=FOODPANDA_SERVICE_URL, 
         description='取得foodpanda菜單和搜尋使用'
+    ),
+    Server(
+        url='https://mylangflow0108.zeabur.app',
+        description='Langflow 生產環境'
     )
 ]
 

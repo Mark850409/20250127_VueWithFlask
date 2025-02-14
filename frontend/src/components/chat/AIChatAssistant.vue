@@ -91,7 +91,7 @@
               v-for="question in quickQuestions" 
               :key="question.id"
               class="quick-question-btn"
-              @click="handleQuickQuestion(question.title)"
+              @click="handleQuickQuestion(question)"
             >
               <i v-if="question.icon" :class="question.icon"></i>
               {{ question.title }}
@@ -121,7 +121,7 @@
 
 <script>
 import { ref, onMounted, nextTick, watch } from 'vue'
-import axios from 'axios'
+import { botAPI } from '@/api'
 
 export default {
   name: 'AIChatAssistant',
@@ -158,9 +158,9 @@ export default {
     }
 
     // 處理快速提問
-    const handleQuickQuestion = (question) => {
-      userInput.value = question
-      sendMessage()
+    const handleQuickQuestion = async (question) => {
+      userInput.value = question.message || question
+      await sendMessage()
     }
 
     // 監聽聊天歷史變化，自動滾動到底部
@@ -366,54 +366,38 @@ export default {
     // 獲取預設訊息
     const fetchDefaultMessage = async () => {
       try {
-        const response = await fetch(
-          'http://localhost:5000/api/bots/?is_active=true&is_default=true',
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        )
-        
-        if (!response.ok) {
-          throw new Error('獲取預設訊息失敗')
-        }
-        
-        const data = await response.json()
-        if (data.bots && data.bots.length > 0) {
-          // 設置預設訊息
-          chatHistory.value = [{
-            content: data.bots[0].message || defaultMessage.content,
-            isUser: false
-          }]
+        const response = await botAPI.getBots({
+          is_active: true,
+          is_default: true
+        })
+        const data = response.data.bots
+        if (data && data.length > 0) {
+          defaultMessage.content = data[0].message
+          chatHistory.value = [defaultMessage]
         }
       } catch (error) {
-        console.error('獲取預設訊息錯誤:', error)
+        console.error('獲取預設訊息失敗:', error)
       }
     }
 
-    // 獲取快速問答列表
+    // 獲取快速問答
     const fetchQuickQuestions = async () => {
       try {
-        const response = await fetch(
-          'http://localhost:5000/api/bots/?is_active=true&is_default=false',
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        )
-        
-        if (!response.ok) {
-          throw new Error('獲取快速問答失敗')
+        const response = await botAPI.getBots({
+          is_active: true,
+          is_default: false
+        })
+        const data = response.data.bots
+        if (data) {
+          quickQuestions.value = data.map(item => ({
+            id: item.id,
+            title: item.title,
+            message: item.message,
+            icon: item.icon
+          }))
         }
-        
-        const data = await response.json()
-        quickQuestions.value = data.bots
       } catch (error) {
-        console.error('獲取快速問答錯誤:', error)
+        console.error('獲取快速問答失敗:', error)
       }
     }
 

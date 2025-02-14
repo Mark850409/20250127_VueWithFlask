@@ -18,6 +18,7 @@ import Learning from '@/components/food/pages/Learning.vue'
 import Pricing from '@/components/food/pages/Pricing.vue'
 import Login from '@/views/auth/Login.vue'
 import ResetPassword from '@/views/auth/ResetPassword.vue'
+import BotManagement from '@/views/admin/BotManagement.vue'
 
 const routes = [
   {
@@ -107,6 +108,15 @@ const routes = [
         meta: {
           requiresAuth: true,
           title: '版控管理'
+        }
+      },
+      {
+        path: 'bots',
+        name: 'BotManagement',
+        component: BotManagement,
+        meta: {
+          requiresAuth: true,
+          title: '快速提問&預設訊息管理'
         }
       }
     ]

@@ -62,6 +62,14 @@ class Config:
     API_URL = API_URL
     FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 
+    # 資料夾 API 路徑
+    FOLDER_API_PATH = os.getenv('FOLDER_API_PATH')
+
+    # Langflow API 配置
+    LANGFLOW_API_BASE_URL = os.getenv('LANGFLOW_API_BASE_URL')
+    LANGFLOW_API_KEY = os.getenv('LANGFLOW_API_KEY')
+    LANGFLOW_AUTH_TOKEN = os.getenv('LANGFLOW_AUTH_TOKEN')
+
     # 獲取 Google Maps API Key
     GOOGLE_MAPS_API_KEY = GOOGLE_MAPS_API_KEY
     
