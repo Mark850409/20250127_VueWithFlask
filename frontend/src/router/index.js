@@ -21,6 +21,7 @@ import ResetPassword from '@/views/auth/ResetPassword.vue'
 import BotManagement from '@/components/admin/Bot/BotManagement.vue'
 import KnowledgeManagement from '@/components/admin/knowledge/KnowledgeManagement.vue'
 import MonitorManagement from '@/components/admin/monitor/MonitorManagement.vue'
+import ProjectManagement from '@/components/admin/projects/ProjectManagement.vue'
 
 const routes = [
   {
@@ -137,6 +138,15 @@ const routes = [
         meta: {
           title: '監控管理',
           requiresAuth: true
+        }
+      },
+      {
+        path: 'projects',
+        name: 'ProjectManagement',
+        component: ProjectManagement,
+        meta: {
+          requiresAuth: true,
+          title: '專案管理'
         }
       }
     ]

@@ -1,77 +1,86 @@
 from flask_openapi3 import APIBlueprint, Tag
 from schemas.langflow_schema import FolderPath, FolderCreate, FolderUpdate, FolderDownloadResponse
-from services.folder_service import FolderService
-from flask import send_file, jsonify, make_response
+from services.langflow_folder_service import FolderService
 import logging
-from datetime import datetime
-import os
-import uuid
-import json
 from flask import Response
-import requests
 # 設定 logger
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-folder_tag = Tag(name='Langflow_folder', description='Langflow 資料夾相關操作')
+folder_tag = Tag(name='Langflow_folder', description='Langflow 專案相關操作')
 folder_bp = APIBlueprint('folder', __name__, url_prefix='/api/v1/folders')
 
 service = FolderService()
 
 @folder_bp.get('/', tags=[folder_tag])
 def read_folders():
-    """讀取所有資料夾"""
+    """讀取所有專案"""
     try:
         folders = service.get_all_folders()
-        return {'folders': [f.to_dict() for f in folders]}
+        return folders
     except Exception as e:
-        logger.error(f"讀取資料夾失敗: {str(e)}")
-        return {'message': str(e)}, 400
+        logger.error(f"讀取專案失敗: {str(e)}")
+        return {'message': f"讀取專案失敗: {str(e)}"}, 400
 
 @folder_bp.post('/', tags=[folder_tag])
 def create_folder(body: FolderCreate):
-    """建立資料夾"""
+    """建立專案"""
     try:
-        folder = service.create_folder(body.dict())
-        return {'message': '建立成功', 'data': folder.to_dict()}
+        # 將 pydantic 模型轉換為字典
+        folder_data = {
+            "name": body.name,
+            "description": body.description,
+            "components_list": body.components_list,
+            "flows_list": body.flows_list
+        }
+        folder = service.create_folder(folder_data)
+        return {'message': '建立成功', 'data': folder}
     except Exception as e:
-        logger.error(f"建立資料夾失敗: {str(e)}")
+        logger.error(f"建立專案失敗: {str(e)}")
         return {'message': str(e)}, 400
 
 @folder_bp.get('/<folder_id>', tags=[folder_tag])
 def read_folder(path: FolderPath):
-    """讀取單一資料夾"""
+    """讀取單一專案"""
     try:
         folder = service.get_folder(path.folder_id)
         if not folder:
-            return {'message': '資料夾不存在'}, 404
-        return folder.to_dict()
+            return {'message': '專案不存在'}, 404
+        return folder
     except Exception as e:
-        logger.error(f"讀取資料夾失敗: {str(e)}")
+        logger.error(f"讀取專案失敗: {str(e)}")
         return {'message': str(e)}, 400
 
 @folder_bp.patch('/<folder_id>', tags=[folder_tag])
 def update_folder(path: FolderPath, body: FolderUpdate):
-    """更新資料夾"""
+    """更新專案"""
     try:
-        folder = service.update_folder(path.folder_id, body.dict(exclude_unset=True))
+        # 將 pydantic 模型轉換為字典
+        folder_data = {
+            "name": body.name,
+            "description": body.description,
+            "parent_id": body.parent_id,
+            "components": body.components,
+            "flows": body.flows
+        }
+        folder = service.update_folder(path.folder_id, folder_data)
         if not folder:
-            return {'message': '資料夾不存在'}, 404
-        return {'message': '更新成功', 'data': folder.to_dict()}
+            return {'message': '專案不存在'}, 404
+        return folder
     except Exception as e:
-        logger.error(f"更新資料夾失敗: {str(e)}")
+        logger.error(f"更新專案失敗: {str(e)}")
         return {'message': str(e)}, 400
 
 @folder_bp.delete('/<folder_id>', tags=[folder_tag])
 def delete_folder(path: FolderPath):
-    """刪除資料夾"""
+    """刪除專案"""
     try:
         result = service.delete_folder(path.folder_id)
         return {'message': '刪除成功' if result else '刪除失敗'}
     except Exception as e:
-        logger.error(f"刪除資料夾失敗: {str(e)}")
+        logger.error(f"刪除專案失敗: {str(e)}")
         return {'message': str(e)}, 400
 
 
@@ -80,16 +89,16 @@ def delete_folder(path: FolderPath):
     tags=[folder_tag],
     responses={
         200: FolderDownloadResponse,
-        404: {"description": "資料夾不存在或無法生成 ZIP"},
+        404: {"description": "專案不存在或無法生成 ZIP"},
         400: {"description": "下載失敗"}
     }
 )
 def download_folder(path: FolderPath):
-    """下載資料夾"""
+    """下載單一專案下面的所有專案"""
     try:
         result = service.download_folder(path.folder_id)
         if not result:
-            return {'message': '資料夾不存在或無法下載'}, 404
+            return {'message': '專案不存在或無法下載'}, 404
 
         zip_data, filename = result
 
@@ -103,5 +112,5 @@ def download_folder(path: FolderPath):
         )
 
     except Exception as e:
-        logger.error(f"下載資料夾失敗: {str(e)}")
+        logger.error(f"下載專案失敗: {str(e)}")
         return {'message': str(e)}, 400

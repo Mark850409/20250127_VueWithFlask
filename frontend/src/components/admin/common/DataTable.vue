@@ -1,11 +1,11 @@
 <template>
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
     <!-- 表格控制列 -->
-    <div class="px-6 py-4 border-b dark:border-gray-700 flex justify-between items-center bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-gray-700 dark:to-gray-800">
-      <div class="flex items-center space-x-2">
+    <div class="px-4 md:px-6 py-3 md:py-4 border-b dark:border-gray-700 flex flex-col md:flex-row md:justify-between md:items-center space-y-3 md:space-y-0 bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-gray-700 dark:to-gray-800">
+      <div class="flex items-center space-x-2 w-full md:w-auto">
         <span class="text-sm text-gray-700 dark:text-gray-300">顯示</span>
         <select v-model="pageSize" 
-                class="bg-white dark:bg-gray-700 border border-indigo-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm rounded-md px-3 py-1.5 pr-8 focus:ring-1 focus:ring-indigo-400 dark:focus:ring-indigo-500 focus:border-indigo-400 dark:focus:border-indigo-500">
+                class="bg-white dark:bg-gray-700 border border-indigo-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm rounded-md px-3 py-1.5 pr-8 focus:ring-1 focus:ring-indigo-400 dark:focus:ring-indigo-500 focus:border-indigo-400 dark:focus:border-indigo-500 w-20">
           <option value="10">10</option>
           <option value="25">25</option>
           <option value="50">50</option>
@@ -15,30 +15,35 @@
       </div>
       <!-- 使用具名插槽來自定義工具欄 -->
       <slot name="toolbar">
-        <div class="flex items-center space-x-4">
-          <button v-if="selectedItems.length" 
-                  @click="batchDelete"
-                  class="px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-md hover:bg-red-200 dark:hover:bg-red-900/50 text-sm transition-colors duration-200 border border-red-200 dark:border-red-800">
-            <i class="fas fa-trash-alt mr-2"></i>批次刪除
-          </button>
-          <button v-if="showAddButton" 
-                  @click="$emit('add')"
-                  class="inline-flex items-center px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-sm rounded-md hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors duration-200 border border-emerald-200 dark:border-emerald-800">
-            <i class="fas fa-plus mr-1.5"></i>新增
-          </button>
-          <div class="relative">
+        <div class="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-4 w-full md:w-auto">
+          <!-- 搜尋框 -->
+          <div class="relative w-full md:w-64 order-1 md:order-3">
             <input type="text" 
                    v-model="searchQuery" 
                    placeholder="搜尋..." 
-                   class="bg-white dark:bg-gray-700 border border-indigo-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 pl-8 pr-4 py-1.5 rounded-md w-64 focus:ring-1 focus:ring-indigo-400 dark:focus:ring-indigo-500 focus:border-indigo-400 dark:focus:border-indigo-500 placeholder-gray-500 dark:placeholder-gray-400">
+                   class="bg-white dark:bg-gray-700 border border-indigo-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 pl-8 pr-4 py-1.5 rounded-md w-full focus:ring-1 focus:ring-indigo-400 dark:focus:ring-indigo-500 focus:border-indigo-400 dark:focus:border-indigo-500 placeholder-gray-500 dark:placeholder-gray-400">
             <i class="fas fa-search absolute left-3 top-2.5 text-gray-500 dark:text-gray-400"></i>
+          </div>
+
+          <!-- 按鈕群組 -->
+          <div class="flex items-center gap-2 order-2">
+            <button v-if="selectedItems.length" 
+                    @click="batchDelete"
+                    class="flex-1 md:flex-none px-4 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-md hover:bg-red-200 dark:hover:bg-red-900/50 text-sm transition-colors duration-200 border border-red-200 dark:border-red-800">
+              <i class="fas fa-trash-alt mr-2"></i>批次刪除
+            </button>
+            <button v-if="showAddButton" 
+                    @click="$emit('add')"
+                    class="flex-1 md:flex-none inline-flex items-center justify-center px-4 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-sm rounded-md hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors duration-200 border border-emerald-200 dark:border-emerald-800">
+              <i class="fas fa-plus mr-1.5"></i>新增
+            </button>
           </div>
         </div>
       </slot>
     </div>
 
     <!-- 表格內容 -->
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto scrollbar-thin">
       <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
         <thead class="bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-gray-700 dark:to-gray-800 sticky top-0">
           <tr>
@@ -52,12 +57,15 @@
             <th v-for="column in columns" 
                 :key="column.key"
                 scope="col"
-                class="px-6 py-3.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                class="px-3 md:px-6 py-3 md:py-3.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap">
               {{ column.label }}
             </th>
             <!-- 如果不是只使用自定義操作欄，則顯示預設操作欄標題 -->
             <th v-if="!customActionsOnly && showDefaultActions" 
-                class="px-6 py-3.5 text-right text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                :class="[
+                  'px-3 md:px-6 py-3 md:py-3.5 text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider',
+                  'md:text-right text-center'
+                ]">
               操作
             </th>
           </tr>
@@ -72,23 +80,43 @@
             </td>
             <td v-for="column in columns" 
                 :key="column.key"
-                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                class="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-900">
               <slot :name="column.key" :item="item">
                 {{ column.formatter ? column.formatter(item[column.key]) : item[column.key] }}
               </slot>
             </td>
             <!-- 如果不是只使用自定義操作欄，則顯示預設操作按鈕 -->
             <td v-if="!customActionsOnly && showDefaultActions" 
-                class="px-6 py-4 text-right space-x-3">
-              <button v-if="showEditButton"
-                      @click="$emit('edit', item)" 
-                      class="inline-flex items-center px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors duration-200 border border-blue-200 dark:border-blue-800">
-                <i class="fas fa-edit mr-1.5"></i>編輯
-              </button>
-              <button @click="$emit('delete', item)" 
-                      class="inline-flex items-center px-3 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm rounded-md hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors duration-200 border border-red-200 dark:border-red-800">
-                <i class="fas fa-trash mr-1.5"></i>刪除
-              </button>
+                :class="[
+                  'px-3 md:px-6 py-3 md:py-4',
+                  'md:text-right text-center',
+                  'md:space-x-3'
+                ]">
+              <!-- 桌面版按鈕 -->
+              <div class="hidden md:inline-flex space-x-3">
+                <button v-if="showEditButton"
+                        @click="$emit('edit', item)" 
+                        class="inline-flex items-center px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors duration-200 border border-blue-200 dark:border-blue-800">
+                  <i class="fas fa-edit mr-1.5"></i>編輯
+                </button>
+                <button @click="$emit('delete', item)" 
+                        class="inline-flex items-center px-3 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm rounded-md hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors duration-200 border border-red-200 dark:border-red-800">
+                  <i class="fas fa-trash mr-1.5"></i>刪除
+                </button>
+              </div>
+            
+              <!-- 手機版按鈕 -->
+              <div class="md:hidden flex justify-center items-center space-x-1">
+                <button v-if="showEditButton"
+                        @click="$emit('edit', item)" 
+                        class="p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors duration-200 border border-blue-200 dark:border-blue-800">
+                  <i class="fas fa-edit text-sm"></i>
+                </button>
+                <button @click="$emit('delete', item)" 
+                        class="p-1.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-md hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors duration-200 border border-red-200 dark:border-red-800">
+                  <i class="fas fa-trash text-sm"></i>
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -96,11 +124,11 @@
     </div>
 
     <!-- 分頁區域 -->
-    <div class="px-6 py-4 flex justify-between items-center border-t dark:border-gray-700 bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-gray-700 dark:to-gray-800">
+    <div class="px-4 md:px-6 py-3 md:py-4 flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0 border-t dark:border-gray-700 bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-gray-700 dark:to-gray-800">
       <div class="text-sm text-gray-700 dark:text-gray-300">
         顯示第 {{ startIndex + 1 }} 至 {{ endIndex }} 筆，共 {{ totalItems }} 筆資料
       </div>
-      <div class="flex items-center space-x-2">
+      <div class="flex items-center space-x-1 md:space-x-2">
         <!-- 首頁按鈕 -->
         <button @click="goToFirstPage"
                 :disabled="currentPage === 1"
@@ -323,5 +351,31 @@ select {
   background-position: right 0.5rem center;
   background-repeat: no-repeat;
   background-size: 1.5em 1.5em;
+}
+
+/* 優化表格在小螢幕上的滾動 */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 確保表格在小螢幕上可以水平滾動 */
+@media (max-width: 640px) {
+  .overflow-x-auto {
+    max-width: 100vw;
+    margin: 0 -1rem;
+    padding: 0 1rem;
+  }
+}
+
+/* 優化手機版按鈕觸控區域 */
+@media (max-width: 768px) {
+  .p-1\.5 {
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 </style> 

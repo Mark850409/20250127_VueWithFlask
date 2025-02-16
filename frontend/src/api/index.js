@@ -8,6 +8,7 @@ import recommendAPI from './modules/recommend'
 import messageAPI from './modules/message'
 import botAPI from './modules/bot'
 import knowledgeAPI from './modules/knowledge'
+import projectAPI from './modules/project'
 
 export {
   accountAPI,
@@ -19,5 +20,6 @@ export {
   recommendAPI,
   messageAPI,
   botAPI,
-  knowledgeAPI
+  knowledgeAPI,
+  projectAPI
 } 

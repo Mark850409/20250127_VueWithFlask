@@ -44,19 +44,22 @@ class MonitorQuery(BaseModel):
 
 class FolderPath(BaseModel):
     """資料夾路徑參數"""
-    folder_id: str = Field(..., description='資料夾 ID', example='folder123')
+    folder_id: str = Field(..., description='資料夾 ID', example='79f64748-03ac-454b-aaa4-19491195b026')
 
 class FolderCreate(BaseModel):
-    """建立資料夾請求"""
-    name: str = Field(..., description='資料夾名稱')
-    description: Optional[str] = Field(None, description='資料夾描述')
-    parent_id: Optional[str] = Field(None, description='父資料夾 ID')
+    """Langflow 建立資料夾請求參數"""
+    name: str = Field(..., description='資料夾名稱', example='string')
+    description: str = Field(..., description='資料夾描述', example='string')
+    components_list: List[str] = Field(..., description='組件列表', example=['3fa85f64-5717-4562-b3fc-2c963f66afa6'])
+    flows_list: List[str] = Field(..., description='流程列表', example=['3fa85f64-5717-4562-b3fc-2c963f66afa6'])
 
 class FolderUpdate(BaseModel):
     """更新資料夾請求"""
-    name: Optional[str] = Field(None, description='資料夾名稱')
-    description: Optional[str] = Field(None, description='資料夾描述')
-    parent_id: Optional[str] = Field(None, description='父資料夾 ID')
+    name: str = Field(..., description='資料夾名稱', example='string')
+    description: str = Field(..., description='資料夾描述', example='string')
+    parent_id: str = Field(..., description='父資料夾 ID', example='3fa85f64-5717-4562-b3fc-2c963f66afa6')
+    components: List[str] = Field(..., description='組件列表', example=['3fa85f64-5717-4562-b3fc-2c963f66afa6'])
+    flows: List[str] = Field(..., description='流程列表', example=['3fa85f64-5717-4562-b3fc-2c963f66afa6'])
 
 class FolderDownloadResponse(BaseModel):
     """資料夾下載回應"""

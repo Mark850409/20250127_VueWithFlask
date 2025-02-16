@@ -47,7 +47,7 @@ def setup_cors(app):
         resources={
             r"/*": {
                 "origins": CORS_ORIGINS,
-                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
                 "allow_headers": "*",
                 "expose_headers": ["Content-Type", "Authorization"],
                 "supports_credentials": True,
