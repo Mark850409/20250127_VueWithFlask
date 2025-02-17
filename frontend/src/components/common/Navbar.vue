@@ -1,38 +1,54 @@
 <template>
-  <nav class="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md shadow-sm z-50">
+  <nav class="fixed top-0 left-0 right-0 z-[9999] transition-all duration-300"
+       :class="[
+         scrolled 
+           ? 'bg-[rgba(0,0,0,0.85)]' 
+           : 'bg-[rgba(0,0,0,0)]'
+       ]">
     <div class="container mx-auto px-4">
       <div class="flex items-center justify-between h-16">
         <!-- Logo -->
         <router-link to="/" class="flex items-center space-x-3">
-          <img src="https://api.dicebear.com/7.x/bottts/svg?seed=food" 
-               alt="Logo" class="h-10 w-10">
-          <span class="text-lg font-bold text-gray-800">
-            基於文字探勘與情感分析的點餐推薦系統
+          <i class="fas fa-utensils text-white text-2xl"></i>
+          <span class="text-lg font-bold text-white">
+            今天想喝什麼呢？
           </span>
         </router-link>
 
         <!-- 主選單 -->
         <div class="hidden md:flex items-center space-x-8">
-          <router-link to="/" 
-                      class="text-gray-600 hover:text-gray-900 transition-colors">
+          <a href="/" 
+             :class="[
+               'text-white hover:text-gray-200',
+               'transition-colors'
+             ]">
             <i class="fas fa-home mr-1"></i>
             首頁
-          </router-link>
-          <router-link to="/features" 
-                      class="text-gray-600 hover:text-gray-900 transition-colors">
+          </a>
+          <a href="/features" 
+             :class="[
+               'text-white hover:text-gray-200',
+               'transition-colors'
+             ]">
             <i class="fas fa-star mr-1"></i>
             平台特色
-          </router-link>
-          <router-link to="/learning" 
-                      class="text-gray-600 hover:text-gray-900 transition-colors">
-            <i class="fas fa-book mr-1"></i>
+          </a>
+          <a href="/learning" 
+             :class="[
+               'text-white hover:text-gray-200',
+               'transition-colors'
+             ]">
+            <i class="fas fa-coffee mr-1"></i>
             學習中心
-          </router-link>
-          <router-link to="/pricing" 
-                      class="text-gray-600 hover:text-gray-900 transition-colors">
-            <i class="fas fa-tag mr-1"></i>
+          </a>
+          <a href="/pricing" 
+             :class="[
+               'text-white hover:text-gray-200',
+               'transition-colors'
+             ]">
+            <i class="fas fa-th mr-1"></i>
             定價方案
-          </router-link>
+          </a>
         </div>
 
         <!-- 登入/登出按鈕 -->
@@ -47,24 +63,26 @@
                      class="h-8 w-8 rounded-full border-2 border-blue-500"
                      @error="handleAvatarError"
                 >
-                <span class="ml-2 text-gray-700">{{ userName }}</span>
-                <i class="fas fa-chevron-down ml-2 text-gray-500 text-xs transition-transform duration-200"
+                <span class="ml-2 text-white">
+                  {{ userName }}
+                </span>
+                <i class="fas fa-chevron-down ml-2 text-white/70 text-xs transition-transform duration-200"
                    :class="{ 'transform rotate-180': isDropdownOpen }">
                 </i>
               </div>
               <!-- 下拉選單 -->
               <div v-if="isDropdownOpen" 
-                   class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50
-                          border border-gray-100 transition-all duration-200">
+                   class="absolute right-0 mt-2 w-48 bg-black/90 backdrop-blur-md rounded-lg shadow-lg py-1 z-50
+                          border border-white/20 transition-all duration-200">
                 <router-link to="/admin"
-                            class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50">
+                            class="flex items-center px-4 py-2 text-white hover:bg-white/10">
                   <i class="fas fa-user-cog mr-2"></i>
                   <span>管理後台</span>
                 </router-link>
-                <div class="border-t border-gray-100 my-1"></div>
+                <div class="border-t border-white/20 my-1"></div>
                 <button @click="handleLogout"
-                        class="flex items-center w-full px-4 py-2 text-left text-red-600 
-                               hover:bg-red-50 transition-colors">
+                        class="flex items-center w-full px-4 py-2 text-left text-red-400 
+                               hover:bg-white/10 transition-colors">
                   <i class="fas fa-sign-out-alt mr-2"></i>
                   <span>登出</span>
                 </button>
@@ -74,8 +92,10 @@
           <template v-else>
             <!-- 登入按鈕 -->
             <router-link to="/login" 
-                        class="flex items-center px-4 py-2 text-blue-600 border-2 border-blue-600 
-                               rounded-lg hover:bg-blue-50 transition-all duration-200">
+                       :class="[
+                         'text-white border-white hover:bg-white/10',
+                         'flex items-center px-4 py-2 border-2 rounded-lg transition-all duration-200'
+                       ]">
               <i class="fas fa-user-circle text-lg mr-2"></i>
               <span>登入 / 註冊</span>
             </router-link>
@@ -93,12 +113,25 @@ import { useRouter } from 'vue-router'
 export default {
   name: 'Navbar',
   setup() {
+    const scrolled = ref(false)
     const router = useRouter()
     const isLoggedIn = ref(false)
     const userName = ref('')
     const isDropdownOpen = ref(false)
+    const currentImageIndex = ref(0)
+    const autoPlayInterval = ref(null)
     const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
     
+    // Banner 圖片
+    const bannerImages = [
+      {
+        id: 1,
+        url: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&q=80&w=1920&h=600',
+        alt: 'Banner 1'
+      },
+      // ... 其他圖片
+    ]
+
     // 計算頭像 URL
     const getAvatarUrl = computed(() => {
       if (!isLoggedIn.value) return defaultAvatar
@@ -181,33 +214,96 @@ export default {
       e.target.src = defaultAvatar
     }
 
-    // 組件掛載時檢查登入狀態
+    // 監聽滾動事件
+    const handleScroll = () => {
+      scrolled.value = window.scrollY > 50
+    }
+
+    // 輪播功能
+    const startAutoPlay = () => {
+      autoPlayInterval.value = setInterval(() => {
+        currentImageIndex.value = (currentImageIndex.value + 1) % bannerImages.length
+      }, 5000)
+    }
+
+    const stopAutoPlay = () => {
+      if (autoPlayInterval.value) {
+        clearInterval(autoPlayInterval.value)
+      }
+    }
+
+    // 組件掛載時檢查登入狀態和添加滾動監聽
     onMounted(() => {
       document.addEventListener('click', closeDropdown)
+      window.addEventListener('scroll', handleScroll)
       checkLoginStatus()
+      startAutoPlay()
     })
 
     // 移除監聽
     onUnmounted(() => {
       document.removeEventListener('click', closeDropdown)
+      window.removeEventListener('scroll', handleScroll)
+      stopAutoPlay()
     })
 
     return {
+      scrolled,
       isLoggedIn,
       handleLogout,
       userName,
       getAvatarUrl,
       handleAvatarError,
       isDropdownOpen,
-      toggleDropdown
+      toggleDropdown,
+      currentImageIndex,
+      bannerImages
     }
   }
 }
 </script>
 
 <style scoped>
-/* 防止點擊下拉選單內部時觸發外部點擊事件 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+img {
+  background-color: black;
+}
+
 .relative {
   isolation: isolate;
+}
+
+.container {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1140px;
+  }
+}
+
+/* 添加底線動畫效果 */
+.after\:scale-x-0::after {
+  transform: scaleX(0);
+  transform-origin: center;
+}
+
+.after\:scale-x-100::after {
+  transform: scaleX(1);
+}
+
+.hover\:after\:scale-x-100:hover::after {
+  transform: scaleX(1);
 }
 </style> 

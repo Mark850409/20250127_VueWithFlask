@@ -1,0 +1,828 @@
+<template>
+  <div class="space-y-6">
+    <!-- 頂部工具列 -->
+    <div class="flex justify-between items-center">
+      <div class="flex items-center space-x-4">
+        <!-- 搜尋框 -->
+        <div class="relative">
+          <input v-model="searchQuery"
+                 type="text"
+                 class="w-64 px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                 placeholder="搜尋標題或內容...">
+          <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <i class="fas fa-search"></i>
+          </span>
+        </div>
+        <!-- 視圖切換 -->
+        <div class="flex bg-gray-100 p-1 rounded-lg">
+          <button @click="viewMode = 'card'"
+                  :class="[
+                    'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                    viewMode === 'card' 
+                      ? 'bg-white text-gray-800 shadow-sm' 
+                      : 'text-gray-600 hover:text-gray-800'
+                  ]">
+            <i class="fas fa-th-large mr-2"></i>卡片
+          </button>
+          <button @click="viewMode = 'list'"
+                  :class="[
+                    'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                    viewMode === 'list'
+                      ? 'bg-white text-gray-800 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-800'
+                  ]">
+            <i class="fas fa-list mr-2"></i>列表
+          </button>
+        </div>
+      </div>
+      <button @click="showModal = true; editingSection = null"
+              class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200">
+        <i class="fas fa-plus mr-2"></i>新增主標題
+      </button>
+    </div>
+
+    <!-- 學習區塊列表 -->
+    <TransitionGroup 
+      :name="viewMode === 'card' ? 'layout-card' : 'layout-list'"
+      tag="div"
+      :class="[
+        viewMode === 'card' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'
+      ]">
+      <!-- 無資料時顯示 -->
+      <div v-if="!filteredSections.length" 
+           :class="viewMode === 'card' ? 'col-span-full' : ''">
+        <div class="bg-white rounded-xl shadow-sm p-8 text-center">
+          <div class="text-gray-400 mb-4">
+            <i class="fas fa-book-open text-4xl"></i>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">
+            {{ searchQuery ? '找不到相關內容' : '尚無學習內容' }}
+          </h3>
+          <p class="text-gray-500 mb-4">
+            {{ searchQuery ? '請嘗試其他關鍵字' : '點擊上方按鈕開始新增學習內容' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- 學習區塊卡片/列表項目 -->
+      <div v-for="section in filteredSections" 
+           :key="section.id" 
+           :class="[
+             'bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 border-2 border-blue-100',
+             viewMode === 'list' ? 'max-w-5xl mx-auto' : ''
+           ]">
+        <!-- 卡片標題區 -->
+        <div class="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-100">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full mb-2 inline-block">
+                主標題
+              </span>
+              <h3 class="text-xl font-semibold text-gray-800">{{ section.title }}</h3>
+            </div>
+            <div class="flex space-x-2">
+              <button @click="showAddSubsectionModal(section)"
+                      class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                      title="新增次標題">
+                <i class="fas fa-plus-circle"></i>
+              </button>
+              <button @click="editSection(section)"
+                      class="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button @click="deleteSection(section.id)"
+                      class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <p class="text-gray-600 text-sm mt-2">{{ section.description }}</p>
+        </div>
+
+        <!-- 子區塊列表 -->
+        <div :class="[
+          'divide-y p-4',
+          viewMode === 'card' ? 'space-y-4' : 'space-y-2'
+        ]">
+          <!-- 無次標題時顯示 -->
+          <div v-if="!section.subsections || section.subsections.length === 0" 
+               class="text-center py-8 text-gray-500">
+            <i class="fas fa-list-ul text-2xl mb-2"></i>
+            <p>尚無次標題內容</p>
+          </div>
+          
+          <div v-for="subsection in section.subsections" 
+               :key="subsection.id"
+               class="p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-200 transition-all">
+            <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full mb-2 inline-block">
+              次標題
+            </span>
+            <div class="flex justify-between items-start">
+              <div class="flex-1 mr-4">
+                <h4 class="font-medium text-gray-800 mb-2 text-lg">{{ subsection.title }}</h4>
+                <p class="text-sm text-gray-600 line-clamp-2">{{ subsection.content }}</p>
+                <!-- 圖片預覽 -->
+                <div v-if="subsection.images && subsection.images.length > 0" 
+                     class="mt-4 flex flex-wrap gap-2">
+                  <div v-for="(image, index) in subsection.images" 
+                       :key="index"
+                       class="relative group">
+                    <img :src="getImageUrl(image)"
+                         class="w-20 h-20 rounded-lg object-cover cursor-zoom-in hover:opacity-75 transition-opacity shadow-sm"
+                         @click="previewImage(getImageUrl(image))"
+                         @error="handleImageError($event)">
+                  </div>
+                </div>
+              </div>
+              <div class="flex space-x-2">
+                <button @click="editSubsection(subsection)"
+                        class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button @click="deleteSubsection(subsection.id)"
+                        class="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </TransitionGroup>
+
+    <!-- 新增/編輯主標題對話框 -->
+    <Transition name="modal">
+      <div v-if="showModal" 
+           class="fixed top-[-25px] left-0 right-0 bottom-0 z-[9999] bg-gray-900/75 backdrop-blur-sm"
+           @click.self="closeModal">
+        <div class="fixed top-[-25px] left-0 right-0 bottom-0 overflow-y-auto">
+          <div class="flex items-center justify-center min-h-full p-4">
+            <!-- 對話框內容 -->
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all relative z-[10000]">
+              <!-- 標題列 -->
+              <div class="px-6 py-4 border-b flex justify-between items-center">
+                <h3 class="text-xl font-semibold text-gray-800">
+                  {{ editingSection ? '編輯主標題' : '新增主標題' }}
+                </h3>
+                <button @click="closeModal" 
+                        class="text-gray-400 hover:text-gray-500 transition-colors">
+                  <i class="fas fa-times text-xl"></i>
+                </button>
+              </div>
+              
+              <!-- 表單內容 -->
+              <div class="p-6">
+                <form @submit.prevent="handleSubmit" class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      標題
+                      <span class="text-red-500">*</span>
+                    </label>
+                    <input v-model="form.title"
+                           type="text"
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           :class="{'border-red-500': errors.title}"
+                           placeholder="請輸入標題">
+                    <p v-if="errors.title" class="mt-1 text-sm text-red-500">
+                      {{ errors.title }}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      描述
+                    </label>
+                    <textarea v-model="form.description"
+                             rows="4"
+                             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                             placeholder="請輸入描述"></textarea>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      排序
+                    </label>
+                    <input v-model.number="form.sort_order"
+                           type="number"
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="請輸入排序順序">
+                  </div>
+                </form>
+              </div>
+
+              <!-- 按鈕列 -->
+              <div class="px-6 py-4 border-t bg-gray-50 rounded-b-xl flex justify-end space-x-3">
+                <button @click="closeModal"
+                        class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition-colors">
+                  取消
+                </button>
+                <button @click="handleSubmit"
+                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                  {{ editingSection ? '更新' : '新增' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- 新增/編輯次標題對話框 -->
+    <Transition name="modal">
+      <div v-if="showSubsectionModal" 
+           class="fixed top-[-25px] left-0 right-0 bottom-0 z-[9999] bg-gray-900/75 backdrop-blur-sm"
+           @click.self="closeSubsectionModal">
+        <div class="fixed top-[-25px] left-0 right-0 bottom-0 overflow-y-auto">
+          <div class="flex items-center justify-center min-h-full p-4">
+            <!-- 對話框內容 -->
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all relative z-[10000]">
+              <!-- 標題列 -->
+              <div class="px-6 py-4 border-b flex justify-between items-center">
+                <h3 class="text-xl font-semibold text-gray-800">
+                  {{ editingSubsection ? '編輯次標題' : '新增次標題' }}
+                </h3>
+                <button @click="closeSubsectionModal" 
+                        class="text-gray-400 hover:text-gray-500 transition-colors">
+                  <i class="fas fa-times text-xl"></i>
+                </button>
+              </div>
+              
+              <!-- 表單內容 -->
+              <div class="p-6">
+                <form @submit.prevent="handleSubsectionSubmit" class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      標題
+                      <span class="text-red-500">*</span>
+                    </label>
+                    <input v-model="subsectionForm.title"
+                           type="text"
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           :class="{'border-red-500': subsectionErrors.title}"
+                           placeholder="請輸入標題">
+                    <p v-if="subsectionErrors.title" class="mt-1 text-sm text-red-500">
+                      {{ subsectionErrors.title }}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      內容
+                      <span class="text-red-500">*</span>
+                    </label>
+                    <textarea v-model="subsectionForm.content"
+                             rows="4"
+                             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                             :class="{'border-red-500': subsectionErrors.content}"
+                             placeholder="請輸入內容"></textarea>
+                    <p v-if="subsectionErrors.content" class="mt-1 text-sm text-red-500">
+                      {{ subsectionErrors.content }}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      圖片
+                    </label>
+                    <input type="file"
+                           ref="fileInput"
+                           @change="handleFileChange"
+                           multiple
+                           accept="image/*"
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  </div>
+
+                  <!-- 已上傳圖片預覽 -->
+                  <div v-if="subsectionForm.images?.length" class="grid grid-cols-4 gap-2">
+                    <div v-for="(image, index) in subsectionForm.images"
+                         :key="index"
+                         class="relative group">
+                      <img :src="getImageUrl(image)"
+                           class="w-full h-20 object-cover rounded-lg"
+                           @error="handleImageError">
+                      <button @click="removeImage(index)"
+                              class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <!-- 按鈕列 -->
+              <div class="px-6 py-4 border-t bg-gray-50 rounded-b-xl flex justify-end space-x-3">
+                <button @click="closeSubsectionModal"
+                        class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition-colors">
+                  取消
+                </button>
+                <button @click="handleSubsectionSubmit"
+                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                  {{ editingSubsection ? '更新' : '新增' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- 圖片預覽 Modal -->
+    <Transition name="fade">
+      <div v-if="previewImageUrl" 
+           class="fixed -top-[30px] left-0 right-0 bottom-0 w-screen h-[calc(100vh+64px)] bg-black/90 backdrop-blur-sm z-[99999] flex items-center justify-center"
+           @click="closePreview">
+        <div class="relative w-screen h-[calc(100vh+30px)] flex items-center justify-center px-8 py-16">
+          <!-- 關閉按鈕 -->
+          <button class="absolute top-4 right-4 text-white/80 hover:text-white transition-colors z-[100000]"
+                  @click="closePreview">
+            <i class="fas fa-times text-2xl"></i>
+          </button>
+          <!-- 圖片容器 -->
+          <img :src="previewImageUrl"
+               class="max-w-[90vw] max-h-[80vh] object-contain select-none rounded-lg shadow-2xl"
+               @click.stop
+               alt="圖片預覽">
+        </div>
+      </div>
+    </Transition>
+  </div>
+</template>
+
+<script>
+import { ref, onMounted, reactive, computed, onUnmounted } from 'vue'
+import { learningAPI } from '@/api'
+import Swal from 'sweetalert2'
+
+export default {
+  name: 'LearningManagement',
+  
+  setup() {
+    const sections = ref([])
+    const viewMode = ref('card')
+    const searchQuery = ref('')
+    const showModal = ref(false)
+    const editingSection = ref(null)
+    const errors = reactive({})
+    const showSubsectionModal = ref(false)
+    const editingSubsection = ref(null)
+    const currentSectionId = ref(null)
+    const subsectionErrors = reactive({})
+    const fileInput = ref(null)
+    const previewImageUrl = ref(null)
+    
+    const form = reactive({
+      title: '',
+      description: '',
+      sort_order: 0
+    })
+
+    const subsectionForm = reactive({
+      title: '',
+      content: '',
+      images: []
+    })
+
+    const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
+
+    // 處理圖片 URL
+    const getImageUrl = (avatar) => {
+      if (!avatar) return defaultAvatar
+      if (avatar.startsWith('http')) return avatar
+      return `${import.meta.env.VITE_BACKEND_URL}/api/learning/uploads/${avatar.split('/').pop()}`
+    }
+
+    // 處理圖片載入錯誤
+    const handleImageError = (event) => {
+      event.target.src = defaultAvatar
+    }
+
+    // 獲取所有區塊
+    const fetchSections = async () => {
+      try {
+        const response = await learningAPI.getLearningBlocks()
+        sections.value = response.data.sections || []
+      } catch (error) {
+        console.error('獲取學習區塊失敗:', error)
+        Swal.fire({
+          icon: 'error',
+          title: '獲取資料失敗',
+          text: error.response?.data?.message || '請稍後再試'
+        })
+      }
+    }
+
+    // 初始化表單
+    const initForm = () => {
+      form.title = ''
+      form.description = ''
+      form.sort_order = 0
+      Object.keys(errors).forEach(key => delete errors[key])
+    }
+
+    // 打開編輯對話框
+    const editSection = (section) => {
+      editingSection.value = section
+      form.title = section.title
+      form.description = section.description
+      form.sort_order = section.sort_order
+      showModal.value = true
+    }
+
+    // 關閉對話框
+    const closeModal = () => {
+      showModal.value = false
+      editingSection.value = null
+      initForm()
+    }
+
+    // 表單提交
+    const handleSubmit = async () => {
+      // 驗證
+      if (!form.title) {
+        errors.title = '請輸入標題'
+        return
+      }
+
+      try {
+        if (editingSection.value) {
+          await learningAPI.updateSection(editingSection.value.id, form)
+        } else {
+          await learningAPI.createSection(form)
+        }
+        
+        await fetchSections()
+        closeModal()
+        
+        Swal.fire({
+          icon: 'success',
+          title: `${editingSection.value ? '更新' : '新增'}成功`,
+          timer: 1500,
+          showConfirmButton: false
+        })
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: `${editingSection.value ? '更新' : '新增'}失敗`,
+          text: error.response?.data?.message || '請稍後再試'
+        })
+      }
+    }
+
+    // 初始化次標題表單
+    const initSubsectionForm = () => {
+      subsectionForm.title = ''
+      subsectionForm.content = ''
+      subsectionForm.images = []
+      Object.keys(subsectionErrors).forEach(key => delete subsectionErrors[key])
+    }
+
+    // 打開新增次標題對話框
+    const showAddSubsectionModal = (section) => {
+      currentSectionId.value = section.id
+      editingSubsection.value = null
+      initSubsectionForm()
+      showSubsectionModal.value = true
+    }
+
+    // 打開編輯次標題對話框
+    const editSubsection = (subsection) => {
+      editingSubsection.value = subsection
+      currentSectionId.value = subsection.section_id
+      subsectionForm.title = subsection.title
+      subsectionForm.content = subsection.content
+      subsectionForm.images = [...(subsection.images || [])]
+      showSubsectionModal.value = true
+    }
+
+    // 關閉次標題對話框
+    const closeSubsectionModal = () => {
+      showSubsectionModal.value = false
+      editingSubsection.value = null
+      currentSectionId.value = null
+      initSubsectionForm()
+    }
+
+    // 處理文件選擇
+    const handleFileChange = async (event) => {
+      const files = event.target.files
+      if (!files.length) return
+
+      for (const file of files) {
+        const formData = new FormData()
+        formData.append('file', file)
+        try {
+          const response = await learningAPI.uploadImage(formData)
+          subsectionForm.images.push(response.data.url)
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: '圖片上傳失敗',
+            text: error.response?.data?.message || '請稍後再試'
+          })
+        }
+      }
+      // 清空 input，允許重複上傳相同文件
+      fileInput.value.value = ''
+    }
+
+    // 移除圖片
+    const removeImage = (index) => {
+      subsectionForm.images.splice(index, 1)
+    }
+
+    // 提交次標題表單
+    const handleSubsectionSubmit = async () => {
+      // 驗證
+      if (!subsectionForm.title) {
+        subsectionErrors.title = '請輸入標題'
+        return
+      }
+      if (!subsectionForm.content) {
+        subsectionErrors.content = '請輸入內容'
+        return
+      }
+
+      try {
+        if (editingSubsection.value) {
+          await learningAPI.updateSubsection(editingSubsection.value.id, subsectionForm)
+        } else {
+          await learningAPI.createSubsection({
+            ...subsectionForm,
+            section_id: currentSectionId.value
+          })
+        }
+        
+        await fetchSections()
+        closeSubsectionModal()
+        
+        Swal.fire({
+          icon: 'success',
+          title: `${editingSubsection.value ? '更新' : '新增'}成功`,
+          timer: 1500,
+          showConfirmButton: false
+        })
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: `${editingSubsection.value ? '更新' : '新增'}失敗`,
+          text: error.response?.data?.message || '請稍後再試'
+        })
+      }
+    }
+
+    // 刪除主標題區塊
+    const deleteSection = async (id) => {
+      const result = await Swal.fire({
+        title: '確定要刪除嗎？',
+        text: '此操作將同時刪除該區塊下的所有內容',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '確定刪除',
+        cancelButtonText: '取消',
+        confirmButtonColor: '#dc2626'
+      })
+
+      if (result.isConfirmed) {
+        try {
+          await learningAPI.deleteSection(id)
+          await fetchSections()
+          Swal.fire({
+            icon: 'success',
+            title: '刪除成功',
+            timer: 1500,
+            showConfirmButton: false
+          })
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: '刪除失敗',
+            text: error.response?.data?.message || '請稍後再試'
+          })
+        }
+      }
+    }
+
+    // 刪除次標題區塊
+    const deleteSubsection = async (id) => {
+      const result = await Swal.fire({
+        title: '確定要刪除嗎？',
+        text: '此操作無法復原',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '確定刪除',
+        cancelButtonText: '取消',
+        confirmButtonColor: '#dc2626'
+      })
+
+      if (result.isConfirmed) {
+        try {
+          await learningAPI.deleteSubsection(id)
+          await fetchSections()
+          Swal.fire({
+            icon: 'success',
+            title: '刪除成功',
+            timer: 1500,
+            showConfirmButton: false
+          })
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: '刪除失敗',
+            text: error.response?.data?.message || '請稍後再試'
+          })
+        }
+      }
+    }
+
+    // 圖片預覽
+    const previewImage = (url) => {
+      previewImageUrl.value = url
+      document.body.style.overflow = 'hidden'
+    }
+
+    // 關閉預覽
+    const closePreview = () => {
+      previewImageUrl.value = null
+      document.body.style.overflow = ''
+    }
+
+    // 監聽 ESC 鍵關閉預覽
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && previewImageUrl.value) {
+        closePreview()
+      }
+    }
+
+    // 過濾區塊
+    const filteredSections = computed(() => {
+      if (!searchQuery.value) return sections.value
+      
+      const query = searchQuery.value.toLowerCase()
+      return sections.value.filter(section => {
+        // 搜尋主標題和描述
+        const matchSection = section.title.toLowerCase().includes(query) ||
+                            section.description?.toLowerCase().includes(query)
+        
+        // 搜尋次標題和內容
+        const matchSubsections = section.subsections?.some(sub => 
+          sub.title.toLowerCase().includes(query) ||
+          sub.content.toLowerCase().includes(query)
+        )
+        
+        return matchSection || matchSubsections
+      })
+    })
+
+    onMounted(() => {
+      fetchSections()
+      window.addEventListener('keydown', handleKeyDown)
+    })
+
+    onUnmounted(() => {
+      window.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = ''
+    })
+
+    return {
+      sections,
+      viewMode,
+      searchQuery,
+      showModal,
+      editingSection,
+      form,
+      errors,
+      editSection,
+      closeModal,
+      handleSubmit,
+      showAddSubsectionModal,
+      deleteSection,
+      deleteSubsection,
+      previewImage,
+      getImageUrl,
+      handleImageError,
+      showSubsectionModal,
+      editingSubsection,
+      subsectionForm,
+      subsectionErrors,
+      fileInput,
+      editSubsection,
+      closeSubsectionModal,
+      handleSubsectionSubmit,
+      handleFileChange,
+      removeImage,
+      filteredSections,
+      previewImageUrl,
+      closePreview
+    }
+  }
+}
+</script>
+
+<style scoped>
+/* 對話框容器 */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+/* 對話框內容動畫 */
+.modal-enter-active .bg-white,
+.modal-leave-active .bg-white {
+  transition: all 0.3s ease;
+}
+
+.modal-enter-from .bg-white,
+.modal-leave-to .bg-white {
+  opacity: 0;
+  transform: scale(0.95) translateY(-10px);
+}
+
+/* 背景遮罩動畫 */
+.modal-enter-from::before,
+.modal-leave-to::before {
+  opacity: 0;
+}
+
+.modal-enter-active::before,
+.modal-leave-active::before {
+  transition: opacity 0.2s ease;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 美化 SweetAlert2 的輸入框 */
+:deep(.swal2-input),
+:deep(.swal2-textarea) {
+  margin: 1em auto;
+  width: 100%;
+  max-width: none;
+}
+
+:deep(.swal2-textarea) {
+  height: 120px;
+}
+
+/* 卡片視圖動畫 */
+.layout-card-move {
+  transition: all 0.6s ease;
+}
+
+.layout-card-enter-active,
+.layout-card-leave-active {
+  transition: all 0.6s ease;
+  position: absolute;
+}
+
+.layout-card-enter-from,
+.layout-card-leave-to {
+  opacity: 0;
+  transform: scale(0.3);
+}
+
+/* 列表視圖動畫 */
+.layout-list-move {
+  transition: all 0.6s ease;
+}
+
+.layout-list-enter-active,
+.layout-list-leave-active {
+  transition: all 0.6s ease;
+}
+
+.layout-list-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.layout-list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+/* 淡入淡出動畫 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 圖片預覽時禁用選取 */
+.select-none {
+  user-select: none;
+  -webkit-user-select: none;
+}
+</style> 

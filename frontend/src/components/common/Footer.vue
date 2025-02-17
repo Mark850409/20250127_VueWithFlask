@@ -1,96 +1,176 @@
 <template>
-  <footer class="bg-gray-900 text-white py-12">
-    <div class="container mx-auto px-4">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <!-- 品牌介紹 -->
+  <footer class="relative py-16 overflow-hidden">
+    <!-- 背景圖片 -->
+    <div class="absolute inset-0 bg-fixed">
+      <div class="w-full h-full bg-center bg-no-repeat bg-cover"
+           style="background-image: url('https://images.unsplash.com/photo-1525803377221-4f6ccdaa5133?q=80');">
+      </div>
+      <div class="absolute inset-0 bg-gradient-to-b from-gray-900/80 to-gray-900/75"></div>
+    </div>
+
+    <!-- 內容區域 -->
+    <div class="relative container mx-auto px-4 text-gray-400">
+      <!-- 主要內容區 -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+        <!-- 品牌介紹區塊 -->
         <div>
-          <div class="flex items-center space-x-2 mb-4">
-            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=food" 
-                 alt="Logo" class="w-8 h-8">
-            <h3 class="text-xl font-bold">基於文字探勘與情感分析的推薦系統</h3>
+          <div class="flex items-center mb-4">
+            <i class="fas fa-glass-cheers text-blue-500 text-2xl mr-2"></i>
+            <h2 class="text-xl font-bold text-white">今天想喝什麼呢？</h2>
           </div>
-          <p class="text-gray-400">
-            在我們的飲料店，每一杯都是一種心動。多樣化的飲品選擇，精緻的口感，
-            讓您隨時隨地都能享受至臻完美光，無論是外帶或是堂食，
-            讓我們的飲品為您完美詮釋當季享受。
+          <p class="text-gray-400 leading-relaxed">
+            我們致力於打造最智能的飲品推薦平台，運用先進的 AI 技術，為您提供個人化的飲品建議。
+            無論是在地特色飲品還是最新潮流，都能在這裡找到最適合您的選擇。
           </p>
+        </div>
+
+        <!-- 網站導覽 -->
+        <div>
+          <h3 class="text-lg font-semibold text-white mb-6">網站導覽</h3>
+          <ul class="space-y-4">
+            <li>
+              <a href="/#home" 
+                 class="hover:text-blue-400 transition-colors"
+                 @click.prevent="scrollToSection('home')">首頁</a>
+            </li>
+            <li>
+              <a href="/#about" 
+                 class="hover:text-blue-400 transition-colors"
+                 @click.prevent="scrollToSection('about')">關於我們</a>
+            </li>
+            <li>
+              <a href="/#features" 
+                 class="hover:text-blue-400 transition-colors"
+                 @click.prevent="scrollToSection('features')">平台特色</a>
+            </li>
+            <li>
+              <a href="/#learning" 
+                 class="hover:text-blue-400 transition-colors"
+                 @click.prevent="scrollToSection('learning')">學習中心</a>
+            </li>
+            <li>
+              <a href="/#pricing" 
+                 class="hover:text-blue-400 transition-colors"
+                 @click.prevent="scrollToSection('pricing')">定價方案</a>
+            </li>
+          </ul>
         </div>
 
         <!-- 聯絡資訊 -->
         <div>
-          <h3 class="text-lg font-semibold mb-4">聯絡資訊</h3>
-          <ul class="space-y-2 text-gray-400">
+          <h3 class="text-lg font-semibold text-white mb-6">聯絡我們</h3>
+          <ul class="space-y-4">
             <li class="flex items-center">
               <i class="fas fa-map-marker-alt w-5"></i>
-              <span>台北市信義區XX路123號</span>
+              <span>台北市信義區忠孝東路五段2號</span>
             </li>
             <li class="flex items-center">
               <i class="fas fa-phone w-5"></i>
-              <span>(02) 1234-5678</span>
+              <span>(02) 2720-1230</span>
             </li>
             <li class="flex items-center">
               <i class="fas fa-envelope w-5"></i>
-              <span>info@ourbeverageshop.com</span>
+              <span>info@drinktoday.tw</span>
             </li>
           </ul>
         </div>
 
-        <!-- 功能特色 -->
+        <!-- 關注我們 -->
         <div>
-          <h3 class="text-lg font-semibold mb-4">功能特色</h3>
-          <ul class="space-y-2 text-gray-400">
-            <li>
-              <router-link to="/" class="flex items-center hover:text-white transition duration-300">
-                <i class="fas fa-home w-5"></i>
-                <span>首頁</span>
-              </router-link>
-            </li>
-            <li>
-              <router-link to="/features" class="flex items-center hover:text-white transition duration-300">
-                <i class="fas fa-star w-5"></i>
-                <span>平台特色</span>
-              </router-link>
-            </li>
-            <li>
-              <router-link to="/learning" class="flex items-center hover:text-white transition duration-300">
-                <i class="fas fa-book w-5"></i>
-                <span>學習中心</span>
-              </router-link>
-            </li>
-            <li>
-              <router-link to="/pricing" class="flex items-center hover:text-white transition duration-300">
-                <i class="fas fa-tag w-5"></i>
-                <span>定價方案</span>
-              </router-link>
-            </li>
-          </ul>
-        </div>
-
-        <!-- 社群連結 -->
-        <div>
-          <h3 class="text-lg font-semibold mb-4">關注我們</h3>
+          <h3 class="text-lg font-semibold text-white mb-6">關注我們</h3>
           <div class="flex space-x-4">
-            <a href="#" class="text-gray-400 hover:text-white transition duration-300">
-              <i class="fab fa-facebook-f text-xl"></i>
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-blue-500 transition duration-300">
+              <i class="fab fa-facebook-f"></i>
             </a>
-            <a href="#" class="text-gray-400 hover:text-white transition duration-300">
-              <i class="fab fa-line text-xl"></i>
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-green-500 transition duration-300">
+              <i class="fab fa-line"></i>
             </a>
-            <a href="#" class="text-gray-400 hover:text-white transition duration-300">
-              <i class="fab fa-instagram text-xl"></i>
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-pink-500 transition duration-300">
+              <i class="fab fa-instagram"></i>
             </a>
-            <a href="#" class="text-gray-400 hover:text-white transition duration-300">
-              <i class="fas fa-envelope text-xl"></i>
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-blue-400 transition duration-300">
+              <i class="fas fa-envelope"></i>
             </a>
           </div>
         </div>
       </div>
 
       <!-- 版權聲明 -->
-      <div class="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
-        <p>© 2025 基於文字探勘與情感分析的點餐推薦系統. All rights reserved.</p>
-        <p class="mt-2">Designed by Mark</p>
+      <div class="mt-12 pt-8 border-t border-gray-800/50">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <p>© Copyright 2025 今天想喝什麼呢? All Rights Reserved</p>
+          <p class="mt-4 md:mt-0">Designed by Mark</p>
+        </div>
       </div>
     </div>
   </footer>
-</template> 
+</template>
+
+<script>
+export default {
+  mounted() {},
+  beforeUnmount() {},
+  methods: {
+    scrollToSection(sectionId) {
+      const element = document.getElementById(sectionId)
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        })
+      }
+    }
+  }
+}
+</script>
+
+<style scoped>
+.container {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1140px;
+  }
+}
+
+/* 背景效果 */
+.bg-fixed {
+  background-attachment: fixed;
+}
+
+.bg-center {
+  background-position: center;
+}
+
+.bg-no-repeat {
+  background-repeat: no-repeat;
+}
+
+.bg-cover {
+  background-size: cover;
+}
+
+/* 社群按鈕懸浮效果 */
+.rounded-full {
+  transition: all 0.3s ease;
+}
+
+.rounded-full:hover {
+  transform: translateY(-2px);
+}
+
+/* 漸層背景 */
+.from-gray-900\/80 {
+  --tw-gradient-from: rgb(17 24 39 / 0.80);
+  --tw-gradient-to: rgb(17 24 39 / 0.75);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+/* 添加滾動行為 */
+html {
+  scroll-behavior: smooth;
+}
+</style> 

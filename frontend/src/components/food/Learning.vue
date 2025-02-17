@@ -1,45 +1,72 @@
 <template>
   <section id="learning" class="py-20 bg-white">
-    <div class="container mx-auto px-4">
-      <h2 class="text-3xl font-bold text-center mb-12">學習中心</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div class="bg-gray-50 rounded-xl overflow-hidden">
-          <img src="https://images.unsplash.com/photo-1511920170033-f8396924c348" 
-               class="w-full h-48 object-cover" alt="課程">
-          <div class="p-6">
-            <h3 class="text-xl font-bold mb-2">基礎調飲技巧</h3>
-            <p class="text-gray-600 mb-4">學習專業調飲技巧，掌握飲品製作的基本要領。</p>
-            <button class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 
-                         transition duration-300">
-              開始學習
-            </button>
+    <div class="container mx-auto px-4 max-w-6xl">
+      <!-- 標題區塊 -->
+      <div class="text-center mb-16">
+        <span class="inline-block px-4 py-1 bg-blue-50 text-blue-500 font-medium rounded-full mb-4">
+          LEARNING
+        </span>
+        <h2 class="text-4xl font-bold text-gray-900">
+          學習中心
+        </h2>
+      </div>
+
+      <!-- 卡片區塊 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- 功能導覽 -->
+        <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300">
+          <div class="text-blue-500 text-3xl mb-4">
+            <i class="fas fa-book-open"></i>
           </div>
+          <h3 class="text-xl font-bold mb-3 text-gray-800">功能導覽</h3>
+          <p class="text-gray-600 leading-relaxed mb-4">
+            了解系統各項功能的使用方式，快速上手推薦系統。
+          </p>
         </div>
-        <div class="bg-gray-50 rounded-xl overflow-hidden">
-          <img src="https://images.unsplash.com/photo-1516743619420-154b70a65fea" 
-               class="w-full h-48 object-cover" alt="課程">
-          <div class="p-6">
-            <h3 class="text-xl font-bold mb-2">風味品鑑</h3>
-            <p class="text-gray-600 mb-4">深入了解不同飲品的風味特點，培養專業品鑑能力。</p>
-            <button class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 
-                         transition duration-300">
-              開始學習
-            </button>
+
+        <!-- 常見問題 -->
+        <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300">
+          <div class="text-blue-500 text-3xl mb-4">
+            <i class="fas fa-question-circle"></i>
           </div>
+          <h3 class="text-xl font-bold mb-3 text-gray-800">常見問題</h3>
+          <p class="text-gray-600 leading-relaxed mb-4">
+            解答使用過程中常見的疑問，幫助您更順暢地使用系統。
+          </p>
         </div>
-        <div class="bg-gray-50 rounded-xl overflow-hidden">
-          <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24" 
-               class="w-full h-48 object-cover" alt="課程">
-          <div class="p-6">
-            <h3 class="text-xl font-bold mb-2">創意研發</h3>
-            <p class="text-gray-600 mb-4">激發創意靈感，開發獨特風味的特調飲品。</p>
-            <button class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 
-                         transition duration-300">
-              開始學習
-            </button>
+
+        <!-- 使用教學 -->
+        <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300">
+          <div class="text-blue-500 text-3xl mb-4">
+            <i class="fas fa-video"></i>
           </div>
+          <h3 class="text-xl font-bold mb-3 text-gray-800">使用教學</h3>
+          <p class="text-gray-600 leading-relaxed mb-4">
+            觀看詳細的操作示範影片，掌握系統的進階功能。
+          </p>
         </div>
+      </div>
+
+      <!-- 探索更多按鈕 -->
+      <div class="text-center mt-12">
+        <a href="/learning" class="inline-flex items-center px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition duration-300">
+          <i class="fas fa-search mr-2"></i>
+          探索更多資源
+        </a>
       </div>
     </div>
   </section>
-</template> 
+</template>
+
+<style scoped>
+.container {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1140px;
+  }
+}
+</style> 

@@ -1,8 +1,19 @@
 <template>
   <section id="pricing" class="py-20 bg-gray-50">
-    <div class="container mx-auto px-4">
-      <h2 class="text-3xl font-bold text-center mb-12">定價方案</h2>
+    <div class="container mx-auto px-4 max-w-6xl">
+      <!-- 標題區塊 -->
+      <div class="text-center mb-16">
+        <span class="inline-block px-4 py-1 bg-blue-50 text-blue-500 font-medium rounded-full mb-4">
+          PRICING
+        </span>
+        <h2 class="text-4xl font-bold text-gray-900">
+          定價方案
+        </h2>
+      </div>
+
+      <!-- 方案卡片 -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- 基礎版 -->
         <div class="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition duration-300">
           <h3 class="text-2xl font-bold mb-4">基礎版</h3>
           <div class="text-4xl font-bold mb-6">
@@ -29,8 +40,9 @@
           </button>
         </div>
 
+        <!-- 專業版 -->
         <div class="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition duration-300 
-                    transform scale-105 border-2 border-gray-800">
+                    transform scale-105 border-2 border-blue-500">
           <h3 class="text-2xl font-bold mb-4">專業版</h3>
           <div class="text-4xl font-bold mb-6">
             <span class="text-gray-800">$299</span>
@@ -54,12 +66,13 @@
               <span>優先客服支援</span>
             </li>
           </ul>
-          <button class="w-full py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 
+          <button class="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 
                        transition duration-300">
             立即升級
           </button>
         </div>
 
+        <!-- 企業版 -->
         <div class="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition duration-300">
           <h3 class="text-2xl font-bold mb-4">企業版</h3>
           <div class="text-4xl font-bold mb-6">
@@ -100,4 +113,17 @@
       </div>
     </div>
   </section>
-</template> 
+</template>
+
+<style scoped>
+.container {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1140px;
+  }
+}
+</style> 

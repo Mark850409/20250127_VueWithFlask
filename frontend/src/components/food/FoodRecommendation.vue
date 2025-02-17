@@ -3,147 +3,103 @@
 
     <!-- 內容區域 -->
     <div class="pt-16"> <!-- 添加上邊距，為固定導航欄留出空間 -->
-      <div id="home">
+      <div id="home" class="fade-in-section">
         <Banner />
       </div>
 
-      <div id="features">
+      <!-- 將 CallToAction 移到這裡 -->
+      <div id="about" class="fade-in-section">
+        <About />
+      </div>
+
+      <div id="features" class="fade-in-section">
         <Features />
       </div>
 
-      <!-- 熱門飲料推薦區塊 - 只在登入時顯示 -->
-      <div id="recommend" v-if="isLoggedIn">
-        <div class="container mx-auto px-4 mb-8">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold">想找哪裡的飲料店?</h2>
-            <div class="flex items-center space-x-4">
-              <!-- 定位區域 -->
-              <div class="relative">
-                <button 
-                  @click="getCurrentLocation"
-                  class="flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                  :class="{ 'opacity-50 cursor-not-allowed': isLocating }"
-                  :disabled="isLocating"
-                >
-                  <i class="fas fa-location-crosshairs mr-2 animate-pulse"></i>
-                  {{ isLocating ? '定位中...' : '目前定位' }}
-                </button>
-              </div>
-  
-              <!-- 城市選擇下拉框 -->
-              <select 
-                v-model="selectedCity"
-                class="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-700 shadow-sm hover:border-purple-300 transition-all duration-300"
-                @change="handleCityChange"
-              >
-                <option value="">選擇城市</option>
-                <option v-for="city in cities" :key="city" :value="city">
-                  {{ city }}
-                </option>
-              </select>
-            </div>
-          </div>
-  
-          <!-- 當前位置顯示 -->
-          <div v-if="currentCity" 
-               class="flex items-center text-gray-600 bg-gradient-to-r from-purple-50 to-indigo-50 px-6 py-3 rounded-xl shadow-sm border border-purple-100">
-            <i class="fas fa-map-marker-alt mr-3 text-purple-500"></i>
-            <span class="text-gray-500">目前位置：
-              <span class="font-medium text-purple-700 ml-1">{{ currentCity }}</span>
+      <!-- 將 CallToAction 移到這裡 -->
+      <div id="call-to-action" class="fade-in-section">
+        <CallToAction />
+      </div>
+
+      <!-- 熱門飲料推薦區塊 -->
+      <transition
+        appear
+        enter-active-class="transition ease-out duration-1000"
+        enter-from-class="opacity-0 transform translate-y-12"
+        enter-to-class="opacity-100 transform translate-y-0"
+        leave-active-class="transition ease-in duration-300"
+        leave-from-class="opacity-100 transform translate-y-0"
+        leave-to-class="opacity-0 transform translate-y-12"
+      >
+        <div id="recommend" v-if="isLoggedIn" class="py-20 bg-white">
+          <!-- 標題區塊 -->
+          <div class="text-center mb-16">
+            <span class="inline-block px-4 py-1 bg-blue-50 text-blue-500 font-medium rounded-full mb-4">
+              POPULAR DRINKS
             </span>
+            <h2 class="text-4xl font-bold text-gray-900">
+              尋找更多 <span class="text-blue-500">熱門飲料店</span>
+            </h2>
           </div>
-        </div>
-        
-        <Recommendations />
-      </div>
 
-      <div id="learning">
-        <div class="py-20 bg-white">
-          <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-center mb-12">學習中心</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <!-- 功能導覽 -->
-              <div class="bg-white rounded-xl overflow-hidden shadow-lg">
-                <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3" 
-                     class="w-full h-48 object-cover" alt="功能導覽">
-                <div class="p-6">
-                  <h3 class="text-xl font-bold mb-2">功能導覽</h3>
-                  <p class="text-gray-600 mb-4">
-                    了解系統各項功能的使用方式，快速上手推薦系統。
-                  </p>
-                  <div class="space-y-2 mb-4">
-                    <div class="flex items-center text-gray-600">
-                      <i class="fas fa-book-reader mr-2"></i>
-                      <span>新手必讀</span>
-                    </div>
+          <div class="container mx-auto px-4 mb-12">
+            <!-- 標題和搜尋區域 -->
+            <div class="max-w-7xl mx-auto">
+              <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center space-x-4">
+                  <!-- 定位區域 -->
+                  <div class="relative">
+                    <button 
+                      @click="getCurrentLocation"
+                      class="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 
+                             text-white rounded-lg transition-all duration-300 
+                             shadow-md hover:shadow-lg"
+                      :class="{ 'opacity-50 cursor-not-allowed': isLocating }"
+                      :disabled="isLocating"
+                    >
+                      <i class="fas fa-location-crosshairs mr-2 animate-pulse"></i>
+                      {{ isLocating ? '定位中...' : '目前定位' }}
+                    </button>
                   </div>
-                  <router-link to="/learning" 
-                    class="block w-full px-4 py-2 bg-gray-800 text-white rounded-lg 
-                           hover:bg-gray-700 text-center transition duration-300">
-                    查看教學
-                  </router-link>
+
+                  <!-- 城市選擇下拉框 -->
+                  <select 
+                    v-model="selectedCity"
+                    class="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none 
+                           focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white 
+                           text-gray-700 shadow-sm hover:border-blue-300 transition-all duration-300"
+                    @change="handleCityChange"
+                  >
+                    <option value="">選擇城市</option>
+                    <option v-for="city in cities" :key="city" :value="city">
+                      {{ city }}
+                    </option>
+                  </select>
                 </div>
               </div>
 
-              <!-- 常見問題 -->
-              <div class="bg-white rounded-xl overflow-hidden shadow-lg">
-                <img src="https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d" 
-                     class="w-full h-48 object-cover" alt="常見問題">
-                <div class="p-6">
-                  <h3 class="text-xl font-bold mb-2">常見問題</h3>
-                  <p class="text-gray-600 mb-4">
-                    解答使用過程中常見的疑問，幫助您更順暢地使用系統。
-                  </p>
-                  <div class="space-y-2 mb-4">
-                    <div class="flex items-center text-gray-600">
-                      <i class="fas fa-question-circle mr-2"></i>
-                      <span>快速解答</span>
-                    </div>
-                  </div>
-                  <router-link to="/learning#faq" 
-                    class="block w-full px-4 py-2 bg-gray-800 text-white rounded-lg 
-                           hover:bg-gray-700 text-center transition duration-300">
-                    查看問題
-                  </router-link>
-                </div>
-              </div>
-
-              <!-- 使用教學 -->
-              <div class="bg-white rounded-xl overflow-hidden shadow-lg">
-                <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173" 
-                     class="w-full h-48 object-cover" alt="使用教學">
-                <div class="p-6">
-                  <h3 class="text-xl font-bold mb-2">使用教學</h3>
-                  <p class="text-gray-600 mb-4">
-                    觀看詳細的操作示範影片，掌握系統的進階功能。
-                  </p>
-                  <div class="space-y-2 mb-4">
-                    <div class="flex items-center text-gray-600">
-                      <i class="fas fa-video mr-2"></i>
-                      <span>影片教學</span>
-                    </div>
-                  </div>
-                  <router-link to="/learning#tutorials" 
-                    class="block w-full px-4 py-2 bg-gray-800 text-white rounded-lg 
-                           hover:bg-gray-700 text-center transition duration-300">
-                    觀看影片
-                  </router-link>
-                </div>
+              <!-- 當前位置顯示 -->
+              <div v-if="currentCity" 
+                   class="flex items-center text-gray-600 bg-gradient-to-r from-blue-50 
+                          to-blue-100/50 px-6 py-4 rounded-xl shadow-sm border 
+                          border-blue-100 mb-8">
+                <i class="fas fa-map-marker-alt mr-3 text-blue-500"></i>
+                <span class="text-gray-500">目前位置：
+                  <span class="font-medium text-blue-700 ml-1">{{ currentCity }}</span>
+                </span>
               </div>
             </div>
-            <div class="text-center mt-16">
-              <router-link to="/learning" 
-                class="inline-flex items-center px-6 py-3 bg-gray-800 text-white rounded-lg 
-                       hover:bg-gray-700 transition duration-300">
-                <i class="fas fa-arrow-right mr-2"></i>
-                探索更多資源
-              </router-link>
-            </div>
           </div>
+          
+          <Recommendations />
         </div>
+      </transition>
+
+      <div id="learning" class="fade-in-section">
+        <Learning />
       </div>
 
-      <div id="pricing">
+      <div id="pricing" class="fade-in-section">
         <Pricing />
       </div>
 
@@ -159,6 +115,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 import Navbar from '../common/Navbar.vue'
 import Banner from './Banner.vue'
 import Recommendations from './Recommendations.vue'
+import About from './About.vue'  // 引入 About 組件
 import Footer from '../common/Footer.vue'
 import Features from './Features.vue'
 import Learning from './Learning.vue'
@@ -168,6 +125,7 @@ import axios from '@/utils/axios'
 import { useAuthStore } from '@/stores/auth'
 import Swal from 'sweetalert2'
 import { recommendAPI } from '@/api'
+import CallToAction from './CallToAction.vue'
 
 export default {
   components: {
@@ -178,7 +136,9 @@ export default {
     Features,
     Learning,
     Pricing,
-    AIChatAssistant  // 註冊組件
+    AIChatAssistant,  // 註冊組件
+    CallToAction,
+    About
   },
   setup() {
     const authStore = useAuthStore()
@@ -366,4 +326,8 @@ export default {
     }
   }
 }
-</script> 
+</script>
+
+<style scoped>
+/* 移除之前的 fade-in-section 相關樣式 */
+</style> 

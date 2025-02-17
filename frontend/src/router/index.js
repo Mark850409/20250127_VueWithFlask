@@ -148,6 +148,15 @@ const routes = [
           requiresAuth: true,
           title: '專案管理'
         }
+      },
+      {
+        path: 'learning',
+        name: 'LearningManagement',
+        component: () => import('@/components/admin/learning/LearningManagement.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '學習中心管理'
+        }
       }
     ]
   },

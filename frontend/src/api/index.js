@@ -9,6 +9,7 @@ import messageAPI from './modules/message'
 import botAPI from './modules/bot'
 import knowledgeAPI from './modules/knowledge'
 import projectAPI from './modules/project'
+import learningAPI from './modules/learning'
 
 export {
   accountAPI,
@@ -21,5 +22,6 @@ export {
   messageAPI,
   botAPI,
   knowledgeAPI,
-  projectAPI
+  projectAPI,
+  learningAPI
 } 

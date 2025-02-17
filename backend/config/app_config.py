@@ -61,6 +61,7 @@ def setup_upload_folders(app):
     app.config['UPLOAD_FOLDER'] = 'uploads'
     app.config['AVATAR_FOLDER'] = os.path.join('uploads', 'avatars')
     app.config['STORE_FOLDER'] = os.path.join('uploads', 'stores')
+    app.config['LEARNING_FOLDER'] = os.path.join('uploads', 'learning')
     
     os.makedirs(app.config['AVATAR_FOLDER'], exist_ok=True)
     os.makedirs(app.config['STORE_FOLDER'], exist_ok=True) 
