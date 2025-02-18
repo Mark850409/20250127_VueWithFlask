@@ -75,27 +75,40 @@
           <label class="block text-sm font-medium text-gray-700">
             用戶名稱 <span class="text-red-500">*</span>
           </label>
-          <input v-model="config.name" type="text" 
-                 class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                 :class="{ 'border-red-500': showConfigError && !config.name }">
-          <p v-if="showConfigError && !config.name" class="text-red-500 text-xs mt-1">
-            請輸入用戶名稱
+          <input 
+            v-model="config.name" 
+            type="text" 
+            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            :class="{ 'border-red-500': validationErrors.config.name }"
+            @input="validateConfig"
+            @blur="validateConfig"
+          >
+          <p v-if="validationErrors.config.name" 
+             class="text-red-500 text-xs mt-1">
+            {{ validationErrors.config.name }}
           </p>
         </div>
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700">
             電子郵件 <span class="text-red-500">*</span>
           </label>
-          <input v-model="config.email" type="email" 
-                 class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                 :class="{ 'border-red-500': showConfigError && !config.email }">
-          <p v-if="showConfigError && !config.email" class="text-red-500 text-xs mt-1">
-            請輸入電子郵件
+          <input 
+            v-model="config.email" 
+            type="email" 
+            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            :class="{ 'border-red-500': validationErrors.config.email }"
+            @input="validateConfig"
+            @blur="validateConfig"
+          >
+          <p v-if="validationErrors.config.email" 
+             class="text-red-500 text-xs mt-1">
+            {{ validationErrors.config.email }}
           </p>
         </div>
       </div>
       <button @click="configureGit" 
-              class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+              class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+              >
         保存配置
       </button>
     </div>
@@ -109,27 +122,40 @@
             <label class="block text-sm font-medium text-gray-700">
               遠程名稱 <span class="text-red-500">*</span>
             </label>
-            <input v-model="remote.name" type="text" 
-                   class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                   :class="{ 'border-red-500': showRemoteError && !remote.name }">
-            <p v-if="showRemoteError && !remote.name" class="text-red-500 text-xs mt-1">
-              請輸入遠程名稱
+            <input 
+              v-model="remote.name" 
+              type="text" 
+              class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              :class="{ 'border-red-500': validationErrors.remote.name }"
+              @input="validateRemote"
+              @blur="validateRemote"
+            >
+            <p v-if="validationErrors.remote.name" 
+               class="text-red-500 text-xs mt-1">
+              {{ validationErrors.remote.name }}
             </p>
           </div>
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-700">
               遠程 URL <span class="text-red-500">*</span>
             </label>
-            <input v-model="remote.url" type="text" 
-                   class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                   :class="{ 'border-red-500': showRemoteError && !remote.url }">
-            <p v-if="showRemoteError && !remote.url" class="text-red-500 text-xs mt-1">
-              請輸入遠程 URL
+            <input 
+              v-model="remote.url" 
+              type="text" 
+              class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              :class="{ 'border-red-500': validationErrors.remote.url }"
+              @input="validateRemote"
+              @blur="validateRemote"
+            >
+            <p v-if="validationErrors.remote.url" 
+               class="text-red-500 text-xs mt-1">
+              {{ validationErrors.remote.url }}
             </p>
           </div>
         </div>
         <button @click="addRemote" 
-                class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                >
           添加遠程倉庫
         </button>
       </div>
@@ -146,7 +172,7 @@
               <label class="block text-sm font-medium text-gray-700">
                 提交信息 <span class="text-red-500">*</span>
               </label>
-              <button @click="openCommitMessageDialog" 
+              <button @click="openCommitDialog" 
                       class="text-blue-500 hover:text-blue-600">
                 <i class="fas fa-edit"></i> 編輯
               </button>
@@ -289,7 +315,7 @@
                               data-tooltip="回退到此版本">
                         <i class="fas fa-history"></i>
                       </button>
-                      <button @click="viewCommitDetails(commit)" 
+                      <button @click="openCommitDetails(commit)" 
                               class="text-gray-600 hover:text-gray-800 tooltip"
                               data-tooltip="查看詳情">
                         <i class="fas fa-eye"></i>
@@ -339,11 +365,276 @@
         請先完成 Git 配置並添加遠程倉庫以啟用所有功能
       </div>
     </div>
+
+    <!-- 提交信息對話框 -->
+    <dialog ref="commitDialog" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-xl p-0 w-full max-w-2xl">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">輸入提交信息</h3>
+          <button @click="closeCommitDialog" class="text-gray-400 hover:text-gray-500">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="space-y-4">
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">提交信息</label>
+            <textarea
+              v-model="commitMessage"
+              rows="6"
+              class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono"
+              :class="{ 
+                'border-red-500 focus:ring-red-500': commitMessage && !isValidCommitMessage,
+                'border-green-500 focus:ring-green-500': commitMessage && isValidCommitMessage
+              }"
+              placeholder="例如：&#10;feat: 添加新功能&#10;&#10;- 實現了XXX功能&#10;- 優化了YYY流程"
+              @input="validateCommitMessage"
+            ></textarea>
+            <div v-if="commitMessage" 
+                 class="text-sm mt-1"
+                 :class="{
+                   'text-red-500': !isValidCommitMessage,
+                   'text-green-500': isValidCommitMessage
+                 }"
+            >
+              <i :class="[
+                isValidCommitMessage ? 'fas fa-check-circle' : 'fas fa-exclamation-circle',
+                'mr-1'
+              ]"></i>
+              <span v-if="!isValidCommitMessage">
+                提交信息格式不正確，請使用正確的格式：
+                <ul class="list-disc ml-5 mt-1">
+                  <li>必須以 feat:、fix:、docs:、style:、refactor:、test:、chore: 等開頭</li>
+                  <li>冒號後需要空格</li>
+                  <li>需要包含具體的更改描述</li>
+                </ul>
+              </span>
+              <span v-else>
+                提交信息格式正確
+              </span>
+            </div>
+          </div>
+          <div class="flex justify-end space-x-3">
+            <button
+              @click="closeCommitDialog"
+              class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              取消
+            </button>
+            <button
+              @click="confirmCommit"
+              class="px-4 py-2 text-white rounded-lg transition-colors"
+              :class="{
+                'bg-blue-500 hover:bg-blue-600': isValidCommitMessage && commitMessage,
+                'bg-gray-400 cursor-not-allowed': !isValidCommitMessage || !commitMessage
+              }"
+              :disabled="!isValidCommitMessage || !commitMessage"
+            >
+              確認
+            </button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 倉庫路徑設置對話框 -->
+    <dialog ref="repoPathDialog" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-xl p-0 w-full max-w-xl">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">設置倉庫路徑</h3>
+          <button @click="closeRepoPathDialog" class="text-gray-400 hover:text-gray-500">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="space-y-4">
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Git 倉庫路徑</label>
+            <input
+              v-model="tempRepoPath"
+              type="text"
+              class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              :class="{ 'border-red-500 focus:ring-red-500': !tempRepoPath }"
+              placeholder="例如: C:/Projects/my-repo"
+            />
+            <div v-if="!tempRepoPath" 
+                 class="text-red-500 text-sm mt-1">
+              <i class="fas fa-exclamation-circle mr-1"></i>
+              請輸入倉庫路徑
+            </div>
+          </div>
+          <div class="flex justify-end space-x-3">
+            <button
+              @click="closeRepoPathDialog"
+              class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              取消
+            </button>
+            <button
+              @click="confirmRepoPath"
+              class="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+              :disabled="!tempRepoPath"
+            >
+              確認
+            </button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 未添加文件提示對話框 -->
+    <dialog ref="unstagedDialog" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-xl p-0 w-full max-w-2xl">
+      <div class="p-6">
+        <div class="flex flex-col">
+          <div class="flex items-center mb-4 text-yellow-500">
+            <i class="fas fa-exclamation-triangle text-3xl mr-3"></i>
+            <h3 class="text-lg font-semibold text-gray-900">發現未添加的文件</h3>
+          </div>
+          <div class="space-y-4">
+            <div class="text-left">
+              <p class="mb-2">以下文件尚未添加到暫存區：</p>
+              <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100 max-h-48 overflow-auto">
+                <template v-for="file in unstagedFiles" :key="file">
+                  <div class="text-sm mb-1">
+                    <i class="fas fa-file text-yellow-500 mr-2"></i>{{ file }}
+                  </div>
+                </template>
+              </div>
+            </div>
+            <p class="text-gray-600">是否要將這些文件添加到暫存區？</p>
+            <div class="flex justify-end space-x-3">
+              <button @click="handleUnstagedCancel"
+                      class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                否，僅提交暫存的更改
+              </button>
+              <button @click="handleUnstagedConfirm"
+                      class="px-4 py-2 text-white bg-yellow-500 rounded-lg hover:bg-yellow-600">
+                是，添加文件
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 提示訊息對話框 -->
+    <dialog ref="alertDialog" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-xl p-0 w-full max-w-md">
+      <div class="p-6">
+        <div class="flex flex-col items-center">
+          <div class="mb-4">
+            <i :class="[
+              alertType === 'success' ? 'text-green-500 fas fa-check-circle' : '',
+              alertType === 'error' ? 'text-red-500 fas fa-exclamation-circle' : '',
+              alertType === 'warning' ? 'text-yellow-500 fas fa-exclamation-triangle' : '',
+              'text-4xl'
+            ]"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ alertTitle }}</h3>
+          <p class="text-gray-600 text-center mb-6" v-if="alertMessage">{{ alertMessage }}</p>
+          <div class="flex justify-center space-x-3">
+            <button v-if="showCancelButton"
+                    @click="handleAlertCancel"
+                    class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+              取消
+            </button>
+            <button @click="handleAlertConfirm"
+                    :class="[
+                      'px-4 py-2 text-white rounded-lg',
+                      alertType === 'success' ? 'bg-green-500 hover:bg-green-600' : '',
+                      alertType === 'error' ? 'bg-red-500 hover:bg-red-600' : '',
+                      alertType === 'warning' ? 'bg-yellow-500 hover:bg-yellow-600' : ''
+                    ]">
+              確認
+            </button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 添加提交詳情對話框 -->
+    <dialog ref="commitDetailsDialog" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-xl p-0 w-full max-w-2xl">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">提交詳情</h3>
+          <button @click="closeCommitDetailsDialog" class="text-gray-400 hover:text-gray-500">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="space-y-4">
+          <!-- 基本信息卡片 -->
+          <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div class="grid grid-cols-1 gap-3">
+              <div class="flex items-center">
+                <span class="font-semibold w-24 text-gray-600">提交哈希：</span>
+                <code class="font-mono bg-white px-3 py-1 rounded border border-gray-200 text-sm">{{ selectedCommit?.hash }}</code>
+              </div>
+              <div class="flex items-center">
+                <span class="font-semibold w-24 text-gray-600">作者：</span>
+                <span class="text-gray-800">{{ selectedCommit?.author }}</span>
+              </div>
+              <div class="flex items-center">
+                <span class="font-semibold w-24 text-gray-600">日期：</span>
+                <span class="text-gray-800">{{ selectedCommit?.date }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 提交信息 -->
+          <div>
+            <div class="font-semibold text-gray-700 mb-2">提交信息：</div>
+            <pre class="whitespace-pre-wrap bg-white p-4 rounded-lg border border-gray-200 text-gray-800 text-base leading-relaxed font-mono max-h-[400px] overflow-y-auto">{{ formatCommitMessage(selectedCommit?.message || '') }}</pre>
+          </div>
+
+          <div class="flex justify-end space-x-3 mt-4">
+            <button
+              @click="closeCommitDetailsDialog"
+              class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              關閉
+            </button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 添加回退版本確認對話框 -->
+    <dialog ref="resetConfirmDialog" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-xl p-0 w-full max-w-xl">
+      <div class="p-6">
+        <div class="flex items-center mb-4">
+          <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl mr-3"></i>
+          <h3 class="text-lg font-semibold text-gray-900">確認回退版本？</h3>
+        </div>
+        <div class="space-y-4">
+          <p class="mb-4 text-gray-600">
+            您即將回退到提交 <code class="font-mono bg-gray-100 px-2 py-1 rounded">{{ selectedCommitHash?.substring(0, 7) }}</code>
+          </p>
+          <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+            <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
+            <span class="text-sm text-yellow-700">
+              此操作將會重置當前工作目錄到選定的版本，且無法復原。
+              <br>請確保您已經提交或備份了所有重要更改。
+            </span>
+          </div>
+          <div class="flex justify-end space-x-3 mt-4">
+            <button
+              @click="closeResetConfirmDialog"
+              class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              取消
+            </button>
+            <button
+              @click="confirmReset"
+              class="px-4 py-2 text-white bg-red-500 rounded-lg hover:bg-red-600"
+            >
+              確認回退
+            </button>
+          </div>
+        </div>
+      </div>
+    </dialog>
   </div>
 </template>
 
 <script>
-import axios from '@/utils/axios'
+import { gitAPI } from '@/api'
 import { ElMessage } from 'element-plus'
 import Swal from 'sweetalert2'
 import { useLogger } from '@/composables/useLogger'
@@ -380,7 +671,32 @@ export default {
       pageSize: 10,
       sortKey: 'date',
       sortOrder: 'desc',
-      showRepoPathDialog: false
+      showRepoPathDialog: false,
+      tempRepoPath: '',
+      isValidCommitMessage: false,
+      isValidConfig: false,
+      isValidRemote: false,
+      alertType: 'success',
+      alertTitle: '',
+      alertMessage: '',
+      showCancelButton: false,
+      alertResolve: null,
+      alertReject: null,
+      unstagedFiles: [],
+      hasAttemptedConfig: false,
+      hasAttemptedRemote: false,
+      validationErrors: {
+        config: {
+          name: '',
+          email: ''
+        },
+        remote: {
+          name: '',
+          url: ''
+        }
+      },
+      selectedCommit: null,
+      selectedCommitHash: null,
     }
   },
   setup() {
@@ -443,7 +759,7 @@ export default {
       }
 
       try {
-        await axios.post('/init', { path: this.repoPath })
+        await gitAPI.initRepo(this.repoPath)
         await this.logOperation('【Git管理】初始化倉庫', '新增')
         Swal.fire({
           icon: 'success',
@@ -473,13 +789,14 @@ export default {
     },
 
     async configureGit() {
-      this.showConfigError = true
-      if (!this.config.name || !this.config.email) {
+      this.hasAttemptedConfig = true
+      this.validateConfig()
+      if (!this.isValidConfig) {
         return
       }
 
       try {
-        await axios.post('/config', this.config)
+        await gitAPI.configureGit(this.config)
         await this.logOperation('【Git管理】更新Git配置', '修改')
         Swal.fire({
           icon: 'success',
@@ -489,20 +806,21 @@ export default {
           showConfirmButton: false,
           timer: 3000
         })
-        this.showConfigError = false
+        this.hasAttemptedConfig = false
       } catch (error) {
         // 錯誤處理已在 axios 攔截器中完成
       }
     },
 
     async addRemote() {
-      this.showRemoteError = true
-      if (!this.remote.name || !this.remote.url) {
+      this.hasAttemptedRemote = true
+      this.validateRemote()
+      if (!this.isValidRemote) {
         return
       }
 
       try {
-        await axios.post('/remote/add', this.remote)
+        await gitAPI.addRemote(this.remote)
         await this.logOperation(`【Git管理】添加遠程倉庫 ${this.remote.name}`, '新增')
         Swal.fire({
           icon: 'success',
@@ -513,7 +831,7 @@ export default {
           timer: 3000
         })
         this.isRepoConfigured = true
-        this.showRemoteError = false
+        this.hasAttemptedRemote = false
         
         // 添加遠程倉庫後，依序執行：
         await this.checkStatus()  // 1. 檢查倉庫狀態
@@ -526,7 +844,7 @@ export default {
 
     async checkStatus() {
       try {
-        const response = await axios.get('/status')
+        const response = await gitAPI.getStatus()
         this.status = response.data.message
         console.log('Git status:', this.status)
         this.parsedStatus = this.parseGitStatus(this.status)
@@ -546,7 +864,7 @@ export default {
 
     async addFiles() {
       try {
-        await axios.post('/add')
+        await gitAPI.addFiles()
         Swal.fire({
           icon: 'success',
           title: '文件已添加到暫存區',
@@ -572,53 +890,13 @@ export default {
         
         // 如果有未添加的文件，詢問用戶是否要添加
         if (this.parsedStatus.modified.length || this.parsedStatus.untracked.length) {
-          const result = await Swal.fire({
-            title: '發現未添加的文件',
-            html: `
-              <div class="text-left">
-                <p class="mb-2">以下文件尚未添加到暫存區：</p>
-                <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100 max-h-48 overflow-y-auto">
-                  ${[...this.parsedStatus.modified, ...this.parsedStatus.untracked]
-                    .map(file => `<div class="text-sm mb-1">
-                      <i class="fas fa-file text-yellow-500 mr-2"></i>${file}
-                    </div>`).join('')}
-                </div>
-                <p class="mt-4 text-sm text-gray-600">
-                  是否要先將這些文件添加到暫存區？
-                </p>
-              </div>
-            `,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: '是，添加文件',
-            cancelButtonText: '否，僅提交已暫存的更改',
-            customClass: {
-              container: 'add-files-modal'
-            }
-          })
-
-          if (result.isConfirmed) {
-            // 用戶選擇添加文件
-            await this.addFiles()
-          } else if (result.dismiss === Swal.DismissReason.cancel) {
-            // 用戶選擇不添加文件，確認是否繼續提交
-            const confirmResult = await Swal.fire({
-              title: '確認僅提交已暫存的更改？',
-              text: '未添加的文件將不會包含在此次提交中',
-              icon: 'question',
-              showCancelButton: true,
-              confirmButtonText: '是，繼續提交',
-              cancelButtonText: '取消'
-            })
-            
-            if (!confirmResult.isConfirmed) {
-              return
-            }
-          }
+          this.unstagedFiles = [...this.parsedStatus.modified, ...this.parsedStatus.untracked]
+          this.$refs.unstagedDialog.showModal()
+          return
         }
 
         // 執行提交
-        await axios.post('/commit', { message: this.commitMessage })
+        await gitAPI.commit(this.commitMessage)
         this.commitMessage = ''
         this.showCommitError = false
         
@@ -636,7 +914,7 @@ export default {
           timer: 3000
         })
       } catch (error) {
-        console.error('Error during commit:', error)
+        console.error('Error committing:', error)
       }
     },
 
@@ -644,7 +922,7 @@ export default {
       this.showBranchError = true
       if (!this.branchName) return
       try {
-        await axios.post('/branch/create', { name: this.branchName })
+        await gitAPI.createBranch(this.branchName)
         this.branchName = ''
         this.showBranchError = false
         await this.logOperation(`【Git管理】創建分支 ${this.branchName}`, '新增')
@@ -657,7 +935,7 @@ export default {
       this.showBranchError = true
       if (!this.branchName) return
       try {
-        await axios.post('/branch/switch', { name: this.branchName })
+        await gitAPI.switchBranch(this.branchName)
         this.branchName = ''
         this.showBranchError = false
         await this.checkStatus()
@@ -670,11 +948,7 @@ export default {
     async pull() {
       try {
         // 添加請求頭，指定 Content-Type
-        const response = await axios.post('/pull', {}, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
+        const response = await gitAPI.pull()
         
         // 更新狀態和歷史
         await this.checkStatus()
@@ -697,14 +971,7 @@ export default {
     async push() {
       try {
         // 添加遠程倉庫名稱和分支名稱作為參數
-        const response = await axios.post('/push', {
-          remote: this.remote.name,
-          branch: this.currentBranch
-        }, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
+        const response = await gitAPI.push()
         await this.checkStatus()
         await this.getHistory()
         
@@ -747,14 +1014,7 @@ export default {
       if (result.isConfirmed) {
         try {
           // 添加遠程倉庫名稱和分支名稱作為參數
-          const response = await axios.post('/force-push', {
-            remote: this.remote.name,
-            branch: this.currentBranch
-          }, {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          })
+          const response = await gitAPI.push(true)
           await this.checkStatus()
           await this.getHistory()
           
@@ -775,7 +1035,7 @@ export default {
 
     async getHistory() {
       try {
-        const response = await axios.get('/commits')
+        const response = await gitAPI.getHistory()
         this.commits = response.data.commits
       } catch (error) {
         console.error('Error getting commit history:', error)
@@ -784,50 +1044,29 @@ export default {
     },
 
     async resetToCommit(hash) {
-      // 添加確認提示視窗
-      const result = await Swal.fire({
-        title: '確認回退版本？',
-        html: `
-          <div class="text-left">
-            <p class="mb-4 text-gray-600">您即將回退到提交 <span class="font-mono bg-gray-100 px-2 py-1 rounded">${hash.substring(0, 7)}</span></p>
-            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
-              <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
-              <span class="text-sm text-yellow-700">
-                此操作將會重置當前工作目錄到選定的版本，且無法復原。
-                <br>請確保您已經提交或備份了所有重要更改。
-              </span>
-            </div>
-          </div>
-        `,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: '確認回退',
-        cancelButtonText: '取消',
-        customClass: {
-          popup: 'rounded-lg shadow-xl',
-        }
-      })
+      this.selectedCommitHash = hash
+      this.$refs.resetConfirmDialog.showModal()
+    },
 
-      // 如果用戶確認，則執行回退操作
-      if (result.isConfirmed) {
-        try {
-          await axios.post('/reset', { hash })
-          await this.checkStatus() // 更新倉庫狀態
-          await this.getHistory() // 更新提交歷史
-          Swal.fire({
-            icon: 'success',
-            title: '已回退到指定版本',
-            text: `成功回退到 ${hash.substring(0, 7)}`,
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000
-          })
-        } catch (error) {
-          // 錯誤處理已在 axios 攔截器中完成
-        }
+    closeResetConfirmDialog() {
+      this.$refs.resetConfirmDialog.close()
+      this.selectedCommitHash = null
+    },
+
+    async confirmReset() {
+      try {
+        await gitAPI.resetToCommit(this.selectedCommitHash)
+        await this.checkStatus()
+        await this.getHistory()
+        
+        ElMessage({
+          message: `已成功回退到 ${this.selectedCommitHash.substring(0, 7)}`,
+          type: 'success'
+        })
+        
+        this.closeResetConfirmDialog()
+      } catch (error) {
+        // 錯誤處理已在 axios 攔截器中完成
       }
     },
 
@@ -839,55 +1078,16 @@ export default {
       })
     },
 
-    // 查看提交詳情
-    async viewCommitDetails(commit) {
-      Swal.fire({
-        title: '提交詳情',
-        html: `
-          <div class="text-left space-y-4">
-            <!-- 基本信息卡片 -->
-            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div class="grid grid-cols-1 gap-3">
-                <div class="flex items-center">
-                  <span class="font-semibold w-24 text-gray-600">提交哈希：</span>
-                  <code class="font-mono bg-white px-3 py-1 rounded border border-gray-200 text-sm">${commit.hash}</code>
-                </div>
-                <div class="flex items-center">
-                  <span class="font-semibold w-24 text-gray-600">作者：</span>
-                  <span class="text-gray-800">${commit.author}</span>
-                </div>
-                <div class="flex items-center">
-                  <span class="font-semibold w-24 text-gray-600">日期：</span>
-                  <span class="text-gray-800">${commit.date}</span>
-                </div>
-              </div>
-            </div>
-            
-            <!-- 提交信息 -->
-            <div>
-              <div class="font-semibold text-white mb-2">提交信息：</div>
-              <pre class="whitespace-pre-wrap bg-white p-4 rounded-lg border border-gray-200 text-gray-800 text-base leading-relaxed font-mono max-h-[400px] overflow-y-auto">${this.formatCommitMessage(commit.message)}</pre>
-            </div>
-          </div>
-        `,
-        confirmButtonText: '關閉',
-        confirmButtonColor: '#3085d6',
-        background: '#1e293b', // 深色背景
-        customClass: {
-          container: 'commit-details-modal',
-          popup: 'rounded-lg shadow-xl max-w-2xl',
-          header: 'border-b border-gray-700 pb-3',
-          title: 'text-xl font-semibold text-white', // 標題文字改為白色
-          htmlContainer: 'p-0',
-          confirmButton: 'px-6 py-2',
-        },
-        showClass: {
-          popup: 'animate__animated animate__fadeIn'
-        },
-        hideClass: {
-          popup: 'animate__animated animate__fadeOut'
-        }
-      })
+    // 打開提交詳情對話框
+    openCommitDetails(commit) {
+      this.selectedCommit = commit
+      this.$refs.commitDetailsDialog.showModal()
+    },
+
+    // 關閉提交詳情對話框
+    closeCommitDetailsDialog() {
+      this.$refs.commitDetailsDialog.close()
+      this.selectedCommit = null
     },
 
     // 解析 Git 狀態
@@ -959,79 +1159,99 @@ export default {
       if (this.sortKey !== key) return 'fas fa-sort'
       return this.sortOrder === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'
     },
-    async setRepoPath() {
-      const { value: path } = await Swal.fire({
-        title: '設置倉庫路徑',
-        input: 'text',
-        inputLabel: '請輸入 Git 倉庫的完整路徑',
-        inputValue: this.repoPath,
-        inputPlaceholder: '例如: C:/Projects/my-repo',
-        showCancelButton: true,
-        confirmButtonText: '確認',
-        cancelButtonText: '取消',
-        customClass: {
-          input: 'swal2-input-dark'
-        },
-        didOpen: () => {
-          const style = document.createElement('style')
-          style.textContent = `
-            .swal2-input-dark {
-              color: #000 !important;
-              background-color: #fff !important;
-            }
-          `
-          document.head.appendChild(style)
-        },
-        inputValidator: (value) => {
-          if (!value) {
-            return '請輸入路徑'
-          }
-        }
-      })
-
-      if (path) {
-        this.repoPath = path
-        localStorage.setItem('repoPath', path)
+    setRepoPath() {
+      this.openRepoPathDialog()
+    },
+    openCommitDialog() {
+      this.$refs.commitDialog.showModal()
+    },
+    closeCommitDialog() {
+      this.$refs.commitDialog.close()
+    },
+    confirmCommit() {
+      this.commit()
+      this.closeCommitDialog()
+    },
+    openRepoPathDialog() {
+      this.tempRepoPath = this.repoPath
+      this.$refs.repoPathDialog.showModal()
+    },
+    closeRepoPathDialog() {
+      this.$refs.repoPathDialog.close()
+      this.tempRepoPath = ''
+    },
+    async confirmRepoPath() {
+      if (this.tempRepoPath) {
+        this.repoPath = this.tempRepoPath
+        localStorage.setItem('repoPath', this.repoPath)
+        this.closeRepoPathDialog()
         await this.initRepo()
       }
     },
-    async openCommitMessageDialog() {
-      const { value: message } = await Swal.fire({
-        title: '輸入提交信息',
-        input: 'textarea',
-        inputLabel: '請描述您的更改',
-        inputValue: this.commitMessage,
-        inputPlaceholder: '例如：\nfeat: 添加新功能\n\n- 實現了XXX功能\n- 優化了YYY流程',
-        showCancelButton: true,
-        confirmButtonText: '確認',
-        cancelButtonText: '取消',
-        customClass: {
-          input: 'commit-message-textarea'
-        },
-        didOpen: () => {
-          const style = document.createElement('style')
-          style.textContent = `
-            .commit-message-textarea {
-              height: 200px !important;
-              font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
-              color: #000 !important;
-              background-color: #fff !important;
-            }
-          `
-          document.head.appendChild(style)
-        },
-        inputValidator: (value) => {
-          if (!value) {
-            return '請輸入提交信息'
-          }
-        }
-      })
-
-      if (message) {
-        this.commitMessage = message
-        this.showCommitError = false
+    validateCommitMessage() {
+      // 檢查提交信息格式
+      const commitPattern = /^(feat|fix|docs|style|refactor|test|chore):\s.+/
+      this.isValidCommitMessage = commitPattern.test(this.commitMessage)
+    },
+    validateConfig() {
+      // 重置錯誤信息
+      this.validationErrors.config = {
+        name: '',
+        email: ''
       }
-    }
+      
+      // 驗證用戶名
+      if (!this.config.name) {
+        this.validationErrors.config.name = '請輸入用戶名稱'
+      }
+      
+      // 驗證電子郵件
+      if (!this.config.email) {
+        this.validationErrors.config.email = '請輸入電子郵件'
+      } else {
+        const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/
+        if (!emailPattern.test(this.config.email)) {
+          this.validationErrors.config.email = '請輸入有效的電子郵件地址'
+        }
+      }
+      
+      this.isValidConfig = !this.validationErrors.config.name && !this.validationErrors.config.email
+    },
+    validateRemote() {
+      // 重置錯誤信息
+      this.validationErrors.remote = {
+        name: '',
+        url: ''
+      }
+      
+      // 驗證遠程名稱
+      if (!this.remote.name) {
+        this.validationErrors.remote.name = '請輸入遠程名稱'
+      }
+      
+      // 驗證遠程 URL
+      if (!this.remote.url) {
+        this.validationErrors.remote.url = '請輸入遠程 URL'
+      } else {
+        // Git URL 格式驗證
+        const urlPattern = /^(https?:\/\/|git@)([^\s:]+)(:|\/)[^\s]+$/
+        if (!urlPattern.test(this.remote.url)) {
+          this.validationErrors.remote.url = '請輸入有效的 Git 倉庫 URL'
+        }
+      }
+      
+      this.isValidRemote = !this.validationErrors.remote.name && !this.validationErrors.remote.url
+    },
+    async handleUnstagedConfirm() {
+      this.$refs.unstagedDialog.close()
+      await this.addFiles()
+      await this.commit()
+    },
+    async handleUnstagedCancel() {
+      this.$refs.unstagedDialog.close()
+      // 用戶選擇不添加文件，繼續提交流程
+      await this.commit()
+    },
   },
   watch: {
     // 當搜尋條件或每頁筆數改變時，重置頁碼
@@ -1115,5 +1335,41 @@ export default {
 
 .animate__fadeOut {
   animation: fadeOut 0.2s ease-in;
+}
+</style>
+
+<style scoped>
+dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+dialog {
+  border: none;
+  padding: 0;
+  margin: 0;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 添加滾動條樣式 */
+pre::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+pre::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+pre::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+pre::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 </style> 

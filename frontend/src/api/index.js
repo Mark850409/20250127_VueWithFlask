@@ -11,6 +11,7 @@ import knowledgeAPI from './modules/knowledge'
 import projectAPI from './modules/project'
 import learningAPI from './modules/learning'
 import bannerAPI from './modules/banner'
+import gitAPI from './modules/git'
 
 export {
   accountAPI,
@@ -25,5 +26,6 @@ export {
   knowledgeAPI,
   projectAPI,
   learningAPI,
-  bannerAPI
+  bannerAPI,
+  gitAPI
 } 
