@@ -480,41 +480,6 @@
       </div>
     </dialog>
 
-    <!-- 未添加文件提示對話框 -->
-    <dialog ref="unstagedDialog" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-xl p-0 w-full max-w-2xl">
-      <div class="p-6">
-        <div class="flex flex-col">
-          <div class="flex items-center mb-4 text-yellow-500">
-            <i class="fas fa-exclamation-triangle text-3xl mr-3"></i>
-            <h3 class="text-lg font-semibold text-gray-900">發現未添加的文件</h3>
-          </div>
-          <div class="space-y-4">
-            <div class="text-left">
-              <p class="mb-2">以下文件尚未添加到暫存區：</p>
-              <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100 max-h-48 overflow-auto">
-                <template v-for="file in unstagedFiles" :key="file">
-                  <div class="text-sm mb-1">
-                    <i class="fas fa-file text-yellow-500 mr-2"></i>{{ file }}
-                  </div>
-                </template>
-              </div>
-            </div>
-            <p class="text-gray-600">是否要將這些文件添加到暫存區？</p>
-            <div class="flex justify-end space-x-3">
-              <button @click="handleUnstagedCancel"
-                      class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
-                否，僅提交暫存的更改
-              </button>
-              <button @click="handleUnstagedConfirm"
-                      class="px-4 py-2 text-white bg-yellow-500 rounded-lg hover:bg-yellow-600">
-                是，添加文件
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </dialog>
-
     <!-- 提示訊息對話框 -->
     <dialog ref="alertDialog" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-xl p-0 w-full max-w-md">
       <div class="p-6">
@@ -630,12 +595,84 @@
         </div>
       </div>
     </dialog>
+
+    <!-- 添加文件確認對話框 -->
+    <dialog ref="addFilesDialog" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-xl p-0 w-full max-w-2xl">
+      <div class="p-6">
+        <div class="flex items-center mb-4">
+          <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl mr-3"></i>
+          <h3 class="text-lg font-semibold text-gray-900">發現未添加的文件</h3>
+        </div>
+        <div class="space-y-4">
+          <div class="text-left">
+            <p class="mb-2">以下文件尚未添加到暫存區：</p>
+            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100 max-h-48 overflow-auto font-mono">
+              <template v-for="file in pendingFiles" :key="file">
+                <div class="text-sm mb-1">
+                  <i class="fas fa-file text-yellow-500 mr-2"></i>{{ file }}
+                </div>
+              </template>
+            </div>
+          </div>
+          <div class="flex justify-end space-x-3 mt-4">
+            <button
+              @click="closeAddFilesDialog"
+              class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              取消
+            </button>
+            <button
+              @click="confirmAddFiles"
+              class="px-4 py-2 text-white bg-yellow-500 rounded-lg hover:bg-yellow-600"
+            >
+              添加文件
+            </button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 提交確認對話框 -->
+    <dialog ref="commitConfirmDialog" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-xl p-0 w-full max-w-2xl">
+      <div class="p-6">
+        <div class="flex items-center mb-4">
+          <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl mr-3"></i>
+          <h3 class="text-lg font-semibold text-gray-900">提交前確認</h3>
+        </div>
+        <div class="space-y-4">
+          <div class="text-left">
+            <p class="mb-2">提交前需要先添加以下文件到暫存區：</p>
+            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100 max-h-48 overflow-auto font-mono">
+              <template v-for="file in pendingFiles" :key="file">
+                <div class="text-sm mb-1">
+                  <i class="fas fa-file text-yellow-500 mr-2"></i>{{ file }}
+                </div>
+              </template>
+            </div>
+          </div>
+          <div class="flex justify-end space-x-3 mt-4">
+            <button
+              @click="closeCommitConfirmDialog"
+              class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              取消
+            </button>
+            <button
+              @click="confirmCommitWithFiles"
+              class="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+            >
+              添加並提交
+            </button>
+          </div>
+        </div>
+      </div>
+    </dialog>
   </div>
 </template>
 
 <script>
 import { gitAPI } from '@/api'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import Swal from 'sweetalert2'
 import { useLogger } from '@/composables/useLogger'
 
@@ -697,6 +734,7 @@ export default {
       },
       selectedCommit: null,
       selectedCommitHash: null,
+      pendingFiles: [],
     }
   },
   setup() {
@@ -864,17 +902,20 @@ export default {
 
     async addFiles() {
       try {
-        await gitAPI.addFiles()
-        Swal.fire({
-          icon: 'success',
-          title: '文件已添加到暫存區',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000
-        })
+        const status = await gitAPI.getStatus()
+        const parsedStatus = this.parseGitStatus(status.data.message)
+        
+        if (parsedStatus.modified.length || parsedStatus.untracked.length) {
+          this.pendingFiles = [...parsedStatus.modified, ...parsedStatus.untracked]
+          this.$refs.addFilesDialog.showModal()
+        } else {
+          ElMessage({
+            type: 'info',
+            message: '沒有需要添加的文件'
+          })
+        }
       } catch (error) {
-        // 錯誤處理已在 axios 攔截器中完成
+        console.error('Error checking files:', error)
       }
     },
 
@@ -885,36 +926,36 @@ export default {
       }
 
       try {
-        // 先檢查狀態
-        await this.checkStatus()
+        const status = await gitAPI.getStatus()
+        const parsedStatus = this.parseGitStatus(status.data.message)
         
-        // 如果有未添加的文件，詢問用戶是否要添加
-        if (this.parsedStatus.modified.length || this.parsedStatus.untracked.length) {
-          this.unstagedFiles = [...this.parsedStatus.modified, ...this.parsedStatus.untracked]
-          this.$refs.unstagedDialog.showModal()
-          return
+        if (parsedStatus.modified.length || parsedStatus.untracked.length) {
+          this.pendingFiles = [...parsedStatus.modified, ...parsedStatus.untracked]
+          this.$refs.commitConfirmDialog.showModal()
+        } else {
+          await this.executeCommit()
         }
+      } catch (error) {
+        console.error('Error committing:', error)
+      }
+    },
 
-        // 執行提交
+    async executeCommit() {
+      try {
         await gitAPI.commit(this.commitMessage)
         this.commitMessage = ''
         this.showCommitError = false
         
-        // 提交成功後更新狀態和歷史
         await this.checkStatus()
         await this.getHistory()
-        
         await this.logOperation('【Git管理】提交更改', '新增')
-        Swal.fire({
-          icon: 'success',
-          title: '更改已提交',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000
+        
+        ElMessage({
+          type: 'success',
+          message: '更改已成功提交'
         })
       } catch (error) {
-        console.error('Error committing:', error)
+        console.error('Error executing commit:', error)
       }
     },
 
@@ -1092,60 +1133,87 @@ export default {
 
     // 解析 Git 狀態
     parseGitStatus(status) {
-      const lines = status.split('\n')
+      if (!status) {
+        console.warn('Git status is undefined or empty')
+        return {
+          untracked: [],
+          modified: []
+        }
+      }
+
+      console.log('Raw status:', status)
+
       const result = {
         untracked: [],
         modified: []
       }
 
-      // 解析當前分支
-      const branchMatch = status.match(/On branch (.+)/);
-      if (branchMatch) {
-        this.$nextTick(() => {
-          this.currentBranch = branchMatch[1].trim();
-        });
+      try {
+        const lines = status.split('\n')
+        let section = null
+
+        // 解析當前分支
+        const branchMatch = status.match(/On branch (.+)/)
+        if (branchMatch) {
+          this.currentBranch = branchMatch[1].trim()
+        }
+
+        // 逐行解析
+        for (const line of lines) {
+          const trimmedLine = line.trim()
+
+          // 判斷當前區段
+          if (line.includes('Untracked files:')) {
+            section = 'untracked'
+            continue
+          } else if (line.includes('Changes not staged for commit:')) {
+            section = 'not_staged'
+            continue
+          } else if (line.includes('Changes to be committed:')) {
+            section = 'staged'
+            continue
+          } else if (line === '') {
+            continue
+          }
+
+          // 根據不同區段處理文件
+          if (section === 'untracked') {
+            if (trimmedLine && 
+                !trimmedLine.includes('(use "git add') && 
+                !trimmedLine.includes('to include in what will be committed)') &&
+                !trimmedLine.includes('nothing added to commit but untracked files present')) {
+              result.untracked.push(trimmedLine)
+            }
+          } else if (section === 'not_staged' || section === 'staged') {
+            if (trimmedLine.includes('modified:')) {
+              const file = trimmedLine.replace('modified:', '').trim()
+              if (!result.modified.includes(file)) {
+                result.modified.push(file)
+              }
+            }
+          }
+        }
+
+        // 過濾系統文件
+        result.untracked = result.untracked
+          .filter(file => !file.includes('node_modules'))
+          .filter(file => !file.includes('__pycache__'))
+
+        result.modified = result.modified
+          .filter(file => !file.includes('node_modules'))
+          .filter(file => !file.includes('__pycache__'))
+
+        console.log('Parsed result:', result)
+        return result
+
+      } catch (error) {
+        console.error('Error parsing git status:', error)
+        console.error('Status string:', status)
+        return {
+          untracked: [],
+          modified: []
+        }
       }
-
-      // 解析未追蹤的文件
-      if (status.includes('Untracked files:')) {
-        const untrackedSection = status.split('Untracked files:')[1].split(/\n\n|\nChanges/)[0];
-        result.untracked = untrackedSection
-          .split('\n')
-          .map(line => line.trim())
-          .filter(line => line && !line.includes('(use "git add'))
-          .filter(line => line !== 'to include in what will be committed)')
-          .filter(line => line !== '') // 過濾空行
-      }
-
-      // 解析已修改的文件（包括工作區和暫存區）
-      const modifiedFiles = new Set();
-
-      // 檢查工作區的修改
-      if (status.includes('Changes not staged for commit:')) {
-        const workingSection = status.split('Changes not staged for commit:')[1].split(/\n\n|\nUntracked/)[0];
-        workingSection
-          .split('\n')
-          .filter(line => line.includes('modified:'))
-          .map(line => line.replace('modified:', '').trim())
-          .forEach(file => modifiedFiles.add(file));
-      }
-
-      // 檢查暫存區的修改
-      if (status.includes('Changes to be committed:')) {
-        const stagedSection = status.split('Changes to be committed:')[1].split(/\n\n|\nChanges not staged/)[0];
-        stagedSection
-          .split('\n')
-          .filter(line => line.includes('modified:'))
-          .map(line => line.replace('modified:', '').trim())
-          .forEach(file => modifiedFiles.add(file));
-      }
-
-      // 將所有修改過的文件添加到結果中
-      result.modified = Array.from(modifiedFiles)
-        .filter(file => !file.includes('node_modules')) // 排除 node_modules
-        .filter(file => !file.includes('__pycache__')); // 排除 __pycache__
-
-      return result;
     },
     sortBy(key) {
       if (this.sortKey === key) {
@@ -1242,15 +1310,37 @@ export default {
       
       this.isValidRemote = !this.validationErrors.remote.name && !this.validationErrors.remote.url
     },
-    async handleUnstagedConfirm() {
-      this.$refs.unstagedDialog.close()
-      await this.addFiles()
-      await this.commit()
+    closeAddFilesDialog() {
+      this.$refs.addFilesDialog.close()
+      this.pendingFiles = []
     },
-    async handleUnstagedCancel() {
-      this.$refs.unstagedDialog.close()
-      // 用戶選擇不添加文件，繼續提交流程
-      await this.commit()
+    async confirmAddFiles() {
+      try {
+        await gitAPI.addFiles()
+        await this.checkStatus()
+        
+        ElMessage({
+          type: 'success',
+          message: '文件已成功添加到暫存區'
+        })
+        
+        this.closeAddFilesDialog()
+      } catch (error) {
+        console.error('Error adding files:', error)
+      }
+    },
+    closeCommitConfirmDialog() {
+      this.$refs.commitConfirmDialog.close()
+      this.pendingFiles = []
+    },
+    async confirmCommitWithFiles() {
+      try {
+        await gitAPI.addFiles()
+        await this.executeCommit()
+        this.closeCommitConfirmDialog()
+      } catch (error) {
+        console.error('Error committing with files:', error)
+      }
     },
   },
   watch: {
@@ -1371,5 +1461,17 @@ pre::-webkit-scrollbar-thumb {
 
 pre::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* 自定義確認對話框樣式 */
+.custom-message-box {
+  max-width: 600px !important;
+}
+
+.custom-message-box .el-message-box__message {
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: monospace;
 }
 </style> 
