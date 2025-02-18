@@ -90,14 +90,6 @@
             </ul>
           </div>
         </div>
-        <div class="text-center">
-          <router-link to="/features" 
-            class="inline-flex items-center px-6 py-3 bg-gray-800 text-white rounded-lg 
-                   hover:bg-gray-700 transition duration-300">
-            <i class="fas fa-arrow-right mr-2"></i>
-            查看更多特色
-          </router-link>
-        </div>
       </div>
     </div>
   </div>

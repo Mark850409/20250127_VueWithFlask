@@ -15,12 +15,17 @@
         <!-- 品牌介紹區塊 -->
         <div>
           <div class="flex items-center mb-4">
-            <i class="fas fa-glass-cheers text-blue-500 text-2xl mr-2"></i>
+            <i class="ri-drinks-2-line text-blue-500 text-2xl mr-2"></i>
             <h2 class="text-xl font-bold text-white">今天想喝什麼呢？</h2>
           </div>
-          <p class="text-gray-400 leading-relaxed">
-            我們致力於打造最智能的飲品推薦平台，運用先進的 AI 技術，為您提供個人化的飲品建議。
-            無論是在地特色飲品還是最新潮流，都能在這裡找到最適合您的選擇。
+          <p class="text-gray-400 leading-loose">
+            我們致力於打造最智能的飲品推薦平台，
+            <br class="hidden sm:block">
+            運用先進的 AI 技術，為您提供個人化的飲品建議。
+            <br>
+            無論是在地特色飲品還是最新潮流，
+            <br class="hidden sm:block">
+            都能在這裡找到最適合您的選擇。
           </p>
         </div>
 
@@ -98,8 +103,20 @@
       <!-- 版權聲明 -->
       <div class="mt-12 pt-8 border-t border-gray-800/50">
         <div class="flex flex-col md:flex-row justify-between items-center">
-          <p>© Copyright 2025 今天想喝什麼呢? All Rights Reserved</p>
-          <p class="mt-4 md:mt-0">Designed by Mark</p>
+          <div class="text-sm">
+            <p class="mb-2">
+              Copyright © {{ currentYear }} 今天想喝什麼呢? All Rights Reserved.
+            </p>
+            <p class="text-gray-500">
+              本網站受中華民國著作權法及國際著作權法律保護
+              <br class="hidden md:block">
+              未經授權禁止複製、散布或其他商業行為
+            </p>
+          </div>
+          <div class="mt-4 md:mt-0 text-sm text-gray-400">
+            <p>Designed & Developed by</p>
+            <p class="font-medium text-gray-300">Mark HSU</p>
+          </div>
         </div>
       </div>
     </div>
@@ -108,6 +125,11 @@
 
 <script>
 export default {
+  data() {
+    return {
+      currentYear: new Date().getFullYear()
+    }
+  },
   mounted() {},
   beforeUnmount() {},
   methods: {

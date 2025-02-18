@@ -1,66 +1,82 @@
 <template>
   <div class="space-y-6">
     <!-- 頂部工具列 -->
-    <div class="flex justify-between items-center gap-4">
-      <!-- 搜尋框 -->
-      <div class="relative w-64">
-        <input 
-          type="text" 
-          v-model="searchQuery"
-          placeholder="搜尋專案..."
-          class="w-full px-4 py-2 pl-10 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500"
-        >
-        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+    <div class="bg-white rounded-lg shadow-sm p-4">
+      <div class="flex flex-col space-y-4">
+        <!-- 標題和新增按鈕 -->
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-bold text-gray-800">專案管理</h2>
+          <button @click="showAddModal = true"
+                  class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 
+                         transition-colors duration-200 flex items-center">
+            <i class="fas fa-plus mr-2"></i>新增專案
+          </button>
+        </div>
+
+        <!-- 分隔線 -->
+        <div class="border-b border-gray-200"></div>
+
+        <!-- 功能區 -->
+        <div class="flex justify-between items-center">
+          <!-- 左側：視圖切換 -->
+          <div class="flex space-x-1">
+            <button 
+              @click="viewMode = 'card'"
+              :class="[
+                'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                viewMode === 'card' 
+                  ? 'bg-blue-50 text-blue-600 shadow-sm border border-blue-200' 
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
+              ]"
+            >
+              <i class="fas fa-th-large mr-2"></i>卡片
+            </button>
+            <button 
+              @click="viewMode = 'list'"
+              :class="[
+                'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                viewMode === 'list' 
+                  ? 'bg-blue-50 text-blue-600 shadow-sm border border-blue-200'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
+              ]"
+            >
+              <i class="fas fa-list mr-2"></i>列表
+            </button>
+          </div>
+
+          <!-- 右側：搜尋框 -->
+          <div class="flex items-center space-x-4">
+            <div class="relative">
+              <input v-model="searchQuery"
+                     type="text"
+                     class="w-64 px-4 py-2 pr-10 border rounded-lg focus:ring-2 
+                            focus:ring-blue-500 focus:border-transparent"
+                     placeholder="搜尋專案...">
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <i class="fas fa-search"></i>
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
-      
-      <!-- 視圖切換 -->
-      <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-        <button 
-          @click="viewMode = 'card'"
-          :class="[
-            'px-3 py-1 rounded-md transition-all duration-200',
-            viewMode === 'card' 
-              ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm' 
-              : 'text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
-          ]"
-        >
-          <i class="fas fa-th-large mr-2"></i>卡片
-        </button>
-        <button 
-          @click="viewMode = 'list'"
-          :class="[
-            'px-3 py-1 rounded-md transition-all duration-200',
-            viewMode === 'list' 
-              ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm' 
-              : 'text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
-          ]"
-        >
-          <i class="fas fa-list mr-2"></i>列表
-        </button>
-      </div>
-      
-      <!-- 新增按鈕 -->
-      <button 
-        @click="showAddModal = true"
-        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transform hover:scale-105 transition-all duration-200"
-      >
-        <i class="fas fa-plus mr-2"></i>新增專案
-      </button>
     </div>
 
     <!-- 無資料時顯示 -->
-    <div v-if="!filteredProjects.length" 
-         class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 text-center">
-      <div class="text-gray-500 dark:text-gray-400 mb-4">
-        <i class="fas fa-project-diagram text-4xl"></i>
+
+
+      <div v-if="!filteredProjects.length" 
+           class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 text-center">
+        <div class="text-gray-500 dark:text-gray-400 mb-4">
+          <i class="fas fa-project-diagram text-4xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          尚無專案資料
+        </h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-4">
+          目前還沒有任何專案，點擊上方按鈕新增專案。
+        </p>
       </div>
-      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-        尚無專案資料
-      </h3>
-      <p class="text-gray-500 dark:text-gray-400 mb-4">
-        目前還沒有任何專案，點擊上方按鈕新增專案。
-      </p>
-    </div>
+
 
     <!-- 專案列表 -->
     <transition-group 

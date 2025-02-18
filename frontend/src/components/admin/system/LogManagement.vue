@@ -26,6 +26,13 @@
         :searchable="true"
         :searchFields="['description', 'username', 'ip_address']">
         
+        <!-- 操作內容欄位自定義 -->
+        <template #description="{ item }">
+          <span :title="item.description" class="truncate block max-w-[400px]">
+            {{ truncateText(item.description, 50) }}
+          </span>
+        </template>
+        
         <!-- 類型欄位自定義 -->
         <template #action="{ item }">
           <span :class="[
@@ -62,9 +69,15 @@ export default {
       { key: 'created_at', label: '時間' },
       { key: 'action', label: '類型' },
       { key: 'username', label: '操作者' },
-      { key: 'description', label: '操作內容' },
+      { key: 'description', label: '操作內容', class: 'min-w-[400px]' },
       { key: 'ip_address', label: 'IP位址' },
     ]
+
+    // 文字截斷函數
+    const truncateText = (text, length) => {
+      if (!text) return ''
+      return text.length > length ? text.slice(0, length) + '...' : text
+    }
 
     // 獲取日誌列表
     const fetchLogs = async () => {
@@ -88,7 +101,16 @@ export default {
     return {
       logs,
       columns,
+      truncateText
     }
   }
 }
-</script> 
+</script>
+
+<style scoped>
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style> 

@@ -7,6 +7,7 @@ import router from '@/router'
 import './assets/css/main.css'
 import './index.css'
 import '@fortawesome/fontawesome-free/css/all.min.css'
+import 'remixicon/fonts/remixicon.css'
 
 const app = createApp(App)
 const pinia = createPinia()

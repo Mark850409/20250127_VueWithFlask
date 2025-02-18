@@ -61,10 +61,10 @@
 
     <!-- 新增/編輯彈窗 -->
     <div v-if="showAddModal" 
-         class="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center pt-20 px-4 z-[9999]">
-      <div class="bg-white rounded-xl p-6 w-full max-w-2xl relative max-h-[90vh] flex flex-col">
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]">
+      <div class="bg-white rounded-xl w-full max-w-2xl relative max-h-[85vh] flex flex-col transform transition-all">
         <!-- 標題列 -->
-        <div class="flex justify-between items-center mb-6 pb-4 border-b flex-shrink-0">
+        <div class="flex justify-between items-center px-6 py-4 border-b flex-shrink-0">
           <h2 class="text-xl font-bold">{{ editingBot ? '編輯問答' : '新增問答' }}</h2>
           <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
             <i class="fas fa-times text-xl"></i>
@@ -72,47 +72,49 @@
         </div>
 
         <!-- 表單內容區域 -->
-        <div class="overflow-y-auto flex-grow pr-2 mt-4">
+        <div class="overflow-y-auto flex-grow px-6 py-4">
           <div class="space-y-4">
             <!-- Icon 選擇器 -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">選擇圖示</label>
               <div class="flex items-center space-x-2 mb-2">
-                <div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-lg">
-                  <i :class="[botForm.icon || 'fas fa-robot', 'text-xl text-gray-600']"></i>
+                <div class="w-12 h-12 flex items-center justify-center bg-blue-50 rounded-lg 
+                            border-2 border-blue-200 shadow-sm transition-all duration-200">
+                  <i :class="[botForm.icon || 'fas fa-robot', 'text-2xl text-blue-500']"></i>
                 </div>
-                <span class="text-sm text-gray-500">已選擇的圖示</span>
+                <div class="flex flex-col">
+                  <span class="text-sm font-medium text-gray-700">已選擇的圖示</span>
+                  <span class="text-xs text-gray-500">{{ botForm.icon || '尚未選擇' }}</span>
+                </div>
               </div>
-              <div class="border rounded-lg p-3">
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                  <button 
-                    v-for="(category, index) in iconCategories" 
-                    :key="index"
-                    @click="selectedCategory = category.name"
-                    :class="[
-                      'px-3 py-2 rounded-lg text-sm font-medium',
-                      selectedCategory === category.name 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    ]">
-                    <i :class="category.icon" class="mr-2"></i>
-                    {{ category.label }}
-                  </button>
-                </div>
-                <div class="h-32 overflow-y-auto">
-                  <div class="grid grid-cols-8 gap-2">
-                    <button
-                      v-for="icon in getCurrentCategoryIcons"
-                      :key="icon"
-                      @click="selectIcon(icon)"
-                      :class="[
-                        'w-8 h-8 rounded-lg flex items-center justify-center',
-                        botForm.icon === icon 
-                          ? 'bg-blue-500 text-white' 
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      ]">
-                      <i :class="icon"></i>
-                    </button>
+              <div class="border rounded-lg p-4">
+                <div class="flex-1 overflow-y-auto">
+                  <!-- 圖示分類 -->
+                  <div v-for="(group, index) in iconGroups" 
+                       :key="index" 
+                       class="mb-6">
+                    <h4 class="text-sm font-medium text-gray-700 mb-3 px-2 flex items-center">
+                      <i :class="group.groupIcon" class="mr-2 text-blue-500"></i>
+                      {{ group.name }}
+                    </h4>
+                    <div class="grid grid-cols-8 gap-3">
+                      <button v-for="icon in group.icons"
+                              :key="icon"
+                              @click="selectIcon(icon)"
+                              :class="[
+                                'p-3 rounded-lg text-xl relative group/icon transition-all duration-200',
+                                botForm.icon === icon 
+                                  ? 'bg-blue-500 text-white shadow-md transform scale-110' 
+                                  : 'hover:bg-blue-50 text-gray-600'
+                              ]">
+                        <i :class="icon"></i>
+                        <span class="absolute bottom-0 left-1/2 -translate-x-1/2 transform px-2 py-1 bg-gray-800 text-white text-xs rounded 
+                                 opacity-0 group-hover/icon:opacity-100 transition-all whitespace-nowrap"
+                               :class="botForm.icon === icon ? 'bg-blue-600' : 'bg-gray-800'">
+                          {{ icon }}
+                        </span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -159,13 +161,13 @@
         </div>
 
         <!-- 底部按鈕區域 -->
-        <div class="mt-6 flex justify-end space-x-2 pt-4 border-t flex-shrink-0">
+        <div class="px-6 py-4 bg-gray-50 border-t rounded-b-xl flex justify-end space-x-3 flex-shrink-0">
           <button @click="closeModal" 
-                  class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                  class="px-4 py-2 text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors">
             取消
           </button>
           <button @click="saveBot"
-                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
             確定
           </button>
         </div>
@@ -203,52 +205,165 @@ export default {
     const errors = ref({})
 
     // Icon 分類
-    const iconCategories = [
-      { 
-        name: 'common',
-        label: '常用圖示',
-        icon: 'fas fa-star',
-        icons: [
-          'fas fa-robot', 'fas fa-comment', 'fas fa-comments', 
-          'fas fa-question-circle', 'fas fa-info-circle', 'fas fa-exclamation-circle',
-          'fas fa-lightbulb', 'fas fa-bell'
-        ]
-      },
-      {
-        name: 'food',
-        label: '餐飲圖示',
-        icon: 'fas fa-utensils',
-        icons: [
-          'fas fa-utensils', 'fas fa-coffee', 'fas fa-glass-martini',
-          'fas fa-beer', 'fas fa-wine-glass', 'fas fa-hamburger',
-          'fas fa-pizza-slice', 'fas fa-ice-cream'
-        ]
-      },
-      {
-        name: 'interface',
-        label: '介面圖示',
-        icon: 'fas fa-desktop',
-        icons: [
-          'fas fa-home', 'fas fa-search', 'fas fa-cog', 
-          'fas fa-user', 'fas fa-heart', 'fas fa-star',
-          'fas fa-bookmark', 'fas fa-envelope'
-        ]
-      },
-      {
-        name: 'action',
-        label: '動作圖示',
-        icon: 'fas fa-play',
-        icons: [
-          'fas fa-plus', 'fas fa-minus', 'fas fa-edit',
-          'fas fa-trash', 'fas fa-save', 'fas fa-download',
-          'fas fa-upload', 'fas fa-sync'
-        ]
-      }
+    const iconGroups = [
+    {
+          name: 'Arrow 箭頭',
+          groupIcon: 'ri-arrow-right-line',
+          icons: [
+            'ri-arrow-left-line', 'ri-arrow-right-line', 'ri-arrow-up-line', 'ri-arrow-down-line',
+            'ri-arrow-left-right-line', 'ri-arrow-up-down-line', 'ri-arrow-drop-left-line',
+            'ri-arrow-drop-right-line', 'ri-arrow-go-back-line', 'ri-arrow-go-forward-line'
+          ]
+        },
+        {
+          name: 'Buildings 建築',
+          groupIcon: 'ri-building-2-line',
+          icons: [
+            'ri-building-line', 'ri-building-2-line', 'ri-building-3-line', 'ri-building-4-line',
+            'ri-hotel-line', 'ri-community-line', 'ri-government-line', 'ri-bank-line',
+            'ri-store-2-line', 'ri-hospital-line'
+          ]
+        },
+        {
+          name: 'Business 商務',
+          groupIcon: 'ri-briefcase-4-line',
+          icons: [
+            'ri-briefcase-line', 'ri-briefcase-2-line', 'ri-briefcase-4-line', 'ri-calculator-line',
+            'ri-calendar-check-line', 'ri-mail-send-line', 'ri-presentation-line', 'ri-pie-chart-line',
+            'ri-bar-chart-line', 'ri-line-chart-line'
+          ]
+        },
+        {
+          name: 'Communication 通訊',
+          groupIcon: 'ri-chat-1-line',
+          icons: [
+            'ri-message-2-line', 'ri-message-3-line', 'ri-chat-1-line', 'ri-chat-2-line',
+            'ri-chat-3-line', 'ri-chat-4-line', 'ri-discuss-line', 'ri-question-answer-line',
+            'ri-questionnaire-line', 'ri-chat-voice-line'
+          ]
+        },
+        {
+          name: 'Design 設計',
+          groupIcon: 'ri-pencil-ruler-2-line',
+          icons: [
+            'ri-pencil-ruler-2-line', 'ri-paint-brush-line', 'ri-contrast-2-line', 'ri-crop-2-line',
+            'ri-drag-move-2-line', 'ri-edit-2-line', 'ri-focus-2-line', 'ri-mark-pen-line',
+            'ri-palette-line', 'ri-pantone-line'
+          ]
+        },
+        {
+          name: 'Development 開發',
+          groupIcon: 'ri-code-s-slash-line',
+          icons: [
+            'ri-code-line', 'ri-code-s-line', 'ri-code-s-slash-line', 'ri-code-box-line',
+            'ri-terminal-box-line', 'ri-bug-2-line', 'ri-git-branch-line', 'ri-git-commit-line',
+            'ri-git-merge-line', 'ri-git-pull-request-line'
+          ]
+        },
+        {
+          name: 'Document 文件',
+          groupIcon: 'ri-file-list-2-line',
+          icons: [
+            'ri-file-line', 'ri-file-text-line', 'ri-file-list-line', 'ri-file-copy-line',
+            'ri-file-pdf-line', 'ri-file-word-line', 'ri-file-excel-line', 'ri-file-ppt-line',
+            'ri-folder-line', 'ri-folder-open-line'
+          ]
+        },
+        {
+          name: 'Food 食物',
+          groupIcon: 'ri-restaurant-2-line',
+          icons: [
+            'ri-restaurant-line', 'ri-restaurant-2-line', 'ri-cup-line', 'ri-goblet-line',
+            'ri-cake-3-line', 'ri-bread-line',  'ri-beer-line',
+            'ri-knife-line', 'ri-cooking-pot-line'
+          ]
+        },
+        {
+          name: 'Health & Medical 醫療',
+          groupIcon: 'ri-heart-pulse-line',
+          icons: [
+            'ri-heart-pulse-line', 'ri-heart-2-line', 'ri-mental-health-line', 'ri-capsule-line',
+            'ri-medicine-bottle-line', 'ri-microscope-line', 'ri-nurse-line', 'ri-pulse-line',
+            'ri-stethoscope-line', 'ri-syringe-line'
+          ]
+        },
+        {
+          name: 'Logos 品牌',
+          groupIcon: 'ri-github-line',
+          icons: [
+            'ri-github-line', 'ri-google-line', 'ri-facebook-line', 'ri-twitter-line',
+            'ri-instagram-line', 'ri-linkedin-line', 'ri-youtube-line', 'ri-discord-line',
+            'ri-telegram-line', 'ri-slack-line'
+          ]
+        },
+        {
+          name: 'Map 地圖',
+          groupIcon: 'ri-map-pin-2-line',
+          icons: [
+            'ri-map-pin-line', 'ri-map-2-line', 'ri-compass-3-line', 'ri-navigation-line',
+            'ri-route-line', 'ri-guide-line', 'ri-earth-line', 'ri-global-line',
+            'ri-planet-line', 'ri-flight-takeoff-line'
+          ]
+        },
+        {
+          name: 'Media 媒體',
+          groupIcon: 'ri-film-line',
+          icons: [
+            'ri-film-line', 'ri-video-line', 'ri-movie-2-line', 'ri-play-circle-line',
+            'ri-music-2-line', 'ri-volume-up-line', 'ri-camera-3-line', 'ri-image-line',
+            'ri-gallery-line', 'ri-broadcast-line'
+          ]
+        },
+        {
+          name: 'System 系統',
+          groupIcon: 'ri-settings-3-line',
+          icons: [
+            'ri-settings-line', 'ri-settings-2-line', 'ri-settings-3-line', 'ri-settings-4-line',
+            'ri-dashboard-line', 'ri-database-2-line', 'ri-server-line', 'ri-cloud-line',
+            'ri-shield-line', 'ri-lock-line'
+          ]
+        },
+        {
+          name: 'User & Faces 用戶',
+          groupIcon: 'ri-user-3-line',
+          icons: [
+            'ri-user-line', 'ri-user-2-line', 'ri-user-3-line', 'ri-user-4-line',
+            'ri-user-settings-line', 'ri-user-search-line', 'ri-team-line', 'ri-group-line',
+            'ri-user-heart-line', 'ri-user-star-line'
+          ]
+        },
+        {
+          name: 'Git 版控',
+          groupIcon: 'ri-git-repository-line',
+          icons: [
+            'ri-git-repository-line', 'ri-git-repository-private-line', 'ri-git-branch-line',
+            'ri-git-commit-line', 'ri-git-merge-line', 'ri-git-pull-request-line',
+            'ri-git-repository-commits-line', 'ri-github-line', 'ri-gitlab-line', 'ri-git-fork-line'
+          ]
+        },
+        {
+          name: 'Others 其他',
+          groupIcon: 'ri-apps-2-line',
+          icons: [
+            'ri-apps-2-line', 'ri-more-2-line', 'ri-menu-2-line', 'ri-function-line',
+            'ri-command-line', 'ri-brush-line', 'ri-magic-line', 'ri-tools-line',
+            'ri-box-3-line', 'ri-plug-2-line'
+          ]
+        },
+        {
+          name: 'Robot & AI 機器人',
+          groupIcon: 'ri-robot-2-line',
+          icons: [
+            'ri-robot-line', 'ri-robot-2-line', 'ri-robot-3-line', 'ri-ai-generate',
+            'ri-brain-line', 'ri-cpu-line',  'ri-code-box-line',
+            'ri-android-line', 'ri-openai-line'
+          ]
+        },
     ]
 
     // 獲取當前分類的圖示
     const getCurrentCategoryIcons = computed(() => {
-      const category = iconCategories.find(c => c.name === selectedCategory.value)
+      const category = iconGroups.find(c => c.name === selectedCategory.value)
       return category ? category.icons : []
     })
 
@@ -471,7 +586,7 @@ export default {
       batchDeleteBots,
       saveBot,
       closeModal,
-      iconCategories,
+      iconGroups,
       selectedCategory,
       getCurrentCategoryIcons,
       selectIcon

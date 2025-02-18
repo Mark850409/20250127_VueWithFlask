@@ -124,94 +124,143 @@
 
     <!-- 新增/編輯選單彈窗 -->
     <div v-if="showAddModal" 
-         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div class="bg-white rounded-xl p-8 w-full max-w-md">
-        <h2 class="text-xl font-bold mb-6">
-          {{ editingMenu ? '編輯選單' : isSubmenu ? '新增子選單' : '新增主選單' }}
-        </h2>
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">選單名稱</label>
-            <input type="text" v-model="menuForm.name" 
-                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">選單類別</label>
-            <select v-model="menuForm.category" 
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                    @change="handleCategoryChange">
-              <option value="">請選擇類別</option>
-              <option v-for="category in categories" 
-                      :key="category" 
-                      :value="category">
-                {{ category }}
-              </option>
-              <option value="new">+ 新增類別</option>
-            </select>
-          </div>
-          <!-- 新增類別的輸入框 -->
-          <div v-if="menuForm.category === 'new'">
-            <label class="block text-sm font-medium text-gray-700 mb-2">新類別名稱</label>
-            <input type="text" v-model="newCategory" 
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">路徑</label>
-            <input type="text" v-model="menuForm.path" 
-                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">圖示</label>
-            <div class="flex space-x-2">
-              <input type="text" v-model="menuForm.icon" 
-                     class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-              <button @click="showIconPicker = true"
-                      class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
-                <i class="fas fa-icons"></i>
+        class="fixed inset-0 z-[9999]">
+      <!-- 背景遮罩 -->
+      <div class="fixed inset-0 bg-black bg-opacity-50"></div>
+      
+      <!-- Modal 內容 -->
+      <div class="fixed inset-0 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4">
+          <div class="relative bg-white rounded-lg shadow-lg w-full max-w-md">
+            <!-- Modal 標題 -->
+            <div class="flex justify-between items-center px-6 py-4 border-b">
+              <h3 class="text-lg font-semibold">
+                {{ editingMenu ? '編輯選單' : isSubmenu ? '新增子選單' : '新增主選單' }}
+              </h3>
+              <button @click="closeModal" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <!-- Modal 內容 -->
+            <div class="px-6 py-4 space-y-4 max-h-[calc(85vh-8rem)] overflow-y-auto">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  選單名稱 <span class="text-red-500">*</span>
+                </label>
+                <input type="text" 
+                       v-model="menuForm.name"
+                       :class="{'border-red-500': errors.title}"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <span v-if="errors.title" class="text-red-500 text-xs mt-1">{{ errors.title }}</span>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  選單類別 <span class="text-red-500">*</span>
+                </label>
+                <select v-model="menuForm.category" 
+                        :class="{'border-red-500': errors.category, 'w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500': true}"
+                        @change="handleCategoryChange">
+                  <option value="">請選擇類別</option>
+                  <option v-for="category in categories" 
+                          :key="category" 
+                          :value="category">
+                    {{ category }}
+                  </option>
+                  <option value="new">+ 新增類別</option>
+                </select>
+                <span v-if="errors.category" class="text-red-500 text-xs mt-1">{{ errors.category }}</span>
+              </div>
+              <!-- 新增類別的輸入框 -->
+              <div v-if="menuForm.category === 'new'">
+                <label class="block text-sm font-medium text-gray-700 mb-2">新類別名稱</label>
+                <input type="text" v-model="newCategory" 
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  路徑 <span class="text-red-500">*</span>
+                </label>
+                <input type="text" 
+                       v-model="menuForm.path" 
+                       :class="{'border-red-500': errors.path, 'w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500': true}">
+                <span v-if="errors.path" class="text-red-500 text-xs mt-1">{{ errors.path }}</span>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  圖示 <span class="text-red-500">*</span>
+                </label>
+                <div class="flex space-x-2">
+                  <input type="text" 
+                         v-model="menuForm.icon" 
+                         :class="{'border-red-500': errors.icon, 'flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500': true}">
+                  <button @click="showIconPicker = true"
+                          class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+                    <i class="fas fa-icons"></i>
+                  </button>
+                </div>
+                <span v-if="errors.icon" class="text-red-500 text-xs mt-1">{{ errors.icon }}</span>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">描述</label>
+                <textarea v-model="menuForm.description" rows="3"
+                          class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+              </div>
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  狀態
+                </label>
+                <select v-model="menuForm.status"
+                        class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="active">啟用</option>
+                  <option value="disabled">停用</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Modal 底部按鈕 -->
+            <div class="px-6 py-4 bg-gray-50 border-t rounded-b-lg flex justify-end space-x-3">
+              <button @click="closeModal" 
+                      class="px-4 py-2 text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors">
+                取消
+              </button>
+              <button @click="saveMenu" 
+                      class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+                確認
               </button>
             </div>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">描述</label>
-            <textarea v-model="menuForm.description" rows="3"
-                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
-          </div>
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              狀態
-            </label>
-            <select v-model="menuForm.status"
-                    class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="active">啟用</option>
-              <option value="disabled">停用</option>
-            </select>
-          </div>
-        </div>
-        <div class="mt-8 flex justify-end space-x-4">
-          <button @click="closeModal" 
-                  class="px-4 py-2 text-gray-700 border rounded-lg hover:bg-gray-50">
-            取消
-          </button>
-          <button @click="saveMenu" 
-                  class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-            確認
-          </button>
         </div>
       </div>
     </div>
 
     <!-- 圖示選擇器 -->
     <div v-if="showIconPicker"
-         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div class="bg-white rounded-xl p-6 w-full max-w-2xl">
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[99999]">
+      <div class="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col relative z-[100000]">
         <h3 class="text-lg font-bold mb-4">選擇圖示</h3>
-        <div class="grid grid-cols-8 gap-4 max-h-96 overflow-y-auto">
-          <button v-for="icon in commonIcons" 
+        <div class="flex-1 overflow-y-auto">
+          <!-- 圖示分類 -->
+          <div v-for="(group, index) in iconGroups" 
+               :key="index" 
+               class="mb-6">
+            <h4 class="text-sm font-medium text-gray-700 mb-3 px-2 flex items-center">
+              <i :class="group.groupIcon" class="mr-2 text-blue-500"></i>
+              {{ group.name }}
+            </h4>
+            <div class="grid grid-cols-8 gap-3">
+              <button v-for="icon in group.icons"
                   :key="icon"
                   @click="selectIcon(icon)"
-                  class="p-3 hover:bg-gray-100 rounded-lg text-xl">
+                      class="p-3 hover:bg-blue-50 rounded-lg text-xl relative group/icon">
             <i :class="icon"></i>
+                <span class="absolute bottom-0 left-1/2 -translate-x-1/2 transform px-2 py-1 bg-gray-800 text-white text-xs rounded 
+                           opacity-0 group-hover/icon:opacity-100 transition-opacity whitespace-nowrap">
+                  {{ icon }}
+                </span>
           </button>
+            </div>
+          </div>
         </div>
         <div class="mt-6 flex justify-end">
           <button @click="showIconPicker = false" 
@@ -257,6 +306,12 @@ export default defineComponent({
       menus: [],
       menuSections: [],
       isUpdatingOrder: false,
+      errors: {
+        title: '',
+        path: '',
+        icon: '',
+        category: ''
+      },
       menuForm: {
         name: '',
         path: '',
@@ -265,46 +320,160 @@ export default defineComponent({
         status: 'active',
         category: ''
       },
-      commonIcons: [
-        // 導航和基礎圖示
-        'fas fa-home', 'fas fa-dashboard', 'fas fa-compass', 'fas fa-map',
-        'fas fa-bars', 'fas fa-th-large', 'fas fa-th-list', 'fas fa-list',
-        
-        // 系統和設置
-        'fas fa-cog', 'fas fa-wrench', 'fas fa-tools', 'fas fa-sliders-h',
-        'fas fa-database', 'fas fa-server', 'fas fa-shield-alt', 'fas fa-lock',
-        
-        // 用戶和人員
-        'fas fa-user', 'fas fa-users', 'fas fa-user-circle', 'fas fa-user-cog',
-        'fas fa-user-shield', 'fas fa-user-tie', 'fas fa-user-tag', 'fas fa-id-card',
-        
-        // 商務和金融
-        'fas fa-shopping-cart', 'fas fa-cash-register', 'fas fa-credit-card', 'fas fa-wallet',
-        'fas fa-dollar-sign', 'fas fa-chart-line', 'fas fa-chart-bar', 'fas fa-chart-pie',
-        
-        // 通訊和社交
-        'fas fa-envelope', 'fas fa-comment', 'fas fa-comments', 'fas fa-bell',
-        'fas fa-phone', 'fas fa-video', 'fas fa-share-alt', 'fas fa-rss',
-        
-        // 文件和編輯
-        'fas fa-file', 'fas fa-file-alt', 'fas fa-folder', 'fas fa-folder-open',
-        'fas fa-edit', 'fas fa-pen', 'fas fa-trash', 'fas fa-copy',
-        
-        // 餐飲和服務
-        'fas fa-utensils', 'fas fa-coffee', 'fas fa-glass-cheers', 'fas fa-hamburger',
-        'fas fa-pizza-slice', 'fas fa-wine-glass', 'fas fa-concierge-bell', 'fas fa-cookie',
-        
-        // 其他實用圖示
-        'fas fa-star', 'fas fa-heart', 'fas fa-bookmark', 'fas fa-tag',
-        'fas fa-gift', 'fas fa-trophy', 'fas fa-crown', 'fas fa-award',
-        
-        // 箭頭和導航
-        'fas fa-arrow-right', 'fas fa-arrow-left', 'fas fa-chevron-right', 'fas fa-chevron-down',
-        'fas fa-plus', 'fas fa-minus', 'fas fa-times', 'fas fa-check',
-        
-        // 時間和日期
-        'fas fa-clock', 'fas fa-calendar', 'fas fa-calendar-alt', 'fas fa-history',
-        'fas fa-hourglass', 'fas fa-stopwatch', 'fas fa-bell-slash', 'fas fa-sync'
+      iconGroups: [
+        {
+          name: 'Arrow 箭頭',
+          groupIcon: 'ri-arrow-right-line',
+          icons: [
+            'ri-arrow-left-line', 'ri-arrow-right-line', 'ri-arrow-up-line', 'ri-arrow-down-line',
+            'ri-arrow-left-right-line', 'ri-arrow-up-down-line', 'ri-arrow-drop-left-line',
+            'ri-arrow-drop-right-line', 'ri-arrow-go-back-line', 'ri-arrow-go-forward-line'
+          ]
+        },
+        {
+          name: 'Buildings 建築',
+          groupIcon: 'ri-building-2-line',
+          icons: [
+            'ri-building-line', 'ri-building-2-line', 'ri-building-3-line', 'ri-building-4-line',
+            'ri-hotel-line', 'ri-community-line', 'ri-government-line', 'ri-bank-line',
+            'ri-store-2-line', 'ri-hospital-line'
+          ]
+        },
+        {
+          name: 'Business 商務',
+          groupIcon: 'ri-briefcase-4-line',
+          icons: [
+            'ri-briefcase-line', 'ri-briefcase-2-line', 'ri-briefcase-4-line', 'ri-calculator-line',
+            'ri-calendar-check-line', 'ri-mail-send-line', 'ri-presentation-line', 'ri-pie-chart-line',
+            'ri-bar-chart-line', 'ri-line-chart-line'
+          ]
+        },
+        {
+          name: 'Communication 通訊',
+          groupIcon: 'ri-chat-1-line',
+          icons: [
+            'ri-message-2-line', 'ri-message-3-line', 'ri-chat-1-line', 'ri-chat-2-line',
+            'ri-chat-3-line', 'ri-chat-4-line', 'ri-discuss-line', 'ri-question-answer-line',
+            'ri-questionnaire-line', 'ri-chat-voice-line'
+          ]
+        },
+        {
+          name: 'Design 設計',
+          groupIcon: 'ri-pencil-ruler-2-line',
+          icons: [
+            'ri-pencil-ruler-2-line', 'ri-paint-brush-line', 'ri-contrast-2-line', 'ri-crop-2-line',
+            'ri-drag-move-2-line', 'ri-edit-2-line', 'ri-focus-2-line', 'ri-mark-pen-line',
+            'ri-palette-line', 'ri-pantone-line'
+          ]
+        },
+        {
+          name: 'Development 開發',
+          groupIcon: 'ri-code-s-slash-line',
+          icons: [
+            'ri-code-line', 'ri-code-s-line', 'ri-code-s-slash-line', 'ri-code-box-line',
+            'ri-terminal-box-line', 'ri-bug-2-line', 'ri-git-branch-line', 'ri-git-commit-line',
+            'ri-git-merge-line', 'ri-git-pull-request-line'
+          ]
+        },
+        {
+          name: 'Document 文件',
+          groupIcon: 'ri-file-list-2-line',
+          icons: [
+            'ri-file-line', 'ri-file-text-line', 'ri-file-list-line', 'ri-file-copy-line',
+            'ri-file-pdf-line', 'ri-file-word-line', 'ri-file-excel-line', 'ri-file-ppt-line',
+            'ri-folder-line', 'ri-folder-open-line'
+          ]
+        },
+        {
+          name: 'Food 食物',
+          groupIcon: 'ri-restaurant-2-line',
+          icons: [
+            'ri-restaurant-line', 'ri-restaurant-2-line', 'ri-cup-line', 'ri-goblet-line',
+            'ri-cake-3-line', 'ri-bread-line',  'ri-beer-line',
+            'ri-knife-line', 'ri-cooking-pot-line'
+          ]
+        },
+        {
+          name: 'Health & Medical 醫療',
+          groupIcon: 'ri-heart-pulse-line',
+          icons: [
+            'ri-heart-pulse-line', 'ri-heart-2-line', 'ri-mental-health-line', 'ri-capsule-line',
+            'ri-medicine-bottle-line', 'ri-microscope-line', 'ri-nurse-line', 'ri-pulse-line',
+            'ri-stethoscope-line', 'ri-syringe-line'
+          ]
+        },
+        {
+          name: 'Logos 品牌',
+          groupIcon: 'ri-github-line',
+          icons: [
+            'ri-github-line', 'ri-google-line', 'ri-facebook-line', 'ri-twitter-line',
+            'ri-instagram-line', 'ri-linkedin-line', 'ri-youtube-line', 'ri-discord-line',
+            'ri-telegram-line', 'ri-slack-line'
+          ]
+        },
+        {
+          name: 'Map 地圖',
+          groupIcon: 'ri-map-pin-2-line',
+          icons: [
+            'ri-map-pin-line', 'ri-map-2-line', 'ri-compass-3-line', 'ri-navigation-line',
+            'ri-route-line', 'ri-guide-line', 'ri-earth-line', 'ri-global-line',
+            'ri-planet-line', 'ri-flight-takeoff-line'
+          ]
+        },
+        {
+          name: 'Media 媒體',
+          groupIcon: 'ri-film-line',
+          icons: [
+            'ri-film-line', 'ri-video-line', 'ri-movie-2-line', 'ri-play-circle-line',
+            'ri-music-2-line', 'ri-volume-up-line', 'ri-camera-3-line', 'ri-image-line',
+            'ri-gallery-line', 'ri-broadcast-line'
+          ]
+        },
+        {
+          name: 'System 系統',
+          groupIcon: 'ri-settings-3-line',
+          icons: [
+            'ri-settings-line', 'ri-settings-2-line', 'ri-settings-3-line', 'ri-settings-4-line',
+            'ri-dashboard-line', 'ri-database-2-line', 'ri-server-line', 'ri-cloud-line',
+            'ri-shield-line', 'ri-lock-line'
+          ]
+        },
+        {
+          name: 'User & Faces 用戶',
+          groupIcon: 'ri-user-3-line',
+          icons: [
+            'ri-user-line', 'ri-user-2-line', 'ri-user-3-line', 'ri-user-4-line',
+            'ri-user-settings-line', 'ri-user-search-line', 'ri-team-line', 'ri-group-line',
+            'ri-user-heart-line', 'ri-user-star-line'
+          ]
+        },
+        {
+          name: 'Git 版控',
+          groupIcon: 'ri-git-repository-line',
+          icons: [
+            'ri-git-repository-line', 'ri-git-repository-private-line', 'ri-git-branch-line',
+            'ri-git-commit-line', 'ri-git-merge-line', 'ri-git-pull-request-line',
+            'ri-git-repository-commits-line', 'ri-github-line', 'ri-gitlab-line', 'ri-git-fork-line'
+          ]
+        },
+        {
+          name: 'Others 其他',
+          groupIcon: 'ri-apps-2-line',
+          icons: [
+            'ri-apps-2-line', 'ri-more-2-line', 'ri-menu-2-line', 'ri-function-line',
+            'ri-command-line', 'ri-brush-line', 'ri-magic-line', 'ri-tools-line',
+            'ri-box-3-line', 'ri-plug-2-line'
+          ]
+        },
+        {
+          name: 'Robot & AI 機器人',
+          groupIcon: 'ri-robot-2-line',
+          icons: [
+            'ri-robot-line', 'ri-robot-2-line', 'ri-robot-3-line', 'ri-ai-generate',
+            'ri-brain-line', 'ri-cpu-line',  'ri-code-box-line',
+            'ri-android-line', 'ri-openai-line'
+          ]
+        },
       ],
       // 預設類別和路徑的映射
       categoryPathMap: {
@@ -348,6 +517,37 @@ export default defineComponent({
         }))
         return acc
       }, {})
+    }
+  },
+  watch: {
+    // 即時驗證
+    'menuForm.name'(val) {
+      if (!val) {
+        this.errors.title = '請輸入選單名稱'
+      } else {
+        this.errors.title = ''
+      }
+    },
+    'menuForm.path'(val) {
+      if (!val) {
+        this.errors.path = '請輸入路徑'
+      } else {
+        this.errors.path = ''
+      }
+    },
+    'menuForm.icon'(val) {
+      if (!val) {
+        this.errors.icon = '請選擇圖示'
+      } else {
+        this.errors.icon = ''
+      }
+    },
+    'menuForm.category'(val) {
+      if (!val) {
+        this.errors.category = '請選擇類別'
+      } else {
+        this.errors.category = ''
+      }
     }
   },
   methods: {
@@ -445,24 +645,9 @@ export default defineComponent({
     },
     async saveMenu() {
       // 表單驗證
-      const errors = []
-      if (!this.menuForm.name?.trim()) {
-        errors.push('選單名稱不能為空')
-      }
-      if (!this.menuForm.path?.trim()) {
-        errors.push('路徑不能為空')
-      }
-      if (!this.menuForm.icon?.trim()) {
-        errors.push('圖示不能為空')
-      }
+      const isValid = this.validateForm()
       
-      if (errors.length > 0) {
-        await Swal.fire({
-          icon: 'warning',
-          title: '表單驗證錯誤',
-          html: errors.join('<br>'),
-          confirmButtonText: '確定'
-        })
+      if (!isValid) {
         return
       }
 
@@ -570,7 +755,32 @@ export default defineComponent({
     },
     closeModal() {
       this.showAddModal = false
-      this.resetForm()
+      // 重置表單
+      this.menuForm = {
+        name: '',
+        path: '',
+        icon: '',
+        description: '',
+        status: 'active',
+        category: ''
+      }
+      // 重置錯誤訊息
+      this.errors = {
+        title: '',
+        path: '',
+        icon: '',
+        category: ''
+      }
+      // 重置其他狀態
+      this.editingMenu = null
+      this.isSubmenu = false
+      this.parentMenu = null
+      this.newCategory = ''
+      // 清空所有錯誤提示的 border 樣式
+      const inputs = document.querySelectorAll('.border-red-500')
+      inputs.forEach(input => {
+        input.classList.remove('border-red-500')
+      })
     },
     async onDragChange(evt) {
       if (!evt.moved && !evt.added && !evt.removed) return
@@ -738,6 +948,42 @@ export default defineComponent({
     // 獲取該類別下的選單數量
     getMenuCountByCategory(category) {
       return this.menus.filter(menu => menu.category === category).length
+    },
+    validateForm() {
+      this.errors = {
+        title: '',
+        path: '',
+        icon: '',
+        category: ''
+      }
+      
+      let isValid = true
+      
+      // 驗證選單名稱
+      if (!this.menuForm.name) {
+        this.errors.title = '請輸入選單名稱'
+        isValid = false
+      }
+      
+      // 驗證路徑
+      if (!this.menuForm.path) {
+        this.errors.path = '請輸入路徑'
+        isValid = false
+      }
+      
+      // 驗證圖示
+      if (!this.menuForm.icon) {
+        this.errors.icon = '請選擇圖示'
+        isValid = false
+      }
+      
+      // 驗證類別
+      if (!this.menuForm.category) {
+        this.errors.category = '請選擇類別'
+        isValid = false
+      }
+      
+      return isValid
     },
   },
   async mounted() {

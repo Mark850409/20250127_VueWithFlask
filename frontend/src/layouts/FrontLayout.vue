@@ -12,6 +12,9 @@
       </router-view>
     </main>
 
+        <!-- 在最外層 div 結尾前添加 AI 聊天助手 -->
+    <AIChatAssistant />
+
     <!-- 前台 Footer -->
     <Footer />
   </div>
@@ -20,12 +23,65 @@
 <script>
 import Navbar from '../components/common/Navbar.vue'
 import Footer from '../components/common/Footer.vue'
+import AIChatAssistant from '../components/chat/AIChatAssistant.vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import axios from '@/utils/axios'
 
 export default {
   name: 'FrontLayout',
   components: {
     Navbar,
-    Footer
+    Footer,
+    AIChatAssistant
+  },
+  setup() {
+    const authStore = useAuthStore()
+    let tokenCheckInterval = null
+
+    // 檢查登入狀態和 token 有效性
+    const checkLoginStatus = async () => {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        authStore.isLoggedIn = false
+        return
+      }
+
+      try {
+        // 驗證 token 有效性
+        const response = await axios.get('/users/verify')
+        if (response.status === 200) {
+          authStore.isLoggedIn = true
+        }
+      } catch (error) {
+        console.error('Token 驗證失敗:', error)
+        localStorage.removeItem('token')
+        authStore.isLoggedIn = false
+      }
+    }
+
+    onMounted(() => {
+      // 初始檢查
+      checkLoginStatus()
+      
+      // 設定每小時檢查一次
+      tokenCheckInterval = setInterval(checkLoginStatus, 3600000)
+      
+      // 監聽 localStorage 變化
+      window.addEventListener('storage', checkLoginStatus)
+    })
+
+    // 組件卸載時清理定時器
+    onUnmounted(() => {
+      if (tokenCheckInterval) {
+        clearInterval(tokenCheckInterval)
+      }
+      window.removeEventListener('storage', checkLoginStatus)
+    })
+
+    return {
+      checkLoginStatus
+    }
   },
   mounted() {
     // 添加滾動監聽

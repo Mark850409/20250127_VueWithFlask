@@ -1,34 +1,46 @@
 <template>
-  <div class="min-h-screen max-w-4xl mx-auto px-4">
+  <div class="space-y-6">
+    <!-- 頂部工具列 -->
     <!-- 頁籤切換 -->
-    <div class="mb-6 bg-white/50 backdrop-blur-sm rounded-xl shadow-sm overflow-hidden border border-white/20">
-      <nav class="flex">
-        <button v-for="tab in tabs" 
-                :key="tab.key"
-                @click="currentTab = tab.key"
-                :class="[
-                  'flex-1 px-6 py-4 text-sm font-medium transition-all duration-200 border-b-2 flex items-center justify-center space-x-2',
-                  currentTab === tab.key 
-                    ? 'text-blue-600 border-blue-600' 
-                    : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300'
-                ]">
-          <i :class="tab.icon"></i>
-          <span>{{ tab.name }}</span>
-        </button>
-      </nav>
+    <div class="bg-white rounded-lg shadow-sm p-4">
+      <div class="flex flex-col space-y-4">
+        <!-- 標題和頁籤 -->
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-bold text-gray-800">知識庫管理</h2>
+        </div>
+        
+        <!-- 分隔線 -->
+        <div class="border-b border-gray-200"></div>
+        
+        <!-- 頁籤區域 -->
+        <div class="flex space-x-1">
+          <button v-for="tab in tabs"
+                  :key="tab.key"
+                  @click="currentTab = tab.key"
+                  :class="[
+                    'px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-2',
+                    currentTab === tab.key
+                      ? 'bg-blue-50 text-blue-600 shadow-sm border border-blue-200'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
+                  ]">
+            <i :class="tab.icon"></i>
+            <span>{{ tab.name }}</span>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- 知識庫上傳 -->
     <div v-if="currentTab === 'upload'" 
-         class="bg-white/50 backdrop-blur-sm rounded-xl shadow-sm overflow-hidden border border-white/20">
+         class="bg-white rounded-lg shadow-sm overflow-hidden">
       <!-- 表單標題 -->
-      <div class="px-8 py-6 border-b border-gray-100/50 bg-white/80 transition-all duration-300">
+      <div class="px-6 py-4 border-b border-gray-200">
         <h2 class="text-xl font-semibold text-gray-800">上傳知識庫文件</h2>
         <p class="mt-1 text-sm text-gray-500">請填寫必要資訊並選擇要上傳的檔案</p>
       </div>
 
-      <div class="p-8 bg-white/80 transition-all duration-300">
-        <div class="grid gap-8">
+      <div class="p-6">
+        <div class="grid gap-6">
           <!-- 知識庫流程ID -->
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-700 required-field">
@@ -39,7 +51,7 @@
               <input type="text"
                      v-model="uploadForm.flowId"
                      placeholder="請輸入知識庫流程ID"
-                     class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
+                     class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             </div>
           </div>
 

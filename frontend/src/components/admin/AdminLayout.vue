@@ -9,9 +9,9 @@
       <!-- Logo -->
       <div class="flex-shrink-0 flex items-center justify-between h-16 border-b dark:border-gray-700 px-4 md:px-6">
         <div class="flex items-center">
-          <i class="fas fa-utensils text-2xl text-indigo-600 dark:text-indigo-400"></i>
+          <i class="ri-drinks-2-line text-2xl text-indigo-600 dark:text-indigo-400"></i>
           <span class="ml-3 text-base md:text-xl font-semibold text-gray-900 dark:text-white truncate max-w-[200px] lg:max-w-none">
-            點餐系統後台
+            今天喝什麼呢?
           </span>
         </div>
         <!-- 手機版關閉按鈕 -->
@@ -32,10 +32,10 @@
                @error="handleAvatarError">
           <div class="overflow-hidden w-full">
             <div class="text-base md:text-lg font-medium text-indigo-600 dark:text-indigo-400 mb-1">
-              Hello ! {{ userInfo.username }}
+              嗨 ~ {{ userInfo.username }} 你好
             </div>
             <div class="text-xs md:text-sm text-gray-500 dark:text-gray-400">
-              Welcome To Your Dashboard
+              歡迎使用後台管理系統
             </div>
           </div>
         </div>
@@ -60,7 +60,7 @@
                 : 'text-gray-700 hover:bg-gray-50'
             ]">
             <div class="flex-shrink-0 w-6">
-              <i class="fas fa-home text-lg"></i>
+              <i class="ri-dashboard-3-line"></i>
             </div>
             <div class="ml-3 flex-1" v-if="!isSidebarCollapsed">
               <div>儀錶板管理</div>
@@ -124,7 +124,7 @@
       <div v-show="!isSidebarCollapsed" class="flex-shrink-0 p-4 border-t dark:border-gray-700">
         <button @click="logout" 
           class="flex items-center justify-center w-full px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-          <i class="fas fa-sign-out-alt text-lg w-6"></i>
+          <i class="ri-logout-box-r-line text-lg w-6"></i>
           <span class="ml-3">登出</span>
         </button>
       </div>
@@ -174,7 +174,7 @@
     </div>
 
     <!-- 手機版側邊欄遮罩 -->
-    <div v-if="!isSidebarCollapsed && window.innerWidth < 768"
+    <div v-if="!isSidebarCollapsed && windowWidth < 768"
          class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30"
          @click="toggleSidebar">
     </div>
@@ -201,47 +201,82 @@ export default {
     const router = useRouter()
     const tokenExpireTime = ref(null)
     const remainingTime = ref(0)
-    let timerInterval = null
-    let tokenCheckInterval = null
+    const timerInterval = ref(null)
+    const tokenCheckInterval = ref(null)
     const menus = ref([])
     const loading = ref(false)
+    const openMenus = ref({})
+    const isSidebarCollapsed = ref(false)
+    const isSidebarVisible = ref(true)
+    const userInfo = ref({
+      username: '',
+      email: '',
+      avatar: ''
+    })
+    const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
+    const windowWidth = ref(window.innerWidth)
 
     // 開始計時器
     const startExpirationTimer = () => {
-      // 從 .env 檔案讀取過期時間，預設一天
-      const expiresIn = parseInt(import.meta.env.VITE_JWT_EXPIRES_IN || '86400')
-      console.log('Token 過期時間設定為:', expiresIn, '秒')
+      // 從 localStorage 獲取登入時間戳
+      const loginTime = localStorage.getItem('loginTime')
+      if (!loginTime) {
+        // 如果沒有登入時間，記錄當前時間
+        localStorage.setItem('loginTime', Date.now().toString())
+      }
       
-      tokenExpireTime.value = Date.now() + (expiresIn * 1000)
-      remainingTime.value = expiresIn
-
-      // 清除舊的計時器
-      if (timerInterval) clearInterval(timerInterval)
-      if (tokenCheckInterval) clearInterval(tokenCheckInterval)
-
+      // 計算剩餘秒數
+      const currentTime = Date.now()
+      const loginTimeStamp = parseInt(localStorage.getItem('loginTime'))
+      const elapsedSeconds = Math.floor((currentTime - loginTimeStamp) / 1000)
+      const totalSeconds = Math.floor(import.meta.env.VITE_JWT_EXPIRES_IN)  // 一天的秒數
+      const remainingSeconds = Math.max(0, totalSeconds - elapsedSeconds)
+      
+      console.log('登入時間:', new Date(loginTimeStamp).toLocaleString())
+      console.log('當前時間:', new Date(currentTime).toLocaleString())
+      console.log('已經過時間:', elapsedSeconds, '秒')
+      console.log('剩餘時間:', remainingSeconds, '秒')
+      
+      // 如果已經過期，執行登出
+      if (remainingSeconds <= 0) {
+        handleLogout()
+        return
+      }
+      
+      // 清除現有的計時器
+      if (timerInterval.value) clearInterval(timerInterval.value)
+      if (tokenCheckInterval.value) clearInterval(tokenCheckInterval.value)
+      
+      // 設置初始剩餘時間
+      remainingTime.value = remainingSeconds
+      
       // 設置倒數計時器
-      timerInterval = setInterval(() => {
-        const now = Date.now()
-        const timeLeft = Math.max(0, Math.ceil((tokenExpireTime.value - now) / 1000))
-        remainingTime.value = timeLeft
-
-        if (timeLeft <= 0) {
-          clearInterval(timerInterval)
-          handleTokenExpiration()
+      timerInterval.value = setInterval(() => {
+        remainingTime.value--
+        if (remainingTime.value <= 0) {
+          clearInterval(timerInterval.value)
+          handleLogout()
         }
       }, 1000)
 
-      // 設置 token 檢查計時器 (每小時檢查一次)
-      tokenCheckInterval = setInterval(async () => {
+      // 設置 token 檢查計時器
+      tokenCheckInterval.value = setInterval(async () => {
         try {
-          console.log('執行每小時 token 檢查...')
+          console.log('執行token 檢查...')
           await axios.get('/users/verify')
           console.log('Token 驗證成功')
         } catch (error) {
-          console.error('Token 驗證失敗:', error)
-          await handleTokenExpiration()
+          // 只有在特定錯誤碼時才登出
+          if (error.response?.status === 401 || 
+              error.response?.data?.code === 403 ||
+              error.response?.data?.msg === 'permission error') {
+            console.error('Token 驗證失敗 (未授權):', error)
+            await handleLogout()
+          } else {
+            console.error('Token 驗證其他錯誤:', error)
+          }
         }
-      }, 3600000) // 3600000 毫秒 = 1 小時
+      }, parseInt(import.meta.env.VITE_CHECK_TOKEN_INTERVAL))  // 預設 1 小時
     }
 
     // 格式化時間
@@ -259,9 +294,12 @@ export default {
     }
 
     // 處理 token 過期
-    const handleTokenExpiration = async () => {
-      clearInterval(timerInterval)
-      clearInterval(tokenCheckInterval)
+    const handleLogout = async () => {
+      // 先清除計時器
+      clearInterval(timerInterval.value)
+      clearInterval(tokenCheckInterval.value)
+      timerInterval.value = null
+      tokenCheckInterval.value = null
       
       await Swal.fire({
         icon: 'warning',
@@ -271,8 +309,15 @@ export default {
         allowOutsideClick: false
       })
       
+      // 清除所有相關的 localStorage 項目
       localStorage.removeItem('token')
       localStorage.removeItem('user')
+      localStorage.removeItem('loginTime')
+      
+      // 重置計時相關的狀態
+      remainingTime.value = 0
+      tokenExpireTime.value = null
+      
       router.push('/login')
     }
 
@@ -302,7 +347,7 @@ export default {
         return true
       } catch (error) {
         console.error('Token 驗證失敗:', error)
-        await handleTokenExpiration()
+        await handleLogout()
         return false
       }
     }
@@ -314,13 +359,13 @@ export default {
     // 組件卸載時清理計時器
     onUnmounted(() => {
       console.log('組件卸載，清理計時器')
-      if (timerInterval) {
-        clearInterval(timerInterval)
-        timerInterval = null
+      if (timerInterval.value) {
+        clearInterval(timerInterval.value)
+        timerInterval.value = null
       }
-      if (tokenCheckInterval) {
-        clearInterval(tokenCheckInterval)
-        tokenCheckInterval = null
+      if (tokenCheckInterval.value) {
+        clearInterval(tokenCheckInterval.value)
+        tokenCheckInterval.value = null
       }
     })
 
@@ -329,23 +374,13 @@ export default {
       formatTime,
       startExpirationTimer,
       menus,
-      loading
-    }
-  },
-  data() {
-    return {
-      openMenus: {}, // 初始化為空對象
-      isSidebarCollapsed: false,
-      isSidebarVisible: true,
-      userInfo: {
-        username: '',
-        email: '',
-        avatar: ''
-      },
-      defaultAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=default',
-      window: {
-        innerWidth: 0
-      }
+      loading,
+      openMenus,
+      isSidebarCollapsed,
+      isSidebarVisible,
+      userInfo,
+      defaultAvatar,
+      windowWidth
     }
   },
   computed: {
@@ -495,6 +530,7 @@ export default {
           await axios.post('/users/logout')
           localStorage.removeItem('token')
           localStorage.removeItem('user')
+          localStorage.removeItem('loginTime')
           this.$router.push('/login')
           
           Swal.fire({
@@ -546,7 +582,7 @@ export default {
       }
     },
     handleWindowResize() {
-      this.window.innerWidth = window.innerWidth
+      this.windowWidth = window.innerWidth
       // 在大螢幕時展開，小螢幕時收合
       if (window.innerWidth >= 768) {
         this.isSidebarCollapsed = false
@@ -580,7 +616,7 @@ export default {
     this.getUserInfo()
     window.addEventListener('resize', this.handleResize)
     this.handleResize()
-    this.window.innerWidth = window.innerWidth
+    this.windowWidth = window.innerWidth
     window.addEventListener('resize', this.handleWindowResize)
     // 初始化時根據螢幕寬度設置側邊欄狀態
     this.handleWindowResize()

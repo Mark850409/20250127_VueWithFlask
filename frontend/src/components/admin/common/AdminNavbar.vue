@@ -7,14 +7,14 @@
           <!-- 漢堡選單按鈕 -->
           <button @click="$emit('toggle-sidebar')" 
                   class="p-2 rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none">
-            <i class="fas fa-bars text-xl"></i>
+            <i class="ri-menu-3-line text-xl"></i>
           </button>
           
           <!-- Logo -->
           <div class="ml-2 sm:ml-4 flex items-center">
-            <i class="fas fa-utensils text-2xl text-indigo-600 dark:text-indigo-400"></i>
+            <i class="ri-drinks-2-line text-2xl text-indigo-600 dark:text-indigo-400"></i>
             <span class="hidden md:block ml-3 font-semibold text-base lg:text-lg text-gray-900 dark:text-white truncate max-w-[200px] lg:max-w-none">
-              基於文字探勘與情感分析的推薦系統後台
+              今天喝什麼呢【後台管理系統】
             </span>
             <span class="md:hidden ml-3 font-semibold text-base text-gray-900 dark:text-white">
               推薦系統後台
@@ -23,15 +23,50 @@
         </div>
 
         <!-- 中間區域：計時器 -->
-        <div class="hidden sm:flex flex-1 justify-center items-center">
+        <!-- 桌面版計時器 -->
+        <div class="hidden md:flex flex-1 justify-center items-center">
           <div v-if="remainingTime > 0" 
-               class="inline-flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-indigo-500 to-blue-500 dark:from-indigo-400 dark:to-blue-400 
-                      text-white rounded-full shadow-md transition-all duration-300 
-                      hover:shadow-lg hover:from-indigo-600 hover:to-blue-600 dark:hover:from-indigo-500 dark:hover:to-blue-500">
-            <i class="fas fa-clock"></i>
-            <span class="font-medium">
-              登入時效：{{ formatTime(remainingTime) }}
-            </span>
+               class="group relative flex items-center gap-2 px-4 py-1.5 bg-white dark:bg-gray-700 
+                      border border-indigo-100 dark:border-gray-600 rounded-lg 
+                      shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="flex items-center gap-3">
+              <!-- 進度條背景 -->
+              <div class="absolute inset-0 bg-gradient-to-r from-indigo-100 to-blue-50 
+                          dark:from-indigo-900/30 dark:to-blue-900/20 rounded-lg transition-all duration-300
+                          group-hover:from-indigo-50 group-hover:to-blue-50
+                          dark:group-hover:from-indigo-800/30 dark:group-hover:to-blue-800/20">
+              </div>
+              <!-- 時鐘圖示 -->
+              <div class="relative z-10 w-8 h-8 flex items-center justify-center 
+                          bg-indigo-500 dark:bg-indigo-400 rounded-full">
+                <i class="fas fa-clock text-white text-sm"></i>
+              </div>
+              <!-- 時間文字 -->
+              <div class="relative z-10 flex flex-col">
+                <span class="text-xs text-gray-500 dark:text-gray-400">登入時效</span>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-200">
+                  {{ formatTime(remainingTime) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 手機版計時器 -->
+        <div class="md:hidden flex items-center mx-2">
+          <div v-if="remainingTime > 0" 
+               class="flex items-center justify-center w-8 h-8 bg-indigo-500 dark:bg-indigo-400 
+                      rounded-full relative group">
+            <i class="fas fa-clock text-white text-sm"></i>
+            <!-- 懸浮提示 -->
+            <div class="absolute invisible group-hover:visible opacity-0 group-hover:opacity-100
+                        bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1
+                        bg-gray-800 text-white text-xs rounded whitespace-nowrap
+                        transition-all duration-200 transform scale-95 group-hover:scale-100">
+              {{ formatTime(remainingTime) }}
+              <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1
+                          border-4 border-transparent border-t-gray-800"></div>
+            </div>
           </div>
         </div>
 
@@ -73,7 +108,7 @@
                   <MenuItem v-slot="{ active }">
                     <a @click="handleLogout" 
                        class="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-indigo-50 cursor-pointer">
-                      <i class="fas fa-sign-out-alt w-5 text-indigo-500"></i>
+                      <i class="ri-logout-box-r-line w-5 text-indigo-500"></i>
                       <span>登出</span>
                     </a>
                   </MenuItem>

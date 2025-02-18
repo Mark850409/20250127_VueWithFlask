@@ -29,111 +29,87 @@
       @update:currentIndex="updateIndex"
     />
 
-    <!-- 主要內容區域 -->
-    <div class="container mx-auto px-4 py-12">
-      <div class="flex gap-12">
-        <!-- 左側導航選單 -->
-        <div class="w-72 flex-shrink-0">
-          <div class="sticky top-24 p-6 bg-white rounded-lg shadow-sm">
-            <h3 class="text-xl font-bold mb-6">功能導覽</h3>
-            <ul class="space-y-3">
-              <li v-for="section in sections" :key="section.id">
-                <a :href="`#section-${section.id}`"
-                   class="block py-2 px-4 rounded-lg transition-colors hover:bg-blue-50 hover:text-blue-600"
-                   :class="{ 'bg-blue-50 text-blue-600': activeSection === `section-${section.id}` }">
-                   {{ section.title }}
-                </a>
-                <!-- 次標題選單 -->
-                <ul v-if="section.subsections?.length" class="mt-2 space-y-2">
-                  <li v-for="sub in section.subsections" :key="sub.id">
-                    <a :href="`#subsection-${sub.id}`"
-                       class="block py-2 px-4 rounded-lg transition-colors hover:bg-blue-50 hover:text-blue-600 pl-8"
-                       :class="{ 'bg-blue-50 text-blue-600': activeSection === `subsection-${sub.id}` }">
-                       {{ sub.title }}
-                    </a>
-                  </li>
-                </ul>
-              </li>
-            </ul>
+    <!-- 新的主要內容區域 -->
+    <div class="container mx-auto px-4 py-12 max-w-5xl">
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-8">
+        學習中心
+      </h1>
+      
+      <!-- 卡片列表 -->
+      <div class="grid grid-cols-1 gap-6">
+        <div v-for="section in sections" 
+             :key="section.id"
+             class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300">
+          <!-- 卡片標題區 -->
+          <div class="px-8 py-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+            <div class="flex items-center justify-between cursor-pointer"
+                 @click="toggleSection(`section-${section.id}`)">
+              <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shadow-inner">
+                  <i class="ri-book-open-line text-blue-500 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 tracking-wide">{{ section.title }}</h3>
+              </div>
+              <i class="fas fa-chevron-down text-gray-400 transform transition-transform duration-200"
+                 :class="{ 'rotate-180': openSections[`section-${section.id}`] }"></i>
+            </div>
           </div>
-        </div>
-
-        <!-- 右側內容區域 -->
-        <div class="flex-1 max-w-3xl">
-          <!-- 動態內容區域 -->
-          <div v-for="section in sections" :key="section.id" class="mb-16">
-            <section :id="`section-${section.id}`">
-              <h2 class="text-3xl font-bold mb-8">{{ section.title }}</h2>
-            
-              <!-- 次標題內容 -->
-              <div v-for="subsection in section.subsections" 
-                   :key="subsection.id" 
-                   :id="`subsection-${subsection.id}`"
-                   class="mb-12">
-                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                  <div class="flex items-center p-6 cursor-pointer" 
-                       @click="toggleSection(subsection.id)">
-                    <i class="fas fa-chevron-right mr-2 transform transition-transform duration-200"
-                       :class="{ 'rotate-90': openSections[subsection.id] }"></i>
-                    <h3 class="text-xl font-semibold">{{ subsection.title }}</h3>
+          
+          <!-- 卡片內容區 -->
+          <div v-show="openSections[`section-${section.id}`]" 
+               class="divide-y divide-gray-100 bg-white">
+            <div v-for="subsection in section.subsections" 
+                 :key="subsection.id"
+                 class="px-8 py-6 hover:bg-gray-50/50 transition-all duration-300">
+              <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0 mt-1.5">
+                  <i class="ri-robot-2-line text-blue-500/70"></i>
+                </div>
+                <div class="flex-1">
+                  <h4 class="text-lg font-semibold text-gray-800 mb-3">
+                    {{ subsection.title }}
+                  </h4>
+                  <p class="text-base text-gray-600 leading-relaxed mb-6 whitespace-pre-line">
+                    {{ subsection.content }}
+                  </p>
+                  
+                  <!-- 圖片預覽區 -->
+                  <div v-if="subsection.images?.length" 
+                       class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
+                    <div v-for="(image, index) in subsection.images" 
+                         :key="index"
+                         class="relative aspect-video rounded-xl overflow-hidden bg-gray-100 cursor-zoom-in shadow-sm hover:shadow-md transition-all duration-300"
+                         @click="previewImage(getImageUrl(image))">
+                      <img :src="getImageUrl(image)"
+                           :alt="`${subsection.title} 圖片 ${index + 1}`"
+                           class="w-full h-full object-cover hover:opacity-90 transition-opacity"/>
+                    </div>
                   </div>
                   
-                  <div v-show="openSections[subsection.id]" class="px-6 pb-6">
-                    <!-- 圖片區域 -->
-                    <div v-if="subsection.images?.length" 
-                         class="mb-6">
-                      <div v-for="(image, index) in subsection.images" 
-                           :key="index"
-                           class="bg-white rounded-lg shadow-sm overflow-hidden mb-6 relative"
-                           style="min-height: 400px">
-                        <img :src="getImageUrl(image)"
-                             :alt="`${subsection.title} 圖片 ${index + 1}`"
-                             class="w-full h-full absolute inset-0 object-contain cursor-zoom-in hover:opacity-90 transition-opacity"
-                             @click="previewImage(getImageUrl(image))"/>
-                      </div>
+                  <!-- 提示區塊 -->
+                  <div v-if="subsection.tips" 
+                       class="my-6 p-5 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-yellow-100/50 shadow-sm">
+                    <div class="flex items-start space-x-3">
+                      <i class="fas fa-lightbulb text-amber-500 text-lg mt-0.5"></i>
+                      <p class="text-base text-amber-900 leading-relaxed">{{ subsection.tips }}</p>
                     </div>
-                    
-                    <!-- 文字內容 -->
-                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-8 mb-6">
-                      <!-- 內容標題 -->
-                      <h4 class="text-lg font-medium text-gray-900 mb-4">
-                        <i class="fas fa-info-circle mr-2 text-blue-500"></i>
-                        說明內容
-                      </h4>
-                      <!-- 內容文字 -->
-                      <div class="prose prose-blue max-w-none">
-                        <p class="text-gray-600 leading-relaxed whitespace-pre-line">
-                          {{ subsection.content }}
-                        </p>
-                      </div>
-                      <!-- 補充提示 -->
-                      <div v-if="subsection.tips" 
-                           class="mt-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
-                        <p class="text-yellow-800">
-                          <i class="fas fa-lightbulb mr-2"></i>
-                          <span class="font-medium">提示：</span>
-                          {{ subsection.tips }}
-                        </p>
-                      </div>
-                      <!-- 相關連結 -->
-                      <div v-if="subsection.links?.length" class="mt-6">
-                        <h5 class="font-medium text-gray-900 mb-2">相關連結：</h5>
-                        <ul class="space-y-2">
-                          <li v-for="(link, index) in subsection.links" 
-                              :key="index"
-                              class="text-blue-600 hover:text-blue-800">
-                            <i class="fas fa-external-link-alt mr-2"></i>
-                            <a :href="link.url" target="_blank" rel="noopener">
-                              {{ link.title }}
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
+                  </div>
+                  
+                  <!-- 相關連結 -->
+                  <div v-if="subsection.links?.length" 
+                       class="mt-6 flex flex-wrap gap-3">
+                    <a v-for="(link, index) in subsection.links"
+                       :key="index"
+                       :href="link.url"
+                       target="_blank"
+                       class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 hover:shadow-sm transition-all duration-300">
+                      <i class="fas fa-external-link-alt mr-2 text-xs opacity-70"></i>
+                      {{ link.title }}
+                    </a>
                   </div>
                 </div>
               </div>
-            </section>
+            </div>
           </div>
         </div>
       </div>

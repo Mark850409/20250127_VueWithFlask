@@ -1,15 +1,13 @@
 <template>
-  <section class="relative py-20 overflow-hidden">
+  <section class="relative min-h-[600px] overflow-hidden flex items-center">
     <!-- 背景圖片 -->
     <div class="absolute inset-0 bg-fixed">
-      <div class="w-full h-full bg-center bg-no-repeat bg-cover"
-           style="background-image: url('https://images.unsplash.com/photo-1544145945-f90425340c7e');">
-      </div>
+      <div class="w-full h-full banner-bg bg-cover bg-center bg-no-repeat"></div>
       <div class="absolute inset-0 bg-gradient-to-b from-black/70 to-black/50"></div>
     </div>
 
     <!-- 內容 -->
-    <div class="relative container mx-auto px-4 text-center text-white">
+    <div class="relative container mx-auto px-4 text-center text-white py-20">
       <h2 class="text-4xl font-bold mb-6">
         尋找您的完美飲品
       </h2>
@@ -58,20 +56,14 @@ export default {
 }
 
 /* 背景固定效果 */
-.bg-fixed {
-  background-attachment: fixed;
-}
-
-.bg-center {
-  background-position: center;
-}
-
-.bg-no-repeat {
+.banner-bg {
+  background-image: url('https://images.unsplash.com/photo-1483536999439-9c9c911cc1a2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+  @apply fixed inset-0 w-full h-full;
   background-repeat: no-repeat;
-}
-
-.bg-cover {
+  background-attachment: fixed;
+  background-position: center;
   background-size: cover;
+  min-height: 180px;
 }
 
 /* 漸變背景效果 */
@@ -79,5 +71,11 @@ export default {
   --tw-gradient-from: rgb(0 0 0 / 0.7);
   --tw-gradient-to: rgb(0 0 0 / 0.5);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+@media (max-width: 768px) {
+  .banner-bg {
+    background-attachment: scroll;
+  }
 }
 </style> 

@@ -89,19 +89,19 @@
             <td v-if="!customActionsOnly && showDefaultActions" 
                 :class="[
                   'px-3 md:px-6 py-3 md:py-4',
-                  'md:text-right text-center',
-                  'md:space-x-3'
+                  'text-center md:text-right',
+                  'whitespace-nowrap'
                 ]">
               <!-- 桌面版按鈕 -->
-              <div class="hidden md:inline-flex space-x-3">
+              <div class="hidden md:inline-flex items-center space-x-2 whitespace-nowrap">
                 <button v-if="showEditButton"
                         @click="$emit('edit', item)" 
-                        class="inline-flex items-center px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors duration-200 border border-blue-200 dark:border-blue-800">
-                  <i class="fas fa-edit mr-1.5"></i>編輯
+                        class="inline-flex items-center px-2.5 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors duration-200 border border-blue-200 dark:border-blue-800 whitespace-nowrap">
+                  <i class="fas fa-edit mr-1"></i>編輯
                 </button>
                 <button @click="$emit('delete', item)" 
-                        class="inline-flex items-center px-3 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm rounded-md hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors duration-200 border border-red-200 dark:border-red-800">
-                  <i class="fas fa-trash mr-1.5"></i>刪除
+                        class="inline-flex items-center px-2.5 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium rounded-md hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors duration-200 border border-red-200 dark:border-red-800 whitespace-nowrap">
+                  <i class="fas fa-trash mr-1"></i>刪除
                 </button>
               </div>
             

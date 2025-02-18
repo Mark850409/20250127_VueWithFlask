@@ -5,14 +5,15 @@
       <div class="container mx-auto px-4">
         <!-- 排序和視圖切換選項 -->
         <div class="max-w-7xl mx-auto">
-          <div class="flex justify-between items-center mb-8">
-            <div class="flex space-x-4">
+          <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-8 space-y-4 md:space-y-0">
+            <!-- 排序選項 -->
+            <div class="grid grid-cols-2 gap-2 md:flex md:space-x-4">
               <button 
                 v-for="sort in sortOptions" 
                 :key="sort.value"
                 @click="currentSort = sort.value"
                 :class="[
-                  'px-4 py-2 rounded-full transition duration-300 flex items-center space-x-2',
+                  'px-4 py-2 rounded-full transition duration-300 flex items-center justify-center space-x-2 text-sm md:text-base',
                   currentSort === sort.value 
                     ? 'bg-blue-500 text-white' 
                     : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
@@ -23,7 +24,7 @@
               </button>
             </div>
             
-            <div class="flex space-x-2">
+            <div class="flex space-x-2 justify-center md:justify-end">
               <button 
                 @click="viewMode = 'grid'"
                 :class="[
@@ -81,14 +82,15 @@
 
         <!-- 排序和視圖切換選項 -->
         <div class="max-w-7xl mx-auto">
-          <div class="flex justify-between items-center mb-8">
-            <div class="flex space-x-4">
+          <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-8 space-y-4 md:space-y-0">
+            <!-- 排序選項 -->
+            <div class="grid grid-cols-2 gap-2 md:flex md:space-x-4">
               <button 
                 v-for="sort in recommendSortOptions" 
                 :key="sort.value"
                 @click="recommendSort = sort.value"
                 :class="[
-                  'px-4 py-2 rounded-full transition duration-300 flex items-center space-x-2',
+                  'px-4 py-2 rounded-full transition duration-300 flex items-center justify-center space-x-2 text-sm md:text-base',
                   recommendSort === sort.value 
                     ? 'bg-blue-500 text-white' 
                     : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
@@ -99,7 +101,7 @@
               </button>
             </div>
 
-            <div class="flex space-x-2">
+            <div class="flex space-x-2 justify-center md:justify-end">
               <button 
                 @click="recommendViewMode = 'grid'"
                 :class="[

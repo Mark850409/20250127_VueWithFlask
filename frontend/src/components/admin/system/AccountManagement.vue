@@ -50,71 +50,100 @@
 
     <!-- 新增/編輯帳號彈窗 -->
     <div v-if="showAddModal" 
-         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div class="bg-white rounded-xl p-8 w-full max-w-md">
-        <h2 class="text-xl font-bold mb-6">{{ editingAccount ? '編輯帳號' : '新增帳號' }}</h2>
-        <div class="space-y-4">
-          <!-- 頭像上傳 -->
-          <div class="flex items-center space-x-4">
-            <img :src="previewAvatar || defaultAvatar" 
-                 class="w-20 h-20 rounded-full object-cover border-2 border-gray-200">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">頭像</label>
-              <input type="file" 
-                     @change="handleAvatarChange" 
-                     accept="image/*"
-                     class="block w-full text-sm text-gray-500
-                            file:mr-4 file:py-2 file:px-4
-                            file:rounded-full file:border-0
-                            file:text-sm file:font-semibold
-                            file:bg-blue-50 file:text-blue-700
-                            hover:file:bg-blue-100">
+         class="fixed inset-0 z-[9999]">
+      <!-- 背景遮罩 -->
+      <div class="fixed inset-0 bg-black bg-opacity-50"></div>
+      
+      <!-- Modal 內容 -->
+      <div class="fixed inset-0 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4">
+          <div class="relative bg-white rounded-lg shadow-lg w-full max-w-md">
+            <!-- Modal 標題 -->
+            <div class="flex justify-between items-center px-6 py-4 border-b">
+              <h3 class="text-lg font-semibold">{{ editingAccount ? '編輯帳號' : '新增帳號' }}</h3>
+              <button @click="closeModal" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <!-- Modal 內容 -->
+            <div class="px-6 py-4 space-y-4 max-h-[calc(85vh-8rem)] overflow-y-auto">
+              <!-- 頭像上傳 -->
+              <div class="flex items-center space-x-4">
+                <img :src="previewAvatar || defaultAvatar" 
+                     class="w-20 h-20 rounded-full object-cover border-2 border-gray-200">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">頭像</label>
+                  <input type="file" 
+                         @change="handleAvatarChange" 
+                         accept="image/*"
+                         class="block w-full text-sm text-gray-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-full file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-blue-50 file:text-blue-700
+                                hover:file:bg-blue-100">
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">帳號名稱</label>
+                <input type="text" 
+                       v-model="accountForm.username" 
+                       :class="{'border-red-500': errors.username}"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <span v-if="errors.username" class="text-red-500 text-xs mt-1">{{ errors.username }}</span>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input type="email" 
+                       v-model="accountForm.email" 
+                       :class="{'border-red-500': errors.email}"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <span v-if="errors.email" class="text-red-500 text-xs mt-1">{{ errors.email }}</span>
+              </div>
+              <div v-if="!editingAccount">
+                <label class="block text-sm font-medium text-gray-700 mb-2">密碼</label>
+                <div class="relative">
+                  <input :type="showPassword ? 'text' : 'password'"
+                         v-model="accountForm.password"
+                         :class="{'border-red-500': errors.password}"
+                         class="w-full px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                  <button type="button"
+                          @click="showPassword = !showPassword"
+                          class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 hover:text-gray-800">
+                    <i :class="[
+                      'fas',
+                      showPassword ? 'fa-eye-slash' : 'fa-eye'
+                    ]"></i>
+                  </button>
+                </div>
+                <span v-if="errors.password" class="text-red-500 text-xs mt-1">{{ errors.password }}</span>
+                <p class="mt-1 text-xs text-gray-500">密碼需要6-12碼，包含大小寫字母、數字及特殊符號</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">狀態</label>
+                <select v-model="accountForm.status" 
+                        :class="{'border-red-500': errors.status}"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                  <option value="Enabled">啟用</option>
+                  <option value="Disabled">停用</option>
+                </select>
+                <span v-if="errors.status" class="text-red-500 text-xs mt-1">{{ errors.status }}</span>
+              </div>
+            </div>
+
+            <!-- Modal 底部按鈕 -->
+            <div class="px-6 py-4 bg-gray-50 border-t rounded-b-lg flex justify-end space-x-3">
+              <button @click="closeModal" 
+                      class="px-4 py-2 text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors">
+                取消
+              </button>
+              <button @click="saveAccount" 
+                      class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+                確認
+              </button>
             </div>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">帳號名稱</label>
-            <input type="text" 
-                   v-model="accountForm.username" 
-                   :class="{'border-red-500': errors.username}"
-                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-            <span v-if="errors.username" class="text-red-500 text-xs mt-1">{{ errors.username }}</span>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-            <input type="email" 
-                   v-model="accountForm.email" 
-                   :class="{'border-red-500': errors.email}"
-                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-            <span v-if="errors.email" class="text-red-500 text-xs mt-1">{{ errors.email }}</span>
-          </div>
-          <div v-if="!editingAccount">
-            <label class="block text-sm font-medium text-gray-700 mb-2">密碼</label>
-            <input type="password" 
-                   v-model="accountForm.password"
-                   :class="{'border-red-500': errors.password}"
-                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-            <span v-if="errors.password" class="text-red-500 text-xs mt-1">{{ errors.password }}</span>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">狀態</label>
-            <select v-model="accountForm.status" 
-                    :class="{'border-red-500': errors.status}"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-              <option value="Enabled">啟用</option>
-              <option value="Disabled">停用</option>
-            </select>
-            <span v-if="errors.status" class="text-red-500 text-xs mt-1">{{ errors.status }}</span>
-          </div>
-        </div>
-        <div class="mt-8 flex justify-end space-x-4">
-          <button @click="closeModal" 
-                  class="px-4 py-2 text-gray-700 border rounded-lg hover:bg-gray-50">
-            取消
-          </button>
-          <button @click="saveAccount" 
-                  class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-            確認
-          </button>
         </div>
       </div>
     </div>
@@ -163,6 +192,7 @@ export default {
       defaultAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=default',
       previewAvatar: null,
       avatarFile: null,
+      showPassword: false,
       errors: {
         username: '',
         email: '',
@@ -390,6 +420,28 @@ export default {
         }
       }
     },
+    validatePassword(password) {
+      // 密碼驗證規則
+      const rules = {
+        length: password.length >= 6 && password.length <= 12,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+      }
+
+      const errors = []
+      if (!rules.length) errors.push('密碼長度需要在6-12碼之間')
+      if (!rules.uppercase) errors.push('需要包含大寫字母')
+      if (!rules.lowercase) errors.push('需要包含小寫字母')
+      if (!rules.number) errors.push('需要包含數字')
+      if (!rules.special) errors.push('需要包含特殊符號')
+
+      return {
+        isValid: Object.values(rules).every(rule => rule),
+        errors: errors
+      }
+    },
     validateForm() {
       this.errors = {
         username: '',
@@ -421,11 +473,10 @@ export default {
       
       // 新增時驗證密碼
       if (!this.editingAccount) {
-        if (!this.accountForm.password) {
-          this.errors.password = '請輸入密碼'
-          isValid = false
-        } else if (this.accountForm.password.length < 6) {
-          this.errors.password = '密碼至少需要6個字符'
+        // 加強密碼驗證
+        const passwordValidation = this.validatePassword(this.accountForm.password)
+        if (!passwordValidation.isValid) {
+          this.errors.password = passwordValidation.errors.join('、')
           isValid = false
         }
       }
@@ -608,8 +659,14 @@ export default {
         status: 'Enabled'
       }
       this.editingAccount = null
-      this.showAddModal = false
-      this.resetAvatarForm()
+      this.previewAvatar = null
+      this.avatarFile = null
+      this.errors = {
+        username: '',
+        email: '',
+        password: '',
+        status: ''
+      }
     },
     closeModal() {
       this.showAddModal = false

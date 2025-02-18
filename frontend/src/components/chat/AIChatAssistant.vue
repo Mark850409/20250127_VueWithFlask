@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed bottom-4 right-4">
+  <div class="fixed bottom-4 right-4 z-[9999]">
     <!-- 聊天氣泡按鈕 - 始終顯示 -->
     <button @click="toggleChat"
             :class="[
@@ -11,7 +11,7 @@
 
     <!-- 聊天視窗 -->
     <div v-show="isOpen" 
-         class="absolute bottom-20 right-0 w-96 bg-white rounded-lg shadow-xl animate-fade-in">
+         class="absolute bottom-20 right-0 w-96 bg-white rounded-lg shadow-xl animate-fade-in z-[9999]">
       <!-- 聊天視窗標題 -->
       <div class="flex justify-between items-center p-4 border-b bg-gradient-to-r from-blue-500 to-blue-600 rounded-t-lg">
         <div class="flex items-center">

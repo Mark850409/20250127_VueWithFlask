@@ -229,182 +229,177 @@
     </div>
 
     <!-- 新增/編輯 Modal -->
-    <Transition name="modal">
-      <div v-if="showModal" 
-           class="fixed top-[-25px] left-0 right-0 bottom-0 z-[9999] bg-gray-900/75 backdrop-blur-sm"
-           @click.self="closeModal">
-        <div class="fixed top-[-25px] left-0 right-0 bottom-0 overflow-y-auto">
-          <div class="flex items-center justify-center min-h-full p-4">
-            <!-- 對話框內容 -->
-            <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all relative z-[10000] my-8">
-              <!-- 標題列 -->
-              <div class="px-6 py-4 border-b flex justify-between items-center">
-                <h3 class="text-xl font-semibold text-gray-800">
-                  {{ isEditing ? '編輯輪播圖' : '新增輪播圖' }}
-                </h3>
-                <button @click="closeModal" 
-                        class="text-gray-400 hover:text-gray-500 transition-colors">
-                  <i class="fas fa-times text-xl"></i>
+    <div v-if="showModal" 
+         class="fixed inset-0 z-[9999]">
+       <!-- 背景遮罩 -->
+       <div class="fixed inset-0 bg-black bg-opacity-50"></div>
+       
+       <!-- Modal 內容 -->
+       <div class="absolute inset-0 overflow-y-auto">
+         <div class="flex min-h-full items-center justify-center p-4">
+           <div class="relative bg-white rounded-lg shadow-lg w-full max-w-xl">
+              <!-- Modal 標題 -->
+              <div class="flex justify-between items-center px-6 py-4 border-b">
+                <h3 class="text-lg font-semibold">{{ editingBanner ? '編輯輪播圖' : '新增輪播圖' }}</h3>
+                <button @click="closeModal" class="text-gray-500 hover:text-gray-700">
+                  <i class="fas fa-times"></i>
                 </button>
               </div>
-              
-              <!-- 表單內容 -->
-              <div class="p-6">
-                <form @submit.prevent="handleSubmit" class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                      輪播圖類型
-                      <span class="text-red-500">*</span>
-                    </label>
-                    <select v-model="form.banner_type"
-                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                      <option value="" disabled>請選擇類型</option>
-                      <option v-for="option in bannerTypeOptions"
-                              :key="option.value"
-                              :value="option.value">
-                        {{ option.label }}
-                      </option>
-                    </select>
-                    <div v-if="errors.banner_type" class="mt-1 text-sm text-red-500">
-                      {{ errors.banner_type }}
-                    </div>
+  
+              <!-- Modal 內容 -->
+              <div class="px-6 py-4 space-y-4 max-h-[calc(85vh-8rem)] overflow-y-auto">
+                <!-- 輪播圖類型 -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1 required-field">
+                    輪播圖類型
+                  </label>
+                  <select v-model="form.banner_type"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="" disabled>請選擇類型</option>
+                    <option v-for="option in bannerTypeOptions"
+                            :key="option.value"
+                            :value="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                  <div v-if="errors.banner_type" class="mt-1 text-sm text-red-500">
+                    {{ errors.banner_type }}
                   </div>
+                </div>
 
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                      標題
-                      <span class="text-red-500">*</span>
-                    </label>
-                    <input v-model="form.title"
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    標題
+                    <span class="text-red-500">*</span>
+                  </label>
+                  <input v-model="form.title"
+                         type="text"
+                         class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                         :class="{'border-red-500': errors.title}"
+                         placeholder="請輸入標題">
+                  <p v-if="errors.title" class="mt-1 text-sm text-red-500">
+                    {{ errors.title }}
+                  </p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    副標題
+                    <span class="text-red-500">*</span>
+                  </label>
+                  <input v-model="form.subtitle"
+                         type="text"
+                         class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                         :class="{'border-red-500': errors.subtitle}"
+                         placeholder="請輸入副標題">
+                  <p v-if="errors.subtitle" class="mt-1 text-sm text-red-500">
+                    {{ errors.subtitle }}
+                  </p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    描述
+                    <span class="text-red-500">*</span>
+                  </label>
+                  <textarea v-model="form.description"
+                           rows="3"
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           :class="{'border-red-500': errors.description}"
+                           placeholder="請輸入描述"></textarea>
+                  <p v-if="errors.description" class="mt-1 text-sm text-red-500">
+                    {{ errors.description }}
+                  </p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    圖片網址
+                    <span class="text-red-500">*</span>
+                  </label>
+                  <div class="flex space-x-2">
+                    <input v-model="form.image_url"
                            type="text"
-                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           :class="{'border-red-500': errors.title}"
-                           placeholder="請輸入標題">
-                    <p v-if="errors.title" class="mt-1 text-sm text-red-500">
-                      {{ errors.title }}
-                    </p>
+                           class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           :class="{'border-red-500': errors.image_url}"
+                           placeholder="請輸入圖片網址">
+                    <button type="button"
+                            @click="previewImage(form.image_url)"
+                            :disabled="!form.image_url || !isValidUrl(form.image_url)"
+                            class="px-3 py-2 rounded-lg transition-colors"
+                            :class="[
+                              form.image_url && isValidUrl(form.image_url)
+                                ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer' 
+                                : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                            ]">
+                      <i class="fas fa-eye"></i>
+                    </button>
                   </div>
+                  <p v-if="errors.image_url" class="mt-1 text-sm text-red-500">
+                    {{ errors.image_url }}
+                  </p>
+                </div>
 
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                      副標題
-                      <span class="text-red-500">*</span>
-                    </label>
-                    <input v-model="form.subtitle"
-                           type="text"
-                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           :class="{'border-red-500': errors.subtitle}"
-                           placeholder="請輸入副標題">
-                    <p v-if="errors.subtitle" class="mt-1 text-sm text-red-500">
-                      {{ errors.subtitle }}
-                    </p>
-                  </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    替代文字
+                  </label>
+                  <input v-model="form.alt"
+                         type="text"
+                         class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                         placeholder="請輸入替代文字">
+                </div>
 
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                      描述
-                      <span class="text-red-500">*</span>
-                    </label>
-                    <textarea v-model="form.description"
-                             rows="3"
-                             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                             :class="{'border-red-500': errors.description}"
-                             placeholder="請輸入描述"></textarea>
-                    <p v-if="errors.description" class="mt-1 text-sm text-red-500">
-                      {{ errors.description }}
-                    </p>
-                  </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    排序
+                    <span class="text-red-500">*</span>
+                  </label>
+                  <input v-model.number="form.sort_order"
+                         type="number"
+                         min="1"
+                         class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                         :class="{'border-red-500': errors.sort_order}"
+                         placeholder="請輸入排序">
+                  <p v-if="errors.sort_order" class="mt-1 text-sm text-red-500">
+                    {{ errors.sort_order }}
+                  </p>
+                </div>
 
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                      圖片網址
-                      <span class="text-red-500">*</span>
-                    </label>
-                    <div class="flex space-x-2">
-                      <input v-model="form.image_url"
-                             type="text"
-                             class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                             :class="{'border-red-500': errors.image_url}"
-                             placeholder="請輸入圖片網址">
-                      <button type="button"
-                              @click="previewImage(form.image_url)"
-                              :disabled="!form.image_url || !isValidUrl(form.image_url)"
-                              class="px-3 py-2 rounded-lg transition-colors"
-                              :class="[
-                                form.image_url && isValidUrl(form.image_url)
-                                  ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer' 
-                                  : 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                              ]">
-                        <i class="fas fa-eye"></i>
-                      </button>
-                    </div>
-                    <p v-if="errors.image_url" class="mt-1 text-sm text-red-500">
-                      {{ errors.image_url }}
-                    </p>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    狀態
+                  </label>
+                  <div class="flex items-center space-x-2 h-[42px]">
+                    <button type="button"
+                            @click="form.is_active = !form.is_active"
+                            :class="[
+                              'px-4 py-2 rounded-lg transition-colors w-full',
+                              form.is_active 
+                                ? 'bg-green-500 text-white hover:bg-green-600'
+                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                            ]">
+                      {{ form.is_active ? '啟用' : '停用' }}
+                    </button>
                   </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                      替代文字
-                    </label>
-                    <input v-model="form.alt"
-                           type="text"
-                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="請輸入替代文字">
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                      排序
-                      <span class="text-red-500">*</span>
-                    </label>
-                    <input v-model.number="form.sort_order"
-                           type="number"
-                           min="1"
-                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           :class="{'border-red-500': errors.sort_order}"
-                           placeholder="請輸入排序">
-                    <p v-if="errors.sort_order" class="mt-1 text-sm text-red-500">
-                      {{ errors.sort_order }}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                      狀態
-                    </label>
-                    <div class="flex items-center space-x-2 h-[42px]">
-                      <button type="button"
-                              @click="form.is_active = !form.is_active"
-                              :class="[
-                                'px-4 py-2 rounded-lg transition-colors w-full',
-                                form.is_active 
-                                  ? 'bg-green-500 text-white hover:bg-green-600'
-                                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                              ]">
-                        {{ form.is_active ? '啟用' : '停用' }}
-                      </button>
-                    </div>
-                  </div>
-                </form>
+                </div>
               </div>
-
-              <!-- 按鈕列 -->
-              <div class="px-6 py-4 border-t bg-gray-50 rounded-b-xl flex justify-end space-x-3">
-                <button @click="closeModal"
-                        class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition-colors">
+  
+              <!-- Modal 底部按鈕 -->
+              <div class="px-6 py-4 bg-gray-50 border-t rounded-b-lg flex justify-end space-x-3">
+                <button @click="closeModal" 
+                        class="px-4 py-2 text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors">
                   取消
                 </button>
                 <button @click="handleSubmit"
-                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                  {{ isEditing ? '更新' : '新增' }}
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+                  確定
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </Transition>
+         </div>
+       </div>
+    </div>
 
     <!-- 圖片預覽 Modal -->
     <Transition name="modal">
@@ -437,6 +432,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { bannerAPI } from '@/api'
 import Swal from 'sweetalert2'
+import { useLogger } from '@/composables/useLogger'
 
 // 視圖模式
 const viewMode = ref('card')
@@ -492,6 +488,7 @@ const getBannerTypeLabel = (type) => {
 // 處理頁籤切換
 const handleTabChange = async (tab) => {
   currentTab.value = tab
+  await logOperation(`【Banner管理】切換到${getBannerTypeLabel(tab)}頁籤`, '查看')
   await fetchBannersByType(tab)
 }
 
@@ -502,6 +499,7 @@ const fetchBannersByType = async (type) => {
     banners.value = response.data.data
     // 清除錯誤記錄
     handledErrors.value.clear()
+    await logOperation(`【Banner管理】查看${getBannerTypeLabel(type)}輪播圖列表`, '查看')
   } catch (error) {
     console.error('Failed to fetch banners:', error)
     Swal.fire({
@@ -515,6 +513,8 @@ const fetchBannersByType = async (type) => {
 
 // 修改原有的 fetchBanners
 const fetchBanners = () => fetchBannersByType(currentTab.value)
+
+const { logOperation } = useLogger()
 
 // 打開新增 Modal
 const openCreateModal = () => {
@@ -547,6 +547,7 @@ const openEditModal = (banner) => {
     banner_type: banner.banner_type
   }
   showModal.value = true
+  logOperation(`【Banner管理】開始編輯輪播圖: ${banner.title}`, '編輯')
 }
 
 // 添加 URL 驗證函數
@@ -610,8 +611,12 @@ const handleKeyDown = (e) => {
 }
 
 onMounted(() => {
+  const init = async () => {
+    await fetchBannersByType(currentTab.value)
+    await logOperation('【Banner管理】訪問Banner管理頁面', '查看')
+  }
+  init()
   window.addEventListener('keydown', handleKeyDown)
-  fetchBannersByType(currentTab.value)
 })
 
 onUnmounted(() => {
@@ -626,6 +631,7 @@ const handleSubmit = async () => {
   try {
     if (isEditing.value) {
       const response = await bannerAPI.updateBanner(currentBannerId.value, form.value)
+      await logOperation(`【Banner管理】更新輪播圖: ${form.value.title}`, '修改')
       if (response.data.data) {
         const updatedBanner = response.data.data
         const index = banners.value.findIndex(b => b.id === updatedBanner.id)
@@ -647,6 +653,7 @@ const handleSubmit = async () => {
       })
     } else {
       const response = await bannerAPI.createBanner(form.value)
+      await logOperation(`【Banner管理】新增輪播圖: ${form.value.title}`, '新增')
       if (response.data.data) {
         banners.value.push(response.data.data)
       }
@@ -705,6 +712,7 @@ const confirmDelete = async (banner) => {
   if (result.isConfirmed) {
     try {
       await bannerAPI.deleteBanner(banner.id)
+      await logOperation(`【Banner管理】刪除輪播圖: ${banner.title}`, '刪除')
       banners.value = banners.value.filter(b => b.id !== banner.id)
       Swal.fire({
         icon: 'success',

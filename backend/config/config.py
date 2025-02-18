@@ -83,7 +83,7 @@ class Config:
     
     # JWT配置
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'your-secret-key')
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 86400)))  # 預設一天
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
     
     # 日誌配置

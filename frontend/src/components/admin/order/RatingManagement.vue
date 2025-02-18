@@ -47,81 +47,95 @@
       </DataTable>
 
       <!-- 新增/編輯彈窗 -->
-      <el-dialog
-        title="編輯評分"
-        v-model="showAddModal"
-        width="500px"
-        :close-on-click-modal="false"
-        destroy-on-close>
-        <div class="p-4">
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              用戶 <span class="text-red-500">*</span>
-            </label>
-            <input 
-              v-model="ratingForm.user"
-              type="text"
-              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              :class="{'border-red-500': errors.user}"
-              placeholder="請輸入用戶名稱">
-            <span v-if="errors.user" class="text-red-500 text-xs mt-1">{{ errors.user }}</span>
-          </div>
-          
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              店家 <span class="text-red-500">*</span>
-            </label>
-            <input 
-              v-model="ratingForm.restaurant_name"
-              type="text"
-              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              :class="{'border-red-500': errors.restaurant_name}"
-              placeholder="請輸入店家名稱">
-            <span v-if="errors.restaurant_name" class="text-red-500 text-xs mt-1">{{ errors.restaurant_name }}</span>
-          </div>
-          
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              評分 <span class="text-red-500">*</span>
-            </label>
-            <el-rate 
-              v-model="ratingForm.rating"
-              :max="5"
-              class="mt-1">
-            </el-rate>
-            <span v-if="errors.rating" class="text-red-500 text-xs mt-1">{{ errors.rating }}</span>
-          </div>
-          
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              評論內容 <span class="text-red-500">*</span>
-            </label>
-            <textarea 
-              v-model="ratingForm.text"
-              rows="6"
-              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-              :class="{'border-red-500': errors.text}"
-              placeholder="請輸入評論內容">
-            </textarea>
-            <span v-if="errors.text" class="text-red-500 text-xs mt-1">{{ errors.text }}</span>
+      <div v-if="showAddModal" 
+           class="fixed inset-0 z-[9999]">
+        <!-- 背景遮罩 -->
+        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+        
+        <!-- Modal 內容 -->
+        <div class="absolute inset-0 overflow-y-auto">
+          <div class="flex min-h-full items-center justify-center p-4">
+            <div class="relative bg-white rounded-lg shadow-lg w-full max-w-xl">
+              <!-- Modal 標題 -->
+              <div class="flex justify-between items-center px-6 py-4 border-b">
+                <h3 class="text-lg font-semibold">編輯評分</h3>
+                <button @click="closeModal" class="text-gray-500 hover:text-gray-700">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+
+              <!-- Modal 內容 -->
+              <div class="px-6 py-4 space-y-4 max-h-[calc(85vh-8rem)] overflow-y-auto">
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    用戶 <span class="text-red-500">*</span>
+                  </label>
+                  <input 
+                    v-model="ratingForm.user"
+                    type="text"
+                    class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    :class="{'border-red-500': errors.user}"
+                    placeholder="請輸入用戶名稱">
+                  <span v-if="errors.user" class="text-red-500 text-xs mt-1">{{ errors.user }}</span>
+                </div>
+                
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    店家 <span class="text-red-500">*</span>
+                  </label>
+                  <input 
+                    v-model="ratingForm.restaurant_name"
+                    type="text"
+                    class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    :class="{'border-red-500': errors.restaurant_name}"
+                    placeholder="請輸入店家名稱">
+                  <span v-if="errors.restaurant_name" class="text-red-500 text-xs mt-1">{{ errors.restaurant_name }}</span>
+                </div>
+                
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    評分 <span class="text-red-500">*</span>
+                  </label>
+                  <el-rate 
+                    v-model="ratingForm.rating"
+                    :max="5"
+                    class="mt-1">
+                  </el-rate>
+                  <span v-if="errors.rating" class="text-red-500 text-xs mt-1">{{ errors.rating }}</span>
+                </div>
+                
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    評論內容 <span class="text-red-500">*</span>
+                  </label>
+                  <textarea 
+                    v-model="ratingForm.text"
+                    rows="6"
+                    class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    :class="{'border-red-500': errors.text}"
+                    placeholder="請輸入評論內容">
+                  </textarea>
+                  <span v-if="errors.text" class="text-red-500 text-xs mt-1">{{ errors.text }}</span>
+                </div>
+              </div>
+
+              <!-- Modal 底部按鈕 -->
+              <div class="px-6 py-4 bg-gray-50 border-t rounded-b-lg flex justify-end space-x-3">
+                <button 
+                  @click="closeModal"
+                  class="px-4 py-2 text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors">
+                  取消
+                </button>
+                <button 
+                  @click="validateAndSubmit"
+                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+                  確定
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <template #footer>
-          <div class="flex justify-end space-x-3">
-            <button 
-              @click="showAddModal = false"
-              class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
-              取消
-            </button>
-            <button 
-              @click="validateAndSubmit"
-              class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-              確定
-            </button>
-          </div>
-        </template>
-      </el-dialog>
+      </div>
     </div>
   </div>
 </template>
@@ -171,13 +185,6 @@ export default {
       editingRating.value = null
       errors.value = {}
     }
-
-    // 監聽 showAddModal 的變化
-    watch(showAddModal, (newVal) => {
-      if (!newVal) {
-        resetForm()
-      }
-    })
 
     // 獲取評分列表
     const fetchRatings = async () => {
@@ -341,6 +348,11 @@ export default {
       }
     }
 
+    const closeModal = () => {
+      showAddModal.value = false
+      resetForm()
+    }
+
     onMounted(() => {
       fetchRatings()
     })
@@ -356,7 +368,9 @@ export default {
       handleEdit,
       handleDelete,
       handleBatchDelete,
-      truncateText
+      truncateText,
+      closeModal,
+      resetForm
     }
   }
 }

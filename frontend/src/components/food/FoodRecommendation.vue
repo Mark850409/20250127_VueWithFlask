@@ -105,8 +105,6 @@
 
     </div>
 
-    <!-- 在最外層 div 結尾前添加 AI 聊天助手 -->
-    <AIChatAssistant v-if="isLoggedIn" />
   </div>
 </template>
 
@@ -121,11 +119,10 @@ import Features from './Features.vue'
 import Learning from './Learning.vue'
 import Pricing from './Pricing.vue'
 import AIChatAssistant from '../chat/AIChatAssistant.vue'  // 引入 AI 聊天助手組件
-import axios from '@/utils/axios'
-import { useAuthStore } from '@/stores/auth'
 import Swal from 'sweetalert2'
 import { recommendAPI } from '@/api'
 import CallToAction from './CallToAction.vue'
+import { useAuthStore } from '@/stores/auth'
 
 export default {
   components: {
@@ -143,7 +140,6 @@ export default {
   setup() {
     const authStore = useAuthStore()
     const isLoggedIn = computed(() => authStore.isLoggedIn)
-    let tokenCheckInterval = null
 
     const currentSort = ref('predicted')
     const currentRecommendSort = ref('predicted')
@@ -170,46 +166,6 @@ export default {
       selectedCity.value = '台北市'
       currentCity.value = '台北市'
       handleCityChange()
-    })
-
-    // 檢查登入狀態和 token 有效性
-    const checkLoginStatus = async () => {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        authStore.isLoggedIn = false
-        return
-      }
-
-      try {
-        // 驗證 token 有效性
-        const response = await axios.get('/users/verify')
-        if (response.status === 200) {
-          authStore.isLoggedIn = true
-        }
-      } catch (error) {
-        console.error('Token 驗證失敗:', error)
-        localStorage.removeItem('token')
-        authStore.isLoggedIn = false
-      }
-    }
-
-    onMounted(() => {
-      // 初始檢查
-      checkLoginStatus()
-      
-      // 設定每小時檢查一次
-      tokenCheckInterval = setInterval(checkLoginStatus, 3600000)
-      
-      // 監聽 localStorage 變化
-      window.addEventListener('storage', checkLoginStatus)
-    })
-
-    // 組件卸載時清理定時器
-    onUnmounted(() => {
-      if (tokenCheckInterval) {
-        clearInterval(tokenCheckInterval)
-      }
-      window.removeEventListener('storage', checkLoginStatus)
     })
 
     // 獲取當前位置

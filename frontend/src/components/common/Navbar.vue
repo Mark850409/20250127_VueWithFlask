@@ -9,11 +9,16 @@
       <div class="flex items-center justify-between h-16">
         <!-- Logo -->
         <router-link to="/" class="flex items-center space-x-3">
-          <i class="fas fa-utensils text-white text-2xl"></i>
+          <i class="ri-drinks-2-line text-white text-2xl"></i>
           <span class="text-lg font-bold text-white">
             今天想喝什麼呢？
           </span>
         </router-link>
+
+        <!-- 漢堡選單按鈕 (手機版) -->
+        <button class="md:hidden text-white p-2" @click="toggleMobileMenu">
+          <i class="fas fa-bars text-xl"></i>
+        </button>
 
         <!-- 主選單 -->
         <div class="hidden md:flex items-center space-x-8">
@@ -22,7 +27,7 @@
                'text-white hover:text-gray-200',
                'transition-colors'
              ]">
-            <i class="fas fa-home mr-1"></i>
+            <i class="ri-home-smile-2-line"></i>
             首頁
           </a>
           <a href="/features" 
@@ -30,7 +35,7 @@
                'text-white hover:text-gray-200',
                'transition-colors'
              ]">
-            <i class="fas fa-star mr-1"></i>
+            <i class="ri-store-2-line"></i>
             平台特色
           </a>
           <a href="/learning" 
@@ -38,7 +43,7 @@
                'text-white hover:text-gray-200',
                'transition-colors'
              ]">
-            <i class="fas fa-coffee mr-1"></i>
+            <i class="ri-brush-line"></i>
             學習中心
           </a>
           <a href="/pricing" 
@@ -46,7 +51,7 @@
                'text-white hover:text-gray-200',
                'transition-colors'
              ]">
-            <i class="fas fa-th mr-1"></i>
+            <i class="ri-price-tag-3-line mr-1"></i>
             定價方案
           </a>
         </div>
@@ -103,6 +108,69 @@
         </div>
       </div>
     </div>
+
+    <!-- 手機版選單 -->
+    <div v-if="isMobileMenuOpen" 
+         class="md:hidden fixed inset-0 z-[10000]">
+      <!-- 背景遮罩 -->
+      <div class="absolute inset-0 bg-black/50" @click="toggleMobileMenu"></div>
+      
+      <!-- 選單面板 -->
+      <div class="absolute inset-y-0 left-0 w-[280px] bg-white shadow-xl transform transition-transform duration-300"
+           :class="[isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full']">
+        <div class="flex flex-col h-full">
+          <!-- 頂部用戶資訊 -->
+          <div class="p-4 bg-gray-50 border-b">
+            <template v-if="isLoggedIn">
+              <div class="flex items-center space-x-3">
+                <img :src="getAvatarUrl" 
+                     alt="User Avatar"
+                     class="h-10 w-10 rounded-full border-2 border-blue-500"
+                     @error="handleAvatarError">
+                <span class="text-gray-800 font-medium">{{ userName }}</span>
+              </div>
+            </template>
+            <template v-else>
+              <router-link to="/login" 
+                          class="flex items-center space-x-2 text-gray-700 hover:text-blue-600"
+                          @click="toggleMobileMenu">
+                <i class="fas fa-user-circle text-xl"></i>
+                <span>登入 / 註冊</span>
+              </router-link>
+            </template>
+          </div>
+          
+          <!-- 選單內容 -->
+          <div class="flex-1 py-4">
+            <a v-for="item in menuItems" 
+               :key="item.path"
+               :href="item.path" 
+               class="flex items-center px-6 py-3 space-x-3 text-gray-700 hover:bg-gray-100 transition-colors"
+               @click="toggleMobileMenu">
+              <i :class="[item.icon, 'text-gray-500 w-6']"></i>
+              <span>{{ item.label }}</span>
+            </a>
+
+            <!-- 登入/登出按鈕 -->
+            <template v-if="isLoggedIn">
+              <div class="border-t mt-4 pt-4">
+                <router-link to="/admin"
+                            class="flex items-center px-6 py-3 space-x-3 text-gray-700 hover:bg-gray-100"
+                            @click="toggleMobileMenu">
+                  <i class="fas fa-user-cog w-6 text-gray-500"></i>
+                  <span>管理後台</span>
+                </router-link>
+                <button @click="handleLogoutMobile"
+                        class="w-full flex items-center px-6 py-3 space-x-3 text-red-600 hover:bg-red-50">
+                  <i class="fas fa-sign-out-alt w-6"></i>
+                  <span>登出</span>
+                </button>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
   </nav>
 </template>
 
@@ -121,6 +189,7 @@ export default {
     const currentImageIndex = ref(0)
     const autoPlayInterval = ref(null)
     const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
+    const isMobileMenuOpen = ref(false)
     
     // Banner 圖片
     const bannerImages = [
@@ -130,6 +199,13 @@ export default {
         alt: 'Banner 1'
       },
       // ... 其他圖片
+    ]
+
+    const menuItems = [
+      { path: '/', label: '首頁', icon: 'ri-home-smile-2-line' },
+      { path: '/features', label: '平台特色', icon: 'ri-store-2-line' },
+      { path: '/learning', label: '學習中心', icon: 'ri-brush-line' },
+      { path: '/pricing', label: '定價方案', icon: 'ri-price-tag-3-line' }
     ]
 
     // 計算頭像 URL
@@ -232,6 +308,17 @@ export default {
       }
     }
 
+    const toggleMobileMenu = () => {
+      isMobileMenuOpen.value = !isMobileMenuOpen.value
+      // 切換時禁用/啟用背景滾動
+      document.body.style.overflow = isMobileMenuOpen.value ? 'hidden' : ''
+    }
+
+    const handleLogoutMobile = () => {
+      handleLogout()
+      toggleMobileMenu()
+    }
+
     // 組件掛載時檢查登入狀態和添加滾動監聽
     onMounted(() => {
       document.addEventListener('click', closeDropdown)
@@ -257,7 +344,11 @@ export default {
       isDropdownOpen,
       toggleDropdown,
       currentImageIndex,
-      bannerImages
+      bannerImages,
+      isMobileMenuOpen,
+      menuItems,
+      toggleMobileMenu,
+      handleLogoutMobile
     }
   }
 }
@@ -305,5 +396,16 @@ img {
 
 .hover\:after\:scale-x-100:hover::after {
   transform: scaleX(1);
+}
+
+/* 手機版選單動畫 */
+.mobile-menu-enter-active,
+.mobile-menu-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.mobile-menu-enter-from,
+.mobile-menu-leave-to {
+  opacity: 0;
 }
 </style> 
