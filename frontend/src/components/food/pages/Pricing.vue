@@ -1,10 +1,12 @@
 <template>
   <div class="min-h-screen bg-gray-50 pt-16">
     <PageBanner
-      title="定價方案"
-      subtitle="靈活選擇・專業服務"
-      description="我們提供多種靈活的方案選擇，從個人使用到企業需求，都能找到最適合的服務組合。
-                  讓我們為您打造最優質的推薦體驗。"
+      :title="currentBanner.title"
+      :subtitle="currentBanner.subtitle"
+      :description="currentBanner.description"
+      :bannerImages="bannerData.bannerImages"
+      :currentImageIndex="currentIndex"
+      @update:currentIndex="updateIndex"
     />
     
     <!-- 定價方案卡片 -->
@@ -219,10 +221,57 @@
 
 <script>
 import PageBanner from '../PageBanner.vue'
+import bannerAPI from '@/api/modules/banner'
 
 export default {
   components: {
     PageBanner
+  },
+  data() {
+    return {
+      currentIndex: 0,
+      bannerData: {
+        bannerImages: []
+      }
+    }
+  },
+  computed: {
+    currentBanner() {
+      if (this.bannerData.bannerImages.length === 0) {
+        return {
+          title: '',
+          subtitle: '',
+          description: ''
+        }
+      }
+      return this.bannerData.bannerImages[this.currentIndex] || this.bannerData.bannerImages[0]
+    }
+  },
+  async created() {
+    try {
+      const response = await bannerAPI.getBannersByType('pricing')
+      if (response.data && response.data.data) {
+        const banners = response.data.data
+        this.bannerData.bannerImages = banners.map(banner => ({
+          id: banner.id,
+          image_url: banner.image_url,
+          alt: banner.alt,
+          title: banner.title,
+          subtitle: banner.subtitle,
+          description: banner.description
+        }))
+      }
+    } catch (error) {
+      console.error('Failed to fetch banner data:', error)
+    }
+  },
+  methods: {
+    updateIndex(newIndex) {
+      this.currentIndex = newIndex
+    }
+  },
+  mounted() {
+    this.currentIndex = 0
   }
 }
 </script> 

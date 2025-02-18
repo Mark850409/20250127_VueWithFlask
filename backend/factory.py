@@ -8,7 +8,8 @@ from controllers import (
     message_bp, admin_bp, favorite_bp, foodpanda_core_bp,
     foodpanda_vendors_bp, foodpanda_menu_bp, foodpanda_feed_bp,
     googlemaps_bp, system_bp, googlemaps_info_bp, dashboard_bp,
-    recommend_bp, bot_bp, langflow_bp, monitor_bp, folder_bp, learning_bp
+    recommend_bp, bot_bp, langflow_bp, monitor_bp, folder_bp, learning_bp,
+    banner_bp
 )
 
 def create_app():
@@ -25,7 +26,8 @@ def create_app():
         message_bp, admin_bp, favorite_bp, foodpanda_core_bp,
         foodpanda_vendors_bp, foodpanda_menu_bp, foodpanda_feed_bp,
         googlemaps_bp, system_bp, googlemaps_info_bp, dashboard_bp,
-        recommend_bp, bot_bp, langflow_bp, monitor_bp, folder_bp, learning_bp
+        recommend_bp, bot_bp, langflow_bp, monitor_bp, folder_bp, learning_bp,
+        banner_bp
     ]
     
 

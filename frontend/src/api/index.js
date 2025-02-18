@@ -10,6 +10,7 @@ import botAPI from './modules/bot'
 import knowledgeAPI from './modules/knowledge'
 import projectAPI from './modules/project'
 import learningAPI from './modules/learning'
+import bannerAPI from './modules/banner'
 
 export {
   accountAPI,
@@ -23,5 +24,6 @@ export {
   botAPI,
   knowledgeAPI,
   projectAPI,
-  learningAPI
+  learningAPI,
+  bannerAPI
 } 

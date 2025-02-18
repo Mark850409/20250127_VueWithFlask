@@ -1,11 +1,12 @@
 <template>
   <div class="min-h-screen bg-gray-50 pt-16">
     <PageBanner
-      title="平台特色"
-      subtitle="智能推薦・精準分析"
-      description="透過先進的文字探勘與情感分析技術，我們為您打造最智能的飲品推薦系統。
-                  結合大數據分析與人工智能，讓每一次的選擇都能完美符合您的品味，
-                  打造專屬於您的飲品體驗。"
+      :title="currentBanner.title"
+      :subtitle="currentBanner.subtitle"
+      :description="currentBanner.description"
+      :bannerImages="bannerData.bannerImages"
+      :currentImageIndex="currentIndex"
+      @update:currentIndex="updateIndex"
     />
     
     <!-- 詳細特色說明區塊 -->
@@ -104,10 +105,57 @@
 
 <script>
 import PageBanner from '../PageBanner.vue'
+import bannerAPI from '@/api/modules/banner'
 
 export default {
   components: {
     PageBanner
+  },
+  data() {
+    return {
+      currentIndex: 0,
+      bannerData: {
+        bannerImages: []
+      }
+    }
+  },
+  computed: {
+    currentBanner() {
+      if (this.bannerData.bannerImages.length === 0) {
+        return {
+          title: '',
+          subtitle: '',
+          description: ''
+        }
+      }
+      return this.bannerData.bannerImages[this.currentIndex] || this.bannerData.bannerImages[0]
+    }
+  },
+  async created() {
+    try {
+      const response = await bannerAPI.getBannersByType('features')
+      if (response.data && response.data.data) {
+        const banners = response.data.data
+        this.bannerData.bannerImages = banners.map(banner => ({
+          id: banner.id,
+          image_url: banner.image_url,
+          alt: banner.alt,
+          title: banner.title,
+          subtitle: banner.subtitle,
+          description: banner.description
+        }))
+      }
+    } catch (error) {
+      console.error('Failed to fetch banner data:', error)
+    }
+  },
+  methods: {
+    updateIndex(newIndex) {
+      this.currentIndex = newIndex
+    }
+  },
+  mounted() {
+    this.currentIndex = 0
   }
 }
 </script> 

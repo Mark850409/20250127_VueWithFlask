@@ -22,7 +22,8 @@ import BotManagement from '@/components/admin/Bot/BotManagement.vue'
 import KnowledgeManagement from '@/components/admin/knowledge/KnowledgeManagement.vue'
 import MonitorManagement from '@/components/admin/monitor/MonitorManagement.vue'
 import ProjectManagement from '@/components/admin/projects/ProjectManagement.vue'
-
+import BannerManagement from '@/components/admin/banner/BannerManagement.vue'
+import LearningManagement from '@/components/admin/learning/LearningManagement.vue'
 const routes = [
   {
     path: '/',
@@ -152,10 +153,19 @@ const routes = [
       {
         path: 'learning',
         name: 'LearningManagement',
-        component: () => import('@/components/admin/learning/LearningManagement.vue'),
+        component: LearningManagement,
         meta: {
           requiresAuth: true,
           title: '學習中心管理'
+        }
+      },
+      {
+        path: 'banner',
+        name: 'BannerManagement',
+        component: BannerManagement,
+        meta: {
+          title: '輪播圖管理',
+          requiresAuth: true
         }
       }
     ]

@@ -371,7 +371,9 @@ export default {
         BotManagement: '快速提問管理',
         KnowledgeManagement: '知識庫管理',
         MonitorManagement: '機器人監控管理',
-        ProjectManagement: '專案管理'
+        ProjectManagement: '專案管理',
+        BannerManagement: '輪播圖管理',
+        LearningManagement: '學習中心管理'
       }
       return titles[route] || '後台管理系統'
     },
@@ -391,7 +393,9 @@ export default {
         BotManagement: '管理快速提問設定',
         KnowledgeManagement: '管理知識庫設定',
         MonitorManagement: '機器人監控管理',
-        ProjectManagement: '管理專案設定'
+        ProjectManagement: '管理專案設定',
+        BannerManagement: '管理輪播圖設定',
+        LearningManagement: '管理學習中心'
       }
       return descriptions[route] || '歡迎使用後台管理系統'
     },

@@ -23,6 +23,7 @@ from controllers.langflows_knowledge_controller import langflow_bp
 from controllers.langflows_monitor_controller import monitor_bp
 from controllers.langflows_folder_controller import folder_bp
 from controllers.learning_controller import learning_bp
+from controllers.banner_controller import banner_bp
 
 __all__ = [
     'user_bp',
@@ -47,5 +48,6 @@ __all__ = [
     'langflow_bp',
     'monitor_bp',
     'folder_bp',
-    'learning_bp'
+    'learning_bp',
+    'banner_bp'
 ] 

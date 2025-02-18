@@ -1,18 +1,69 @@
 <template>
   <PageBanner
-    title="今天想喝什麼呢？"
-    subtitle="美味飲品・幸福加倍"
-    description="在我們的飲料店，每一杯都是一種心動。多樣化的飲品選擇，精緻的口感，讓您隨時
-                隨地都能享受至臻完美光，無論是外帶或是堂食，讓我們的飲品為您完美詮釋當季享受。"
+    :title="currentBanner.title"
+    :subtitle="currentBanner.subtitle"
+    :description="currentBanner.description"
+    :bannerImages="bannerData.bannerImages"
+    :currentImageIndex="currentIndex"
+    @update:currentIndex="updateIndex"
   />
 </template>
 
 <script>
 import PageBanner from './PageBanner.vue'
+import bannerAPI from '@/api/modules/banner'
 
 export default {
   components: {
     PageBanner
+  },
+  data() {
+    return {
+      currentIndex: 0,
+      bannerData: {
+        bannerImages: []
+      }
+    }
+  },
+  computed: {
+    // 計算當前要顯示的 banner 內容
+    currentBanner() {
+      if (this.bannerData.bannerImages.length === 0) {
+        return {
+          title: '',
+          subtitle: '',
+          description: ''
+        }
+      }
+      return this.bannerData.bannerImages[this.currentIndex] || this.bannerData.bannerImages[0]
+    }
+  },
+  async created() {
+    try {
+      const response = await bannerAPI.getBannersByType('home')
+      if (response.data && response.data.data) {
+        const banners = response.data.data
+        this.bannerData.bannerImages = banners.map(banner => ({
+          id: banner.id,
+          image_url: banner.image_url,
+          alt: banner.alt,
+          title: banner.title,
+          subtitle: banner.subtitle,
+          description: banner.description
+        }))
+      }
+    } catch (error) {
+      console.error('Failed to fetch banner data:', error)
+    }
+  },
+  methods: {
+    updateIndex(newIndex) {
+      this.currentIndex = newIndex
+    }
+  },
+  mounted() {
+    // 確保從第一張圖開始
+    this.currentIndex = 0
   }
 }
 </script> 

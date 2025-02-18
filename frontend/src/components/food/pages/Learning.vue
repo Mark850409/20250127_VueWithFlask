@@ -20,12 +20,13 @@
   </Transition>
 
   <div class="min-h-screen bg-gray-50 pt-16">
-    <!-- Banner 區塊保持不變 -->
     <PageBanner
-      title="學習中心"
-      subtitle="功能導覽・使用教學"
-      description="我們提供完整的功能說明和使用教學，幫助您快速掌握系統的各項功能。
-                  無論是新手入門還是進階應用，都能在這裡找到答案。"
+      :title="currentBanner.title"
+      :subtitle="currentBanner.subtitle"
+      :description="currentBanner.description"
+      :bannerImages="bannerData.bannerImages"
+      :currentImageIndex="currentIndex"
+      @update:currentIndex="updateIndex"
     />
 
     <!-- 主要內容區域 -->
@@ -144,47 +145,78 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import PageBanner from '../PageBanner.vue'
 import learningAPI from '@/api/modules/learning'
+import bannerAPI from '@/api/modules/banner'
 
 export default {
   components: {
     PageBanner
   },
-  setup() {
-    const openSections = ref({})  // 改為空物件，根據實際資料動態添加
-    const activeSection = ref('')
-    const sections = ref([])
-    const previewImageUrl = ref(null)
-    
-    // 獲取學習內容
-    const fetchSections = async () => {
-      try {
-        const response = await learningAPI.getLearningBlocks()
-        // 確保資料結構正確
-        sections.value = response.data.sections || []
-        
-        // 初始化展開狀態
-        sections.value.forEach(section => {
-          if (section.subsections) {
-            section.subsections.forEach(sub => {
-              openSections.value[sub.id] = false
-            })
-          }
-        })
-        
-        // 預設打開第一個區塊
-        if (sections.value[0]?.subsections?.[0]) {
-          openSections.value[sections.value[0].subsections[0].id] = true
-        }
-      } catch (error) {
-        console.error('獲取學習內容失敗:', error)
+  data() {
+    return {
+      openSections: {},
+      activeSection: '',
+      sections: [],
+      previewImageUrl: null,
+      currentIndex: 0,
+      bannerData: {
+        bannerImages: []
       }
     }
-
-    const toggleSection = (sectionId) => {
-      openSections.value[sectionId] = !openSections.value[sectionId]
+  },
+  computed: {
+    currentBanner() {
+      if (this.bannerData.bannerImages.length === 0) {
+        return {
+          title: '',
+          subtitle: '',
+          description: ''
+        }
+      }
+      return this.bannerData.bannerImages[this.currentIndex] || this.bannerData.bannerImages[0]
     }
-
-    const updateActiveSection = () => {
+  },
+  async created() {
+    try {
+      const response = await bannerAPI.getBannersByType('learning')
+      if (response.data && response.data.data) {
+        const banners = response.data.data
+        this.bannerData.bannerImages = banners.map(banner => ({
+          id: banner.id,
+          image_url: banner.image_url,
+          alt: banner.alt,
+          title: banner.title,
+          subtitle: banner.subtitle,
+          description: banner.description
+        }))
+      }
+    } catch (error) {
+      console.error('Failed to fetch banner data:', error)
+    }
+  },
+  methods: {
+    fetchSections() {
+      learningAPI.getLearningBlocks()
+        .then(response => {
+          this.sections = response.data.sections || []
+          this.sections.forEach(section => {
+            if (section.subsections) {
+              section.subsections.forEach(sub => {
+                this.openSections[sub.id] = false
+              })
+            }
+          })
+          if (this.sections[0]?.subsections?.[0]) {
+            this.openSections[this.sections[0].subsections[0].id] = true
+          }
+        })
+        .catch(error => {
+          console.error('獲取學習內容失敗:', error)
+        })
+    },
+    toggleSection(sectionId) {
+      this.openSections[sectionId] = !this.openSections[sectionId]
+    },
+    updateActiveSection() {
       const sections = document.querySelectorAll('section[id]')
       const scrollPosition = window.scrollY + 100
 
@@ -192,64 +224,46 @@ export default {
         const sectionTop = section.offsetTop
         const sectionHeight = section.offsetHeight
         if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-          activeSection.value = section.id
+          this.activeSection = section.id
         }
       })
-    }
-
-    const getImageUrl = (image) => {
+    },
+    getImageUrl(image) {
       if (!image) return ''
       if (image.startsWith('http')) return image
       return `${import.meta.env.VITE_BACKEND_URL}/api/learning/uploads/${image.split('/').pop()}`
-    }
-
-    const previewImage = (url) => {
-      previewImageUrl.value = url
-      // 保存當前滾動位置並禁用滾動
+    },
+    previewImage(url) {
+      this.previewImageUrl = url
       document.body.style.overflow = 'hidden'
-      document.body.style.paddingRight = '0px' // 防止滾動條消失導致頁面跳動
-    }
-
-    // 監聽 ESC 鍵關閉預覽
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && previewImageUrl.value) {
-        closePreview()
+      document.body.style.paddingRight = '0px'
+    },
+    closePreview() {
+      this.previewImageUrl = null
+      document.body.style.overflow = ''
+      document.body.style.paddingRight = ''
+    },
+    updateIndex(newIndex) {
+      this.currentIndex = newIndex
+    },
+    handleKeyDown(e) {
+      if (e.key === 'Escape' && this.previewImageUrl) {
+        this.closePreview()
       }
     }
-
-    // 關閉預覽
-    const closePreview = () => {
-      previewImageUrl.value = null
-      // 恢復滾動
-      document.body.style.overflow = ''
-      document.body.style.paddingRight = ''
-    }
-
-    onMounted(() => {
-      window.addEventListener('scroll', updateActiveSection)
-      updateActiveSection()
-      fetchSections()
-      window.addEventListener('keydown', handleKeyDown)
-    })
-
-    onUnmounted(() => {
-      window.removeEventListener('scroll', updateActiveSection)
-      window.removeEventListener('keydown', handleKeyDown)
-      // 確保組件卸載時恢復滾動
-      document.body.style.overflow = ''
-      document.body.style.paddingRight = ''
-    })
-
-    return {
-      openSections,
-      toggleSection,
-      activeSection,
-      sections,
-      getImageUrl,
-      previewImage,
-      previewImageUrl,
-      closePreview
-    }
+  },
+  mounted() {
+    this.currentIndex = 0
+    window.addEventListener('scroll', this.updateActiveSection)
+    this.updateActiveSection()
+    this.fetchSections()
+    window.addEventListener('keydown', this.handleKeyDown)
+  },
+  unmounted() {
+    window.removeEventListener('scroll', this.updateActiveSection)
+    window.removeEventListener('keydown', this.handleKeyDown)
+    document.body.style.overflow = ''
+    document.body.style.paddingRight = ''
   }
 }
 </script>

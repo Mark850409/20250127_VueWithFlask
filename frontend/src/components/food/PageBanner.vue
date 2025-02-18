@@ -3,19 +3,25 @@
     <!-- 輪播圖片 -->
     <div class="absolute inset-0">
       <transition-group name="fade">
-        <img v-for="(image, index) in bannerImages" 
+        <img v-if="hasImages"
+             v-for="(image, index) in bannerImages" 
              :key="image.id"
              v-show="currentImageIndex === index"
-             :src="image.url" 
+             :src="image.image_url" 
              class="w-full h-full object-cover transition-opacity duration-500"
              :alt="image.alt">
+        <!-- 無圖片時顯示預設背景 -->
+        <div v-else
+             key="default-bg"
+             class="w-full h-full bg-gray-900"></div>
       </transition-group>
       <!-- 深色漸層遮罩 -->
       <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30"></div>
     </div>
 
-    <!-- 左右箭頭 - 加回 z-index -->
-    <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between items-center px-4 pointer-events-none z-30">
+    <!-- 只在有圖片時顯示箭頭 -->
+    <div v-if="hasImages" 
+         class="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between items-center px-4 pointer-events-none z-30">
       <button @click.stop="prevSlide" 
               class="w-12 h-12 flex items-center justify-center 
                      text-white/70 hover:text-white bg-black/30 hover:bg-black/50 rounded-full 
@@ -50,11 +56,12 @@
       </div>
     </div>
 
-    <!-- 輪播控制按鈕 -->
-    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-30">
+    <!-- 只在有圖片時顯示輪播控制按鈕 -->
+    <div v-if="hasImages"
+         class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-30">
       <button v-for="(_, index) in bannerImages"
               :key="index"
-              @click="currentImageIndex = index"
+              @click="updateCurrentIndex(index)"
               class="w-3 h-3 rounded-full transition-all duration-300"
               :class="currentImageIndex === index ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/70'">
       </button>
@@ -77,55 +84,63 @@ export default {
     description: {
       type: String,
       required: true
+    },
+    bannerImages: {
+      type: Array,
+      required: true,
+      default: () => []
+    },
+    currentImageIndex: {
+      type: Number,
+      required: true,
+      default: 0
     }
   },
+  emits: ['update:currentIndex'],
   data() {
     return {
-      currentImageIndex: 0,
-      autoPlayInterval: null,
-      bannerImages: [
-        {
-          id: 1,
-          url: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&q=80&w=1920&h=600',
-          alt: 'Banner 1'
-        },
-        {
-          id: 2,
-          url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=1920&h=600',
-          alt: 'Banner 2'
-        },
-        {
-          id: 3,
-          url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80&w=1920&h=600',
-          alt: 'Banner 3'
-        },
-        {
-          id: 4,
-          url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80&w=1920&h=600',
-          alt: 'Banner 4'
-        }
-      ]
+      autoPlayInterval: null
+    }
+  },
+  computed: {
+    hasImages() {
+      return this.bannerImages && this.bannerImages.length > 0
     }
   },
   mounted() {
-    this.startAutoPlay()
+    if (this.hasImages) {
+      this.$emit('update:currentIndex', 0)
+      this.startAutoPlay()
+    }
   },
   beforeUnmount() {
     this.stopAutoPlay()
   },
   methods: {
     prevSlide() {
-      this.currentImageIndex = (this.currentImageIndex - 1 + this.bannerImages.length) % this.bannerImages.length
+      if (!this.hasImages) return
+      const newIndex = (this.currentImageIndex - 1 + this.bannerImages.length) % this.bannerImages.length
+      this.$emit('update:currentIndex', newIndex)
     },
     nextSlide() {
-      this.currentImageIndex = (this.currentImageIndex + 1) % this.bannerImages.length
+      if (!this.hasImages) return
+      const newIndex = (this.currentImageIndex + 1) % this.bannerImages.length
+      this.$emit('update:currentIndex', newIndex)
+    },
+    updateCurrentIndex(index) {
+      this.$emit('update:currentIndex', index)
     },
     startAutoPlay() {
-      this.autoPlayInterval = setInterval(this.nextSlide, 5000)
+      if (!this.hasImages) return
+      this.stopAutoPlay()
+      this.autoPlayInterval = setInterval(() => {
+        this.nextSlide()
+      }, 5000)
     },
     stopAutoPlay() {
       if (this.autoPlayInterval) {
         clearInterval(this.autoPlayInterval)
+        this.autoPlayInterval = null
       }
     },
     scrollToSection(sectionId) {
@@ -136,6 +151,18 @@ export default {
           block: 'start'
         })
       }
+    }
+  },
+  watch: {
+    bannerImages: {
+      handler(newVal) {
+        if (newVal && newVal.length > 0) {
+          this.startAutoPlay()
+        } else {
+          this.stopAutoPlay()
+        }
+      },
+      immediate: true
     }
   }
 }
