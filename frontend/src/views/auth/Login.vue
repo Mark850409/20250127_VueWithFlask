@@ -1,198 +1,245 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8 flex items-center">
-    <div class="max-w-md w-full mx-auto space-y-8 bg-white rounded-2xl shadow-xl p-8">
-      <!-- Logo -->
-      <div class="text-center">
-        <i class="fas fa-utensils text-6xl text-indigo-600"></i>
-        <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
-          {{ isLogin ? '歡迎回來' : '建立新帳號' }}
-        </h2>
-        <p class="mt-2 text-sm text-gray-600">
-          {{ isLogin ? '使用您的帳號登入系統' : '填寫以下資料以建立帳號' }}
-        </p>
-      </div>
+  <!-- 修改背景和遮罩 -->
+  <div class="min-h-screen relative flex items-center">
+    <!-- 背景圖片 -->
+    <div class="absolute inset-0 z-0">
+      <img 
+        src="https://images.unsplash.com/photo-1515059810521-a1d411d8517f?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        class="w-full h-full object-cover"
+        alt="背景圖片"
+      >
+      <!-- 遮罩層 -->
+      <div class="absolute inset-0 bg-black/60"></div>
+    </div>
 
-      <!-- 表單 -->
-      <form class="mt-8 space-y-6" @submit.prevent="handleSubmit">
-        <div class="rounded-md shadow-sm space-y-4">
-          <div v-if="!isLogin" class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">頭像</label>
-            <div class="flex items-center space-x-4">
-              <img :src="avatarPreview || defaultAvatar" 
-                   class="h-20 w-20 rounded-full object-cover border-2 border-gray-200"
-                   alt="頭像預覽">
-              <div class="flex flex-col space-y-2">
-                <label class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500">
-                  <span>上傳頭像</span>
-                  <input type="file" 
-                         class="sr-only" 
-                         accept="image/*"
-                         @change="handleAvatarChange">
-                </label>
-                <p class="text-xs text-gray-500">PNG, JPG 格式 (最大 2MB)</p>
-              </div>
+    <!-- 主要內容 -->
+    <div class="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row relative">
+        <!-- 左側圖片區域 -->
+        <div class="w-full md:w-1/2 transition-transform duration-500 p-8 md:p-16" 
+             :class="{ 'md:translate-x-full': !isLogin }">
+          <div class="text-white space-y-6 md:space-y-8">
+            <!-- Logo 和標題區域 -->
+            <div class="text-center space-y-4 md:space-y-6">
+              <i class="ri-cup-line text-5xl md:text-7xl text-white"></i>
+              <h2 class="text-3xl md:text-5xl font-extrabold tracking-wide text-white drop-shadow-lg">
+                今天喝什麼呢?
+              </h2>
+              <p class="text-lg md:text-xl text-white drop-shadow-md">
+                使用您的帳號登入系統
+              </p>
+            </div>
+            
+            <!-- 關於網站說明 -->
+            <div class="mt-6 md:mt-12 space-y-4 text-center">
+              <p class="text-base md:text-lg text-white text-left drop-shadow-md leading-relaxed">
+                在我們的飲品推薦平台，每一杯飲品都是一次獨特的體驗。透過先進的文字探勘技術和情感分析， 我們精準解讀用戶的評價和偏好，為您提供最貼心的推薦服務。
+              </p>
             </div>
           </div>
-
-          <div v-if="!isLogin">
-            <label for="username" class="block text-sm font-medium text-gray-700">
-              名稱 <span class="text-red-500">*</span>
-            </label>
-            <input id="username" 
-                   v-model="form.username"
-                   type="text"
-                   required
-                   :class="{'border-red-500': errors.username}"
-                   class="appearance-none relative block w-full px-3 py-2 border border-gray-300 
-                          placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
-                          focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                   placeholder="請輸入您的名稱">
-            <p v-if="errors.username" class="mt-1 text-xs text-red-500">{{ errors.username }}</p>
-          </div>
-
-          <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">
-              Email <span class="text-red-500">*</span>
-            </label>
-            <input id="email" 
-                   v-model="form.email" 
-                   type="email" 
-                   required
-                   :class="{'border-red-500': errors.email}"
-                   class="appearance-none relative block w-full px-3 py-2 border border-gray-300 
-                          placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
-                          focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                   placeholder="請輸入Email">
-            <p v-if="errors.email" class="mt-1 text-xs text-red-500">{{ errors.email }}</p>
-          </div>
-
-          <div>
-            <label for="password" class="block text-sm font-medium text-gray-700">
-              密碼 <span class="text-red-500">*</span>
-            </label>
-            <input id="password" 
-                   v-model="form.password" 
-                   type="password" 
-                   required
-                   :class="{'border-red-500': errors.password}"
-                   class="appearance-none relative block w-full px-3 py-2 border border-gray-300 
-                          placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
-                          focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                   placeholder="請輸入密碼">
-            <p v-if="errors.password" class="mt-1 text-xs text-red-500">{{ errors.password }}</p>
-            <p class="mt-1 text-xs text-gray-500">密碼需要6-12碼，包含大小寫字母、數字及特殊符號</p>
-          </div>
-
-          <div v-if="!isLogin">
-            <label for="confirmPassword" class="block text-sm font-medium text-gray-700">
-              確認密碼 <span class="text-red-500">*</span>
-            </label>
-            <input id="confirmPassword" 
-                   v-model="form.confirmPassword" 
-                   type="password" 
-                   required
-                   :class="{'border-red-500': errors.confirmPassword}"
-                   class="appearance-none relative block w-full px-3 py-2 border border-gray-300 
-                          placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
-                          focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                   placeholder="請再次輸入密碼">
-            <p v-if="errors.confirmPassword" class="mt-1 text-xs text-red-500">{{ errors.confirmPassword }}</p>
-          </div>
         </div>
 
-        <div class="flex items-center justify-between">
-          <div class="flex items-center" v-if="isLogin">
-            <input id="remember-me" type="checkbox" v-model="form.remember"
-                   class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-            <label for="remember-me" class="ml-2 block text-sm text-gray-900">
-              記住我
-            </label>
+        <!-- 右側表單區域 -->
+        <div class="w-full md:w-1/2 transition-transform duration-500 p-6 md:p-8 backdrop-blur-sm bg-white/10 rounded-2xl mt-6 md:mt-0"
+             :class="{ 'md:-translate-x-full': !isLogin }">
+          <!-- 表單內容 -->
+          <form class="space-y-4" @submit.prevent="handleSubmit">
+            <div class="rounded-md shadow-sm space-y-3">
+              <div v-if="!isLogin" class="space-y-1">
+                <label class="block text-sm font-medium text-white/90">頭像</label>
+                <div class="flex items-center space-x-4">
+                  <img :src="avatarPreview || defaultAvatar" 
+                       class="h-16 w-16 rounded-full object-cover border-2 border-gray-200"
+                       alt="頭像預覽">
+                  <div class="flex flex-col space-y-1">
+                    <label class="relative cursor-pointer rounded-md font-medium text-indigo-600 text-white/90">
+                      <span>上傳頭像</span>
+                      <input type="file" 
+                             class="sr-only" 
+                             accept="image/*"
+                             @change="handleAvatarChange">
+                    </label>
+                    <p class="text-xs text-white/90">PNG, JPG 格式 (最大 2MB)</p>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="!isLogin">
+                <label for="username" class="block text-sm font-medium text-white/90">
+                  名稱 <span class="text-red-500">*</span>
+                </label>
+                <input id="username" 
+                       v-model="form.username"
+                       type="text"
+                       required
+                       :class="{'border-red-500': errors.username}"
+                       class="appearance-none relative block w-full px-3 py-2 
+                              border border-white/30 bg-white/20 backdrop-blur-md
+                              placeholder-gray-300 text-white rounded-xl
+                              focus:outline-none focus:ring-2 focus:ring-indigo-400 
+                              focus:border-transparent transition-all duration-200
+                              hover:bg-white/30"
+                       placeholder="請輸入您的名稱">
+                <p v-if="errors.username" class="mt-1 text-xs text-red-500">{{ errors.username }}</p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-white/90">
+                  Email <span class="text-red-300">*</span>
+                </label>
+                <input id="email" 
+                       v-model="form.email" 
+                       type="email" 
+                       required
+                       :class="{'border-red-500': errors.email}"
+                       class="appearance-none relative block w-full px-3 py-2 
+                              border border-white/30 bg-white/30 backdrop-blur-md
+                              placeholder-white/60 text-white rounded-xl
+                              focus:outline-none focus:ring-2 focus:ring-indigo-400 
+                              focus:border-transparent transition-all duration-200
+                              hover:bg-white/40"
+                       placeholder="請輸入Email">
+                <p v-if="errors.email" class="mt-1 text-xs text-red-500">{{ errors.email }}</p>
+              </div>
+
+              <div>
+                <label for="password" class="block text-sm font-medium text-white/90">
+                  密碼 <span class="text-red-500">*</span>
+                </label>
+                <input id="password" 
+                       v-model="form.password" 
+                       type="password" 
+                       required
+                       :class="{'border-red-500': errors.password}"
+                       class="appearance-none relative block w-full px-3 py-2 
+                              border border-white/30 bg-white/20 backdrop-blur-md
+                              placeholder-gray-300 text-white rounded-xl
+                              focus:outline-none focus:ring-2 focus:ring-indigo-400 
+                              focus:border-transparent transition-all duration-200
+                              hover:bg-white/30"
+                       placeholder="請輸入密碼">
+                <p v-if="errors.password" class="mt-1 text-xs text-red-300">
+                  {{ errors.password }}
+                </p>
+                <p class="mt-1 text-xs text-white/80">
+                  密碼需要6-12碼，包含大小寫字母、數字及特殊符號
+                </p>
+              </div>
+
+              <div v-if="!isLogin">
+                <label for="confirmPassword" class="block text-sm font-medium text-white/90">
+                  確認密碼 <span class="text-red-500">*</span>
+                </label>
+                <input id="confirmPassword" 
+                       v-model="form.confirmPassword" 
+                       type="password" 
+                       required
+                       :class="{'border-red-500': errors.confirmPassword}"
+                       class="appearance-none relative block w-full px-3 py-2 
+                              border border-white/30 bg-white/20 backdrop-blur-md
+                              placeholder-gray-300 text-white rounded-xl
+                              focus:outline-none focus:ring-2 focus:ring-indigo-400 
+                              focus:border-transparent transition-all duration-200
+                              hover:bg-white/30"
+                       placeholder="請再次輸入密碼">
+                <p v-if="errors.confirmPassword" class="mt-1 text-xs text-red-500">{{ errors.confirmPassword }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div class="flex items-center" v-if="isLogin">
+                <input id="remember-me" type="checkbox" v-model="form.remember"
+                       class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                <label for="remember-me" class="ml-2 block text-sm text-white/90">
+                  記住我
+                </label>
+              </div>
+
+              <div class="text-sm" v-if="isLogin">
+                <a @click="showForgotPasswordModal = true" 
+                   class="font-medium text-indigo-300 hover:text-indigo-200 cursor-pointer">
+                  忘記密碼？
+                </a>
+              </div>
+            </div>
+
+            <div>
+              <button type="submit" 
+                      class="w-full py-3 px-4 border border-white/30
+                             text-sm font-medium rounded-xl text-white 
+                             bg-gradient-to-r from-indigo-500 to-purple-500
+                             hover:from-indigo-600 hover:to-purple-600
+                             backdrop-blur-sm transition-all duration-200
+                             focus:outline-none focus:ring-2 
+                             focus:ring-offset-2 focus:ring-indigo-500
+                             shadow-lg shadow-indigo-500/30">
+                {{ isLogin ? '登入' : '註冊' }}
+              </button>
+            </div>
+          </form>
+
+          <!-- 社群登入按鈕樣式調整 -->
+          <div class="grid grid-cols-3 gap-2 md:gap-4 mt-6 md:mt-8">
+            <button 
+              class="w-full inline-flex justify-center py-3 px-4 
+                     border border-white/30 rounded-xl backdrop-blur-sm 
+                     bg-white/10 text-white hover:bg-white/20 
+                     transition-all duration-200 shadow-lg shadow-black/5">
+              <i class="ri-google-line"></i>
+            </button>
+            <button @click="socialLogin('facebook')"
+                    class="w-full inline-flex justify-center py-3 px-4 
+                     border border-white/30 rounded-xl backdrop-blur-sm 
+                     bg-white/10 text-white hover:bg-white/20 
+                     transition-all duration-200 shadow-lg shadow-black/5">
+              <i class="ri-messenger-line"></i>
+            </button>
+            <button @click="socialLogin('line')"
+                    class="w-full inline-flex justify-center py-3 px-4 
+                     border border-white/30 rounded-xl backdrop-blur-sm 
+                     bg-white/10 text-white hover:bg-white/20 
+                     transition-all duration-200 shadow-lg shadow-black/5">
+              <i class="ri-line-line"></i>
+            </button>
           </div>
 
-          <div class="text-sm" v-if="isLogin">
-            <a @click="showForgotPasswordModal = true" 
-               class="font-medium text-indigo-600 hover:text-indigo-500 cursor-pointer">
-              忘記密碼？
-            </a>
+          <!-- 切換登入/註冊按鈕 -->
+          <div class="text-center mt-4 md:mt-6">
+            <button @click="isLogin = !isLogin" 
+                    class="text-sm text-white hover:text-indigo-200 transition-colors">
+              {{ isLogin ? '還沒有帳號？立即註冊' : '已有帳號？立即登入' }}
+            </button>
           </div>
         </div>
+      </div>
+    </div>
 
-        <div>
-          <button type="submit" 
-                  class="group relative w-full flex justify-center py-2 px-4 border border-transparent 
-                         text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 
-                         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-              <i class="fas fa-lock text-indigo-500 group-hover:text-indigo-400"></i>
-            </span>
-            {{ isLogin ? '登入' : '註冊' }}
+    <!-- 忘記密碼 Modal -->
+    <div v-if="showForgotPasswordModal" 
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+      <div class="bg-white rounded-lg p-6 md:p-8 max-w-md w-full mx-auto">
+        <h3 class="text-xl font-bold mb-4">重設密碼</h3>
+        <p class="text-gray-600 mb-4">請輸入您的 Email，我們將發送重設密碼連結給您。</p>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Email
+          </label>
+          <input type="email" 
+                 v-model="forgotPasswordEmail"
+                 class="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                 placeholder="請輸入您的 Email">
+        </div>
+        
+        <div class="flex justify-end space-x-3">
+          <button @click="showForgotPasswordModal = false"
+                  class="px-4 py-2 text-gray-600 hover:text-gray-800">
+            取消
           </button>
-        </div>
-      </form>
-
-      <!-- 分隔線 -->
-      <div class="relative my-6">
-        <div class="absolute inset-0 flex items-center">
-          <div class="w-full border-t border-gray-300"></div>
-        </div>
-        <div class="relative flex justify-center text-sm">
-          <span class="px-2 bg-white text-gray-500">或使用以下方式</span>
-        </div>
-      </div>
-
-      <!-- 社群登入按鈕 -->
-      <div class="grid grid-cols-3 gap-3">
-        <button @click="socialLogin('google')"
-                class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg 
-                       shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-          <i class="fab fa-google text-red-500"></i>
-        </button>
-        <button @click="socialLogin('facebook')"
-                class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg 
-                       shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-          <i class="fab fa-facebook text-blue-600"></i>
-        </button>
-        <button @click="socialLogin('line')"
-                class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg 
-                       shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-          <i class="fab fa-line text-green-500"></i>
-        </button>
-      </div>
-
-      <!-- 切換登入/註冊 -->
-      <div class="text-center">
-        <button @click="isLogin = !isLogin" class="text-sm text-indigo-600 hover:text-indigo-500">
-          {{ isLogin ? '還沒有帳號？立即註冊' : '已有帳號？立即登入' }}
-        </button>
-      </div>
-
-      <!-- 忘記密碼 Modal -->
-      <div v-if="showForgotPasswordModal" 
-           class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-          <h3 class="text-xl font-bold mb-4">重設密碼</h3>
-          <p class="text-gray-600 mb-4">請輸入您的 Email，我們將發送重設密碼連結給您。</p>
-          
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Email
-            </label>
-            <input type="email" 
-                   v-model="forgotPasswordEmail"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                   placeholder="請輸入您的 Email">
-          </div>
-          
-          <div class="flex justify-end space-x-3">
-            <button @click="showForgotPasswordModal = false"
-                    class="px-4 py-2 text-gray-600 hover:text-gray-800">
-              取消
-            </button>
-            <button @click="handleForgotPassword"
-                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-              發送重設連結
-            </button>
-          </div>
+          <button @click="handleForgotPassword"
+                  class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+            發送重設連結
+          </button>
         </div>
       </div>
     </div>
@@ -210,7 +257,7 @@ export default {
   setup() {
     const router = useRouter()
     const isLogin = ref(true)
-    const defaultAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=default'
+    const defaultAvatar = 'https://api.dicebear.com/9.x/shapes/svg?seed=Liliana&flip=true&backgroundType=gradientLinear'
     const avatarPreview = ref('')
     const avatarFile = ref(null)
     
@@ -416,8 +463,9 @@ export default {
           })
 
           if (response.data.token) {
+            const userData = response.data.user
             localStorage.setItem('token', response.data.token)
-            localStorage.setItem('user', JSON.stringify(response.data.user))
+            localStorage.setItem('user', JSON.stringify(userData))
             console.log('保存的用戶信息:', response.data.user)
             
             await Swal.fire({
@@ -427,11 +475,25 @@ export default {
               timer: 1500,
               showConfirmButton: false
             })
-            router.push('/admin')
+
+            // 判斷是否為管理員帳號
+            if (userData.email === 'xiaoyan850409@gmail.com') {
+              localStorage.setItem('isAdmin', 'true')
+              router.push('/admin')
+            } else {
+              localStorage.setItem('isAdmin', 'false')
+              router.push('/')
+            }
           }
         }
       } catch (error) {
         console.error('Login Error:', error)
+        await Swal.fire({
+          icon: 'error',
+          title: '登入失敗',
+          text: error.response?.data?.message || '請檢查您的帳號密碼',
+          confirmButtonText: '確定'
+        })
       }
     }
 
@@ -501,4 +563,103 @@ export default {
     }
   }
 }
-</script> 
+</script>
+
+<style scoped>
+/* 輸入框 placeholder 顏色調整 */
+::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+
+/* 輸入框自動填充樣式 */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: white;
+  -webkit-box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.2) inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* 調整錯誤提示文字顏色 */
+.text-red-500 {
+  color: rgb(252, 165, 165);
+}
+
+/* 調整必填星號顏色 */
+.text-red-500 {
+  color: rgb(252, 165, 165);
+}
+
+/* 調整 checkbox 樣式 */
+input[type="checkbox"] {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+input[type="checkbox"]:checked {
+  background-color: rgb(99, 102, 241);
+  border-color: rgb(99, 102, 241);
+}
+
+/* 漸變背景效果 */
+.bg-gradient-custom {
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+}
+
+/* 玻璃擬態效果 */
+.glassmorphism {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* 手機版特定樣式 */
+@media (max-width: 768px) {
+  .min-h-screen {
+    min-height: 100vh;
+    padding: 1rem 0;
+  }
+
+  /* 調整輸入框在手機版的大小 */
+  input {
+    font-size: 16px; /* 防止 iOS 自動縮放 */
+  }
+
+  /* 調整社群登入按鈕在手機版的大小 */
+  .grid-cols-3 button {
+    padding: 0.5rem;
+  }
+
+  /* 調整錯誤提示文字在手機版的大小 */
+  .text-xs {
+    font-size: 0.7rem;
+  }
+
+  /* 調整密碼提示文字在手機版的大小 */
+  .text-sm {
+    font-size: 0.8rem;
+  }
+}
+
+/* 確保背景圖片在所有設備上都能完整顯示 */
+.absolute.inset-0 img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+/* 優化手機版的觸控體驗 */
+@media (hover: none) {
+  button, a {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* 調整玻璃擬態效果在手機版的表現 */
+@supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
+  .backdrop-blur-sm {
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+}
+</style> 

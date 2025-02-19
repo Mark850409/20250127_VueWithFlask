@@ -24,6 +24,7 @@ import MonitorManagement from '@/components/admin/monitor/MonitorManagement.vue'
 import ProjectManagement from '@/components/admin/projects/ProjectManagement.vue'
 import BannerManagement from '@/components/admin/banner/BannerManagement.vue'
 import LearningManagement from '@/components/admin/learning/LearningManagement.vue'
+
 const routes = [
   {
     path: '/',
@@ -197,6 +198,21 @@ const router = createRouter({
       return { top: 0 }
     }
   }
+})
+
+router.beforeEach((to, from, next) => {
+  const isAdmin = localStorage.getItem('isAdmin') === 'true'
+  
+  // 檢查是否需要管理員權限的路由
+  if (to.path.startsWith('/admin')) {
+    if (!isAdmin) {
+      // 如果不是管理員，重定向到首頁
+      next('/')
+      return
+    }
+  }
+  
+  next()
 })
 
 export default router 

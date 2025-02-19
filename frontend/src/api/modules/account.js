@@ -82,7 +82,11 @@ export default {
 
   // 重設密碼
   resetPassword(token, newPassword) {
-    return axios.post(`/users/reset-password`, { password: newPassword })
+    return axios.post(`/users/reset-password`, 
+      { 
+        token: token,
+        password: newPassword 
+      })
       .catch(error => {
         console.error('Reset Password Error:', error.response?.data || error.message)
         throw error

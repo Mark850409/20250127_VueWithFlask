@@ -313,6 +313,7 @@ export default {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       localStorage.removeItem('loginTime')
+      localStorage.removeItem('isAdmin')
       
       // 重置計時相關的狀態
       remainingTime.value = 0

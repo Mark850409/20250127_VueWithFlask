@@ -210,6 +210,7 @@ export default {
           await axios.post('/users/logout')
           localStorage.removeItem('token')
           localStorage.removeItem('user')
+          localStorage.removeItem('isAdmin')
           router.push('/login')
           
           // 顯示登出成功訊息
