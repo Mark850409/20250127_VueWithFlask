@@ -1,3 +1,96 @@
+/* Google Fonts - Roboto */
+@import url('https://fonts.googleapis.com/css2?family=Chocolate+Classical+Sans&family=LXGW+WenKai+TC&family=M+PLUS+Rounded+1c&family=Roboto:wght@300&display=swap');
+
+/* 全域字體設定 */
+:root {
+  font-family: 'Chocolate Classical Sans', 'LXGW WenKai TC', 'M PLUS Rounded 1c', 'Roboto', sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 100;
+  font-style: normal;
+  font-variation-settings: "wdth" 100;
+}
+
+/* 全域字體粗細設定 */
+h1, .h1 {
+  font-weight: 300 !important;
+  font-variation-settings: "wdth" 100;
+}
+
+h2, .h2 {
+  font-weight: 300 !important;
+  font-variation-settings: "wdth" 100;
+}
+
+h3, .h3 {
+  font-weight: 300 !important;
+  font-variation-settings: "wdth" 100;
+}
+
+h4, .h4 {
+  font-weight: 300 !important;
+  font-variation-settings: "wdth" 100;
+}
+
+h5, .h5 {
+  font-weight: 300 !important;
+  font-variation-settings: "wdth" 100;
+}
+
+h6, .h6 {
+  font-weight: 300 !important;
+  font-variation-settings: "wdth" 100;
+}
+
+/* 文字元素字體粗細 */
+p, span, a, li, td, th, label, input, textarea, button {
+  font-weight: 300 !important;
+  font-variation-settings: "wdth" 100;
+}
+
+/* 特殊強調文字 */
+strong, b, .font-bold {
+  font-weight: 300 !important;
+  font-variation-settings: "wdth" 100;
+}
+
+/* 輕量文字 */
+.font-light {
+  font-weight: 300 !important;
+  font-variation-settings: "wdth" 100;
+}
+
+/* 一般文字 */
+.font-normal {
+  font-weight: 300 !important;
+  font-variation-settings: "wdth" 100;
+}
+
+/* 中等文字 */
+.font-medium {
+  font-weight: 300 !important;
+  font-variation-settings: "wdth" 100;
+}
+
+/* 半粗文字 */
+.font-semibold {
+  font-weight: 300 !important;
+  font-variation-settings: "wdth" 100;
+}
+
+/* 英文字體 */
+.en {
+  font-family: 'Chocolate Classical Sans', 'Roboto', sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300 !important;
+  font-style: normal;
+  font-variation-settings: "wdth" 100;
+}
+
+/* 中文字體 */
+.zh {
+  font-family: 'LXGW WenKai TC', 'M PLUS Rounded 1c', sans-serif;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -182,4 +275,4 @@
 /* 頁腳漸變背景 */
 .footer-gradient {
   background: linear-gradient(180deg, rgba(31,41,55,0) 0%, rgba(31,41,55,1) 100%);
-} 
+}

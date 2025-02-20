@@ -143,7 +143,6 @@
 <script>
 import { ref, onMounted, watch } from 'vue'
 import DataTable from '../common/DataTable.vue'
-import BackToHome from '../common/BackToHome.vue'
 import { useLogger } from '@/composables/useLogger'
 import { ratingAPI } from '@/api'
 import Swal from 'sweetalert2'
@@ -151,8 +150,7 @@ import Swal from 'sweetalert2'
 export default {
   name: 'RatingManagement',
   components: {
-    DataTable,
-    BackToHome
+    DataTable
   },
   setup() {
     const columns = [

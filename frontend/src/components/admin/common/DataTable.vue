@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+  <div class="datatable-container bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
     <!-- 表格控制列 -->
     <div class="px-4 md:px-6 py-3 md:py-4 border-b dark:border-gray-700 flex flex-col md:flex-row md:justify-between md:items-center space-y-3 md:space-y-0 bg-gradient-to-r from-slate-50 to-gray-50 dark:from-gray-800 dark:to-gray-900">
       <div class="flex items-center space-x-2 w-full md:w-auto">

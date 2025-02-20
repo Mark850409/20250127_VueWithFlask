@@ -1,41 +1,65 @@
 /* ===== Material Design 3 Dark Theme ===== */
 .dark {
   /* 主色系 - Material Design Lavender */
-  --primary-main: #9575CD;          /* Primary - 主紫色 */
-  --primary-light: #EDE7F6;         /* Primary Container - 淺紫背景 */
-  --primary-dark: #7E57C2;          /* On Primary Container - 深紫色 */
-  --primary-hover: #B39DDB;         /* Primary Fixed - 中紫色 */
+  --primary-main: #9575CD;
+  /* Primary - 主紫色 */
+  --primary-light: #EDE7F6;
+  /* Primary Container - 淺紫背景 */
+  --primary-dark: #7E57C2;
+  /* On Primary Container - 深紫色 */
+  --primary-hover: #B39DDB;
+  /* Primary Fixed - 中紫色 */
   --primary-gradient: linear-gradient(135deg, var(--primary-light), var(--primary-main));
 
   /* 文字顏色 */
-  --text-primary: #E6E1E5;          /* On Surface */
-  --text-light: #CAC4D0;            /* Surface Dim */
-  --text-dark: #938F99;             /* Surface Bright */
+  --text-primary: #E6E1E5;
+  /* On Surface */
+  --text-light: #CAC4D0;
+  /* Surface Dim */
+  --text-dark: #938F99;
+  /* Surface Bright */
 
   /* 背景顏色 */
-  --bg-primary: #1C1B1F;            /* Background */
-  --bg-secondary: #2B2930;          /* Surface Container Low */
-  --bg-accent: rgba(208, 188, 255, 0.08);  /* Surface Container Lowest */
+  --bg-primary: #1C1B1F;
+  /* Background */
+  --bg-secondary: #2B2930;
+  /* Surface Container Low */
+  --bg-accent: rgba(208, 188, 255, 0.08);
+  /* Surface Container Lowest */
 
   /* 狀態顏色 */
-  --hover-light: rgba(208, 188, 255, 0.08);  /* Surface Container High */
-  --hover-dark: rgba(208, 188, 255, 0.12);   /* Surface Container Highest */
+  --hover-light: rgba(208, 188, 255, 0.08);
+  /* Surface Container High */
+  --hover-dark: rgba(208, 188, 255, 0.12);
+  /* Surface Container Highest */
 
   /* 排序按鈕相關顏色 */
-  --sort-btn-bg: #2B2930;                    /* Surface Container Low */
-  --sort-btn-text: #D0BCFF;                  /* Primary */
-  --sort-btn-selected-bg: #4F378B;           /* On Primary Container */
-  --sort-btn-selected-text: #EADDFF;         /* Primary Container */
-  --sort-btn-unselected-bg: #1C1B1F;         /* Background */
-  --sort-btn-unselected-text: #CAC4D0;       /* Surface Dim */
-  --sort-btn-hover-bg: #332D41;              /* Surface Container High */
-  --sort-btn-hover-text: #D0BCFF;            /* Primary */
+  --sort-btn-bg: #2B2930;
+  /* Surface Container Low */
+  --sort-btn-text: #D0BCFF;
+  /* Primary */
+  --sort-btn-selected-bg: #4F378B;
+  /* On Primary Container */
+  --sort-btn-selected-text: #EADDFF;
+  /* Primary Container */
+  --sort-btn-unselected-bg: #1C1B1F;
+  /* Background */
+  --sort-btn-unselected-text: #CAC4D0;
+  /* Surface Dim */
+  --sort-btn-hover-bg: #332D41;
+  /* Surface Container High */
+  --sort-btn-hover-text: #D0BCFF;
+  /* Primary */
 
   /* 視圖切換按鈕顏色 */
-  --view-btn-active-bg: #4F378B;             /* On Primary Container */
-  --view-btn-active-text: #EADDFF;           /* Primary Container */
-  --view-btn-default-bg: #2B2930;            /* Surface Container Low */
-  --view-btn-default-text: #D0BCFF;          /* Primary */
+  --view-btn-active-bg: #4F378B;
+  /* On Primary Container */
+  --view-btn-active-text: #EADDFF;
+  /* Primary Container */
+  --view-btn-default-bg: #2B2930;
+  /* Surface Container Low */
+  --view-btn-default-text: #D0BCFF;
+  /* Primary */
 
   /* 陰影效果 */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -43,68 +67,174 @@
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
 
   /* 標題顏色 */
-  --title-primary: #E6E1E5;    /* On Surface - 近白色 */
-  --title-secondary: #CAC4D0;  /* Surface Dim - 淺灰色 */
-  --title-tertiary: #938F99;   /* Surface Bright - 中灰色 */
-  --title-quaternary: #79747E; /* Surface Container Highest - 深灰色 */
-  --title-quinary: #49454F;    /* Surface Container High - 更深灰色 */
-  --title-senary: #322F35;     /* Surface Container Low - 最深灰色 */
-  --title-light: #FFFFFF;      /* White - 純白色 */
+  --title-primary: #E6E1E5;
+  /* On Surface - 近白色 */
+  --title-secondary: #CAC4D0;
+  /* Surface Dim - 淺灰色 */
+  --title-tertiary: #938F99;
+  /* Surface Bright - 中灰色 */
+  --title-quaternary: #79747E;
+  /* Surface Container Highest - 深灰色 */
+  --title-quinary: #49454F;
+  /* Surface Container High - 更深灰色 */
+  --title-senary: #322F35;
+  /* Surface Container Low - 最深灰色 */
+  --title-light: #FFFFFF;
+  /* White - 純白色 */
 
   /* 邊框顏色 */
-  --border-color: #49454F;          /* Outline */
-  --border-accent: #D0BCFF;         /* Primary */
-  --border-hover: rgba(208, 188, 255, 0.5);  /* Primary with opacity */
+  --border-color: #49454F;
+  /* Outline */
+  --border-accent: #D0BCFF;
+  /* Primary */
+  --border-hover: rgba(208, 188, 255, 0.5);
+  /* Primary with opacity */
 
   /* 錯誤狀態 */
-  --error: #F2B8B5;                 /* Error */
-  --on-error: #601410;              /* On Error */
-  --error-container: #8C1D18;       /* Error Container */
-  --on-error-container: #F9DEDC;    /* On Error Container */
+  --error: #F2B8B5;
+  /* Error */
+  --on-error: #601410;
+  /* On Error */
+  --error-container: #8C1D18;
+  /* Error Container */
+  --on-error-container: #F9DEDC;
+  /* On Error Container */
 
   /* 成功狀態 */
-  --success: #A8DAB5;              /* Success */
-  --on-success: #1B4B2A;           /* On Success */
-  --success-container: #2E7D32;    /* Success Container */
-  --on-success-container: #D3E8D4; /* On Success Container */
+  --success: #A8DAB5;
+  /* Success */
+  --on-success: #1B4B2A;
+  /* On Success */
+  --success-container: #2E7D32;
+  /* Success Container */
+  --on-success-container: #D3E8D4;
+  /* On Success Container */
 
   /* 警告狀態 */
-  --warning: #FFB4A1;              /* Warning */
-  --on-warning: #492012;           /* On Warning */
-  --warning-container: #743725;    /* Warning Container */
-  --on-warning-container: #FFDBCF; /* On Warning Container */
+  --warning: #FFB4A1;
+  /* Warning */
+  --on-warning: #492012;
+  /* On Warning */
+  --warning-container: #743725;
+  /* Warning Container */
+  --on-warning-container: #FFDBCF;
+  /* On Warning Container */
 
   /* 後台特殊色系 */
-  --admin-bg-primary: #1a1c23;        /* 主背景色 */
-  --admin-bg-secondary: #24262d;      /* 次要背景 */
-  --admin-bg-tertiary: #2d2f36;       /* 三級背景 */
-  --admin-modal-bg: #1f2937;          /* Modal 背景色 */
-  --admin-modal-overlay: rgba(0, 0, 0, 0.7); /* Modal 遮罩層 */
-  --admin-card-bg: rgba(36, 38, 45, 0.7); /* 卡片背景 */
-  --admin-border: rgba(99, 102, 241, 0.2); /* 邊框顏色 */
-  --admin-hover: rgba(99, 102, 241, 0.15);  /* 懸停效果 */
-  --admin-hover-light: rgba(255, 255, 255, 0.05); /* 淺色懸停效果 */
-  --admin-input-bg: rgba(45, 47, 54, 0.8);  /* 輸入框背景 */
-  --admin-input-hover: rgba(45, 47, 54, 0.9);  /* 輸入框懸停背景 */
-  --admin-input-focus: rgba(45, 47, 54, 1);  /* 輸入框聚焦背景 */
+  --admin-bg-primary: #1a1c23;
+  /* 主背景色 */
+  --admin-bg-secondary: #24262d;
+  /* 次要背景 */
+  --admin-bg-tertiary: #2d2f36;
+  /* 三級背景 */
+  --admin-modal-bg: #1f2937;
+  /* Modal 背景色 */
+  --admin-modal-overlay: rgba(0, 0, 0, 0.7);
+  /* Modal 遮罩層 */
+  --admin-card-bg: rgba(36, 38, 45, 0.95);
+  /* 卡片背景 */
+  --admin-card-hover: rgba(45, 47, 54, 0.98);
+  /* 卡片懸停背景 */
+  --admin-border: rgba(99, 102, 241, 0.15);
+  /* 邊框顏色 */
+  --admin-border-hover: rgba(99, 102, 241, 0.25);
+  /* 邊框懸停顏色 */
+  --admin-border-active: rgba(99, 102, 241, 0.35);
+  /* 邊框激活顏色 */
+  --admin-hover: rgba(99, 102, 241, 0.15);
+  /* 懸停效果 */
+  --admin-hover-light: rgba(255, 255, 255, 0.05);
+  /* 淺色懸停效果 */
+  --admin-input-bg: rgba(45, 47, 54, 0.8);
+  /* 輸入框背景 */
+  --admin-input-hover: rgba(45, 47, 54, 0.9);
+  /* 輸入框懸停背景 */
+  --admin-input-focus: rgba(45, 47, 54, 1);
+  /* 輸入框聚焦背景 */
+  --admin-select-bg: rgba(45, 47, 54, 0.9);
+  /* 下拉選單背景 */
+  --admin-select-hover: rgba(45, 47, 54, 1);
+  /* 下拉選單懸停背景 */
+  --admin-option-hover: rgba(99, 102, 241, 0.1);
+  /* 選項懸停背景 */
+  --admin-label-color: #e2e8f0;
+  /* 標籤文字顏色 */
 
   /* 後台文字顏色 */
-  --admin-text-primary: #e2e8f0;      /* 主要文字 */
-  --admin-text-secondary: #94a3b8;    /* 次要文字 */
-  --admin-text-accent: #818cf8;       /* 強調文字 */
-  --admin-placeholder: #64748b;       /* 佔位符文字 */
-}
-/* ===== 全域通用樣式 ===== */
+  --admin-text-primary: #e2e8f0;
+  /* 主要文字 */
+  --admin-text-secondary: #94a3b8;
+  /* 次要文字 */
+  --admin-text-accent: #818cf8;
+  /* 強調文字 */
+  --admin-placeholder: #64748b;
+  /* 佔位符文字 */
 
-/* 確保深色模式轉換時有平滑效果 */
+  /* DataTable 專用變數 */
+  --datatable-bg: #1f2937;
+  /* 表格背景 */
+  --datatable-header-bg: #111827;
+  /* 表頭背景 */
+  --datatable-border: #374151;
+  /* 表格邊框 */
+  --datatable-hover: rgba(55, 65, 81, 0.5);
+  /* 行懸停背景 */
+  --datatable-stripe: rgba(55, 65, 81, 0.3);
+  /* 條紋背景 */
+  --datatable-text: #e5e7eb;
+  /* 表格文字 */
+  --datatable-text-secondary: #9ca3af;
+  /* 次要文字 */
+  --datatable-control-bg: #1f2937;
+  /* 控制區背景 */
+  --datatable-pagination-active: #3b82f6;
+  /* 分頁按鈕選中背景 */
+  --datatable-pagination-active-border: #2563eb;
+  /* 分頁按鈕選中邊框 */
+
+  /* 按鈕相關變數 */
+  --btn-primary: rgba(99, 102, 241, 0.8);
+  /* 主要按鈕顏色 - 半透明 */
+  --btn-primary-hover: rgba(99, 102, 241, 0.9);
+  /* 主要按鈕懸停顏色 - 半透明 */
+  --btn-secondary: rgba(45, 47, 54, 0.5);
+  /* 次要按鈕顏色 - 半透明 */
+  --btn-secondary-hover: rgba(45, 47, 54, 0.7);
+  /* 次要按鈕懸停顏色 - 半透明 */
+  --btn-unselected: rgba(55, 65, 81, 0.3);
+  /* 未選中按鈕顏色 */
+  --btn-unselected-hover: rgba(55, 65, 81, 0.5);
+  /* 未選中按鈕懸停顏色 */
+  --btn-unselected-text: #9ca3af;
+  /* 未選中按鈕文字顏色 */
+  --btn-danger: rgba(239, 68, 68, 0.8);
+  /* 危險按鈕顏色 - 半透明 */
+  --btn-danger-hover: rgba(239, 68, 68, 0.9);
+  /* 危險按鈕懸停顏色 - 半透明 */
+  --btn-success: rgba(34, 197, 94, 0.8);
+  /* 成功按鈕顏色 - 半透明 */
+  --btn-success-hover: rgba(34, 197, 94, 0.9);
+  /* 成功按鈕懸停顏色 - 半透明 */
+  --btn-icon-color: #e2e8f0;
+  /* 按鈕圖標顏色 */
+  --btn-icon-hover: #c3aafc;
+  /* 按鈕圖標懸停顏色 */
+  --btn-icon-disabled: #94a3b8;
+  /* 禁用按鈕圖標顏色 */
+  --btn-icon-danger: #fecaca;
+  /* 危險按鈕圖標顏色 */
+  --btn-icon-success: #bbf7d0;
+  /* 成功按鈕圖標顏色 */
+}
+
+/* ===== 全域通用樣式 ===== */
 .dark {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* 基礎元素深色模式 */
-.dark body,
-.dark .min-h-screen {
-  background-color: var(--bg-primary);
+.dark body {
+  background-color: var(--bg-secondary);
   color: var(--text-primary);
 }
 
@@ -135,110 +265,152 @@
 .dark .text-gray-700,
 .dark .text-gray-900 {
   color: var(--text-primary);
-
-}
-
-.dark .text-gray-700:hover,
-.dark .text-gray-900:hover {
-  color: var(--text-primary);
-  background-color: var(--admin-bg-tertiary);
 }
 
 .dark .text-gray-500,
-.dark .text-gray-600 {
+.dark .text-gray-600,
+.dark .text-gray-800 {
   color: var(--text-secondary);
+}
+
+.dark pre {
+  color: var(--text-primary) !important;
 }
 
 /* 標題深色模式 */
 .dark h1,
 .dark .h1 {
   color: var(--title-primary);
-  font-weight: 700;
 }
 
 .dark h2,
 .dark .h2 {
   color: var(--title-secondary);
-  font-weight: 600;
 }
 
 .dark h3,
 .dark .h3 {
   color: var(--title-tertiary);
-  font-weight: 500;
 }
 
 .dark h4,
 .dark .h4 {
   color: var(--title-quaternary);
-  font-weight: 500;
 }
 
 .dark h5,
 .dark .h5 {
   color: var(--title-quinary);
-  font-weight: 500;
 }
 
 .dark h6,
 .dark .h6 {
   color: var(--title-senary);
-  font-weight: 500;
 }
 
 
 /* ===== 文字和連結樣式 ===== */
 /* 連結顏色 */
-#about a,
-#pricing a,
-#learning a {
+.dark #about a,
+.dark #pricing a,
+.dark #learning a {
   color: var(--text-primary);
 }
 
 /* 圖標顏色 */
-i,
-.front-footer i {
-  color: inherit;  /* 改為繼承父元素顏色 */
+.dark i,
+.dark .front-footer i {
+  color: inherit;
+  /* 改為繼承父元素顏色 */
+}
+
+.dark #recommend i.text-red-500 {
+  color: var(--btn-danger) !important;
 }
 
 /* ===== 主標題樣式 ===== */
 /* 標題背景樣式 */
-#about .span-title,
-#features .span-title,
-#call-to-action .span-title,
-#recommend .span-title,
-#learning .span-title,
-#pricing .span-title {
+.dark #about .span-title,
+.dark #features .span-title,
+.dark #call-to-action .span-title,
+.dark #recommend .span-title,
+.dark #learning .span-title,
+.dark #pricing .span-title {
   background-color: var(--primary-dark) !important;
   color: var(--text-primary) !important;
 }
 
 /* 副標題樣式 */
-#about .span-subtitle,
-#features .span-subtitle,
-#call-to-action .span-subtitle,
-#recommend .span-subtitle,
-#learning .span-subtitle,
-#pricing .span-subtitle {
+.dark #about .span-subtitle,
+.dark #features .span-subtitle,
+.dark #call-to-action .span-subtitle,
+.dark #recommend .span-subtitle,
+.dark #learning .span-subtitle,
+.dark #pricing .span-subtitle {
   color: var(--text-primary) !important;
 }
 
 /* ===== 推薦系統相關樣式 ===== */
-#recommend .location-span {
+.dark #recommend .location-span {
   background: var(--primary-gradient) !important;
   color: var(--text-dark) !important;
 }
 
-#recommend .location-span-text {
+.dark #recommend .location-span-text {
   color: var(--text-dark) !important;
 }
 
+
+/* 通用按鈕樣式 */
+.dark button {
+  transition: all 0.2s ease;
+}
+
+/* 前台文字顏色 */
+.dark i {
+  color: var(--primary-main);
+}
+
+.dark span i {
+  color: var(--text-primary);
+}
+
+/* 前台主要按鈕 */
+.dark .front-btn-primary,
+.dark .front-page button[class*="bg-blue"],
+.dark .front-page button[class*="bg-indigo"] {
+  background-color: var(--btn-primary);
+  border-color: var(--btn-primary);
+  color: white;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dark .front-btn-primary:hover,
+.dark .front-page button[class*="bg-blue"]:hover,
+.dark .front-page button[class*="bg-indigo"]:hover {
+  background-color: var(--btn-primary-hover);
+  border-color: var(--btn-primary-hover);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* 前台次要按鈕 */
+.dark .front-btn-secondary,
+.dark .front-page button[class*="bg-gray"] {
+  background-color: var(--btn-secondary);
+  border-color: var(--btn-secondary);
+  color: var(--admin-text-secondary);
+  backdrop-filter: blur(4px);
+}
+
+
 /* 排序按鈕基礎樣式 */
-.sort-btn {
+.dark .sort-btn {
   background-color: var(--sort-btn-unselected-bg);
   color: var(--sort-btn-unselected-text);
   padding: 0.5rem 1rem;
-  border-radius: 9999px;  /* rounded-full */
+  border-radius: 9999px;
+  /* rounded-full */
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
@@ -247,136 +419,158 @@ i,
 }
 
 /* 選中狀態樣式 */
-.sort-btn.bg-blue-500 {
+.dark .sort-btn.bg-blue-500 {
   background-color: var(--sort-btn-selected-bg);
   color: var(--sort-btn-selected-text);
 }
 
 /* 未選中狀態樣式 */
-.sort-btn.bg-blue-50 {
+.dark .sort-btn.bg-blue-50 {
   background-color: var(--sort-btn-unselected-bg);
   color: var(--sort-btn-unselected-text);
 }
 
 /* 懸停效果 */
-.sort-btn:hover:not(.bg-blue-500) {
+.dark .sort-btn:hover:not(.bg-blue-500) {
   background-color: var(--sort-btn-hover-bg);
   color: var(--sort-btn-hover-text);
-  transform: translateY(-1px);
 }
 
 /* 圖標樣式 */
-.sort-btn i {
+.dark .sort-btn i {
   color: inherit;
   transition: all 0.3s ease;
 }
 
 /* 圖標懸停效果 */
-.sort-btn:hover i {
+.dark .sort-btn:hover i {
   transform: scale(1.1);
 }
 
 /* 視圖切換按鈕基礎樣式 */
-.grid-btn,
-.list-btn {
+.dark .grid-btn,
+.dark .list-btn {
   padding: 0.5rem;
   border-radius: 0.375rem;
   transition: all 0.3s ease;
 }
 
 /* 視圖切換按鈕選中狀態 */
-.grid-btn.bg-blue-500,
-.list-btn.bg-blue-500 {
+.dark .grid-btn.bg-blue-500,
+.dark .list-btn.bg-blue-500 {
   background-color: var(--sort-btn-selected-bg);
   color: var(--sort-btn-selected-text);
 }
 
 /* 視圖切換按鈕選中狀態圖標 */
-.grid-btn.bg-blue-500 i,
-.list-btn.bg-blue-500 i {
-  color: var(--sort-btn-selected-text);  /* 白色 */
+.dark .grid-btn.bg-blue-500 i,
+.dark .list-btn.bg-blue-500 i {
+  color: var(--sort-btn-selected-text);
+  /* 白色 */
 }
 
 /* 視圖切換按鈕未選中狀態 */
-.grid-btn.bg-blue-50,
-.list-btn.bg-blue-50 {
+.dark .grid-btn.bg-blue-50,
+.dark .list-btn.bg-blue-50 {
   background-color: var(--sort-btn-bg);
   color: var(--sort-btn-text);
 }
 
 /* 視圖切換按鈕未選中狀態圖標 */
-.grid-btn.bg-blue-50 i,
-.list-btn.bg-blue-50 i {
-  color: var(--text-primary);  /* 主要紫色 */
+.dark .grid-btn.bg-blue-50 i,
+.dark .list-btn.bg-blue-50 i {
+  color: var(--text-primary);
+  /* 主要紫色 */
 }
 
-.grid-btn.bg-blue-50:hover,
-.list-btn.bg-blue-50:hover {
+.dark .grid-btn.bg-blue-50:hover,
+.dark .list-btn.bg-blue-50:hover {
   background-color: var(--sort-btn-hover-bg);
   color: var(--sort-btn-hover-text);
 }
 
 
 /* ===== 聊天機器人樣式 ===== */
-.toggleChat {
-  background: var(--primary-gradient) !important;
+.dark .toggleChat {
+  background: linear-gradient(to right, rgba(99, 102, 241, 0.7), rgba(168, 85, 247, 0.7)) !important;
 }
 
-.toggleChat:hover {
-  background: var(--primary-gradient) !important;
+.dark .toggleChat i {
+  color: var(--title-light) !important;
+}
+
+.dark .toggleChat:hover {
+  background: linear-gradient(to right, rgba(99, 102, 241, 0.6), rgba(168, 85, 247, 0.6)) !important;
   opacity: 0.9;
 }
 
-.chatbot-title {
-  background: var(--primary-gradient) !important;
+.dark .chatbot-title {
+  background: linear-gradient(to right, rgba(99, 102, 241, 0.5), rgba(168, 85, 247, 0.5)) !important;
 }
 
-.chatbot-input{
-    background-color: var(--bg-secondary) !important;
-    border-top: rgb(55 65 81 / var(--tw-bg-opacity, 1)) !important;
+.dark .chatbot-title i,
+.dark .quick-question-btn[data-v-435023cb] i,
+.dark .chatbot-response i {
+  color: rgba(99, 102, 241, 0.8);
 }
-.chatbot-input input{
-    border: 2px solid var(--primary-main) !important;
+
+.dark .chatbot-input {
+  background-color: rgba(99, 102, 241, 0.1) !important;
 }
-.quick-section{
-  background-color: var(--bg-secondary) !important;
-  border-top: rgb(55 65 81 / var(--tw-bg-opacity, 1)) !important;
+
+.dark .chatbot-input input {
+  border: 2px solid rgba(99, 102, 241, 0.5) !important;
+}
+
+.dark .chatbot-title button {
+  background-color: transparent !important;
+}
+
+.dark .chatbot-title button:hover {
+  border: 2px solid rgba(99, 102, 241, 0.5) !important;
+  background-color: rgba(99, 102, 241, 0.1) !important;
+  color: var(--btn-icon-hover) !important;
 }
 
 /* ===== 學習中心樣式 ===== */
 /* 學習中心卡片圖標 */
-#learning i,#pricing i,#features i,#about i {
-    color: var(--text-primary);
+.dark #learning i,
+.dark #pricing i,
+.dark #features i,
+.dark #about i {
+  color: var(--text-primary);
 }
 
 /* ===== 定價樣式 ===== */
 
 /* 專業版卡片 */
-.professional-card {
+.dark .professional-card {
   border: 2px solid var(--primary-main);
   transition: all 0.3s ease;
 }
 
-.professional-card:hover {
+.dark .professional-card:hover {
   box-shadow: 0 4px 20px rgba(171, 120, 225, 0.2);
-  transform: translateY(-4px);
 }
 
-.professional-card span,.basic-card span,.enterprise-card span,.learning-card span{
+.dark .professional-card span,
+.dark .basic-card span,
+.dark .enterprise-card span,
+.dark .learning-card span {
   color: var(--text-primary);
 }
 
 /* ===== 全域按鈕基礎樣式 ===== */
-#pricing .basic-btn,
-#pricing .professional-btn,
-#pricing .enterprise-btn,
-#pricing .pricing-btn,
-.chatbot-btn,
-#learning .learning-btn,
-#recommend .location-btn,
-#home .banner-btn,
-#call-to-action .call-to-action-btn,
-.login-btn {
+.dark #pricing .basic-btn,
+.dark #pricing .professional-btn,
+.dark #pricing .enterprise-btn,
+.dark #pricing .pricing-btn,
+.dark .chatbot-btn,
+.dark #learning .learning-btn,
+.dark #recommend .location-btn,
+.dark .banner-btn,
+.dark #call-to-action .call-to-action-btn,
+.dark .login-btn {
   background-color: var(--primary-main) !important;
   color: var(--text-primary) !important;
   border: 2px solid transparent !important;
@@ -384,16 +578,16 @@ i,
 }
 
 /* 按鈕懸停效果 */
-#pricing .basic-btn:hover,
-#pricing .professional-btn:hover,
-#pricing .enterprise-btn:hover,
-#pricing .pricing-btn:hover,
-.chatbot-btn:hover,
-#learning .learning-btn:hover,
-#recommend .location-btn:hover,
-#home .banner-btn:hover,
-#call-to-action .call-to-action-btn:hover,
-.login-btn:hover {
+.dark #pricing .basic-btn:hover,
+.dark #pricing .professional-btn:hover,
+.dark #pricing .enterprise-btn:hover,
+.dark #pricing .pricing-btn:hover,
+.dark .chatbot-btn:hover,
+.dark #learning .learning-btn:hover,
+.dark #recommend .location-btn:hover,
+.dark .banner-btn:hover,
+.dark #call-to-action .call-to-action-btn:hover,
+.dark .login-btn:hover {
   background-color: transparent !important;
   border: 2px solid var(--primary-main) !important;
   color: var(--primary-main) !important;
@@ -401,92 +595,88 @@ i,
 }
 
 /* 按鈕點擊效果 */
-#pricing .basic-btn:active,
-#pricing .professional-btn:active,
-#pricing .enterprise-btn:active,
-#pricing .pricing-btn:active,
-.chatbot-btn:active,
-#learning .learning-btn:active,
-#recommend .location-btn:active,
-#home .banner-btn:active,
-#call-to-action .call-to-action-btn:active,
-.login-btn:active {
+.dark #pricing .basic-btn:active,
+.dark #pricing .professional-btn:active,
+.dark #pricing .enterprise-btn:active,
+.dark #pricing .pricing-btn:active,
+.dark .chatbot-btn:active,
+.dark #learning .learning-btn:active,
+.dark #recommend .location-btn:active,
+.dark .banner-btn:active,
+.dark #call-to-action .call-to-action-btn:active,
+.dark .login-btn:active {
   transform: translateY(0);
 }
 
 /* 按鈕內的圖標 */
-.basic-btn i,
-.professional-btn i,
-.enterprise-btn i,
-.learning-btn i,
-.pricing-btn i,
-.chatbot-btn i {
+.dark .basic-btn i,
+.dark .professional-btn i,
+.dark .enterprise-btn i,
+.dark .learning-btn i,
+.dark .pricing-btn i,
+.dark .chatbot-btn i {
   color: inherit;
   transition: all 0.3s ease;
 }
 
 /* 按鈕內圖標懸停效果 */
-.basic-btn:hover i,
-.professional-btn:hover i,
-.enterprise-btn:hover i,
-.learning-btn:hover i,
-.pricing-btn:hover i,
-.chatbot-btn:hover i {
+.dark .basic-btn:hover i,
+.dark .professional-btn:hover i,
+.dark .enterprise-btn:hover i,
+.dark .learning-btn:hover i,
+.dark .pricing-btn:hover i,
+.dark .chatbot-btn:hover i {
   transform: translateX(4px);
 }
 
 /* ===== 後台儀表板卡片樣式 ===== */
-.dashboard-card-title .grid > a {
+.dark .dashboard-card-title .grid>a {
   background: var(--bg-secondary) !important;
 }
 
 /* ===== 後台儀表板樣式 ===== */
 
+
 /* 儀表板卡片 */
 .dark .dashboard-card {
-  background: var(--admin-card-bg);
+  background: var(--admin-bg-tertiary);
   border: 1px solid var(--admin-border);
-  backdrop-filter: blur(12px);
-  box-shadow: 
+  /* box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    0 2px 4px -1px rgba(0, 0, 0, 0.06); */
 }
 
 /* 卡片懸停效果 */
-.dark .dashboard-card:hover {
+/* .dark .dashboard-card:hover {
   border-color: rgba(99, 102, 241, 0.3);
   background: rgba(36, 38, 45, 0.8);
-  transform: translateY(-2px);
-  box-shadow: 
-    0 8px 16px -4px rgba(0, 0, 0, 0.2),
-    0 4px 8px -2px rgba(0, 0, 0, 0.15);
-}
+} */
 
 /* 數據卡片 */
 .dark .stats-card {
-  background: linear-gradient(145deg, 
-    rgba(36, 38, 45, 0.8),
-    rgba(30, 32, 39, 0.9)
-  );
+  background: linear-gradient(145deg,
+      rgba(36, 38, 45, 0.8),
+      rgba(30, 32, 39, 0.9));
   border: 1px solid var(--admin-border);
 }
 
 /* 數據卡片圖標 */
 .dark .stats-card-icon {
-  background: linear-gradient(135deg, 
-    rgba(99, 102, 241, 0.2),
-    rgba(99, 102, 241, 0.1)
-  );
+  background: linear-gradient(135deg,
+      rgba(99, 102, 241, 0.2),
+      rgba(99, 102, 241, 0.1));
   color: var(--admin-text-accent);
 }
 
 /* 數據增長指標 */
 .dark .growth-indicator.positive {
-  color: #4ade80;  /* 綠色 */
+  color: #4ade80;
+  /* 綠色 */
 }
 
 .dark .growth-indicator.negative {
-  color: #f87171;  /* 紅色 */
+  color: #f87171;
+  /* 紅色 */
 }
 
 /* 圖表容器 */
@@ -496,24 +686,6 @@ i,
   border-radius: 0.75rem;
 }
 
-/* 表格樣式 */
-.dark .admin-table {
-  background: var(--admin-bg-secondary);
-  border: 1px solid var(--admin-border);
-}
-
-.dark .admin-table th {
-  background: var(--admin-bg-tertiary);
-  color: var(--admin-text-primary);
-}
-
-.dark .admin-table td {
-  border-color: rgba(99, 102, 241, 0.1);
-}
-
-.dark .admin-table tr:hover {
-  background: var(--admin-hover-light);
-}
 
 /* 側邊欄樣式優化 */
 .dark aside {
@@ -540,11 +712,9 @@ i,
 
 /* Banner 區域 */
 .dark .banner-section {
-  background: linear-gradient(
-    to bottom,
-    rgba(36, 38, 45, 0.8),
-    rgba(30, 32, 39, 0.9)
-  );
+  background: linear-gradient(to bottom,
+      rgba(36, 38, 45, 0.8),
+      rgba(30, 32, 39, 0.9));
   border: 1px solid var(--admin-border);
 }
 
@@ -562,34 +732,15 @@ i,
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
-/* 按鈕樣式 */
-.dark .admin-button {
-  background: linear-gradient(
-    to right,
-    rgba(99, 102, 241, 0.8),
-    rgba(129, 140, 248, 0.8)
-  );
-  color: white;
-  border: none;
-  backdrop-filter: blur(8px);
-}
-
-.dark .admin-button:hover {
-  background: linear-gradient(
-    to right,
-    rgba(99, 102, 241, 0.9),
-    rgba(129, 140, 248, 0.9)
-  );
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-}
-
 /* 輸入框樣式優化 */
 .dark input[type="text"],
 .dark input[type="email"],
 .dark input[type="password"],
 .dark input[type="search"],
+.dark input[type="number"],
 .dark input[type="url"],
+.dark input[type="datetime-local"],
+.dark input[type="file"],
 .dark textarea {
   background-color: var(--admin-input-bg);
   border: 1px solid var(--admin-border);
@@ -602,7 +753,10 @@ i,
 .dark input[type="email"]:hover,
 .dark input[type="password"]:hover,
 .dark input[type="search"]:hover,
+.dark input[type="number"]:hover,
 .dark input[type="url"]:hover,
+.dark input[type="datetime-local"]:hover,
+.dark input[type="file"]:hover,
 .dark textarea:hover {
   background-color: var(--admin-input-hover);
   border-color: rgba(99, 102, 241, 0.3);
@@ -614,7 +768,10 @@ i,
 .dark input[type="password"]:focus,
 .dark input[type="search"]:focus,
 .dark input[type="url"]:focus,
-.dark textarea:focus {
+.dark textarea:focus,
+.dark input[type="number"]:focus,
+.dark input[type="datetime-local"]:focus,
+.dark input[type="file"]:focus {
   background-color: var(--admin-input-focus);
   border-color: var(--admin-text-accent);
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
@@ -639,44 +796,32 @@ i,
   background: var(--admin-hover-light);
 }
 
-/* 按鈕懸停效果優化 */
-.dark .admin-button:hover {
-  background: linear-gradient(
-    to right,
-    rgba(99, 102, 241, 0.9),
-    rgba(129, 140, 248, 0.9)
-  );
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-}
-
 /* Modal 樣式 */
 .dark .modal-overlay {
-  background-color: var(--admin-modal-overlay);
+  background-color: rgba(0, 0, 0, 0.5);
   position: fixed;
-  inset: 0;
-  z-index: 9998;  /* 提高 z-index，確保覆蓋 sidebar 和 navbar */
-  width: 100vw;
-  height: 100vh;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
   display: flex;
   justify-content: center;
   align-items: center;
+  backdrop-filter: blur(4px);
 }
 
 .dark .modal-container {
-  background-color: var(--admin-modal-bg);
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 95%;
-  max-width: 500px;
+  background-color: var(--bg-secondary);
+  position: relative;
+  width: 80%;
+  max-width: 90vw;
   max-height: 90vh;
+  margin: auto;
   overflow-y: auto;
-  border-radius: 0.5rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-              0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  z-index: 9999;  /* 確保 modal 在遮罩層之上 */
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: modal-show 0.3s ease-out forwards;
 }
 
 /* Modal 標題 */
@@ -702,4 +847,923 @@ i,
 
 .dark .modal-close:hover {
   color: var(--admin-text-primary);
+}
+
+/* Label 樣式 */
+.dark label div[class*="data-v-0943a7d1"] {
+  background: var(--admin-bg-tertiary);
+  color: var(--text-primary);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+}
+
+/* 必填標記 */
+.dark label .required {
+  color: #f87171;
+  margin-left: 0.25rem;
+}
+
+/* Select 下拉選單樣式 */
+.dark select {
+  background-color: var(--admin-select-bg);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-primary);
+  transition: all 0.2s ease;
+}
+
+/* Select 懸停效果 */
+.dark select:hover {
+  background-color: var(--admin-select-hover);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* Select 聚焦效果 */
+.dark select:focus {
+  outline: none;
+  border-color: var(--admin-text-accent);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  background-color: var(--admin-select-hover);
+}
+
+/* Select 選項樣式 */
+.dark select option {
+  background-color: var(--admin-bg-secondary);
+  color: var(--admin-text-primary);
+  padding: 0.5rem;
+}
+
+/* Select 選項懸停效果 */
+.dark select option:hover {
+  background-color: var(--admin-option-hover);
+}
+
+/* 禁用狀態 */
+.dark select:disabled {
+  background-color: var(--admin-bg-tertiary);
+  color: var(--admin-text-secondary);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* 表單組樣式 */
+.dark .form-group {
+  margin-bottom: 1.5rem;
+}
+
+/* 表單說明文字 */
+.dark .form-text {
+  color: var(--admin-text-secondary);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* 錯誤提示 */
+.dark .form-error {
+  color: #f87171;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* 卡片基礎樣式 */
+.dark .card {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.learning-management-container .learning-card-title {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.learning-card-content,
+.learning-subsection-content {
+  border: 1px solid var(--admin-border);
+}
+
+.learning-subsection-content span {
+  background: var(--primary-light);
+  color: var(--primary-dark) !important;
+  border: 1px solid var(--admin-border);
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+/* 後台按鈕樣式 */
+.dark .admin-page button {
+  transition: all 0.2s ease;
+}
+
+.dark .admin-page button:hover{
+  background-color: var(--btn-secondary-hover);
+}
+/* 後台主要按鈕 */
+.dark .admin-btn-primary,
+.dark .admin-page button[class*="bg-blue"],
+.dark .admin-page button[class*="bg-indigo"] {
+  background-color: var(--btn-primary);
+  border-color: var(--btn-secondary-hover);
+  color: white;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dark .admin-btn-primary:hover,
+.dark .admin-page button[class*="bg-blue"]:hover,
+.dark .admin-page button[class*="bg-indigo"]:hover {
+  background: transparent !important;
+  border: 1px solid var(--btn-primary-hover) !important;
+}
+
+/* 危險按鈕 */
+.dark .admin-page .btn-danger,
+.dark .admin-page button[class*="bg-red"] {
+  background-color: var(--btn-danger);
+  border-color: var(--btn-danger);
+  color: white;
+}
+
+.dark .admin-page .btn-danger:hover,
+.dark .admin-page button[class*="bg-red"]:hover {
+  background-color: var(--btn-danger-hover);
+  border-color: var(--btn-danger-hover);
+}
+
+/* 成功按鈕 */
+.dark .admin-page .btn-success,
+.dark .admin-page button[class*="bg-green"],
+.dark .admin-page button[class*="bg-emerald"] {
+  background-color: var(--btn-success);
+  border-color: var(--btn-success);
+  color: white;
+}
+
+.dark .btn-success:hover,
+.dark .admin-page button[class*="bg-green"]:hover,
+.dark .admin-page button[class*="bg-emerald"]:hover {
+  background-color: var(--btn-success-hover);
+  border-color: var(--btn-success-hover);
+}
+
+/* 操作按鈕 */
+.dark .admin-page .edit-btn,
+.dark .admin-page .delete-btn,
+.dark .admin-page .view-btn {
+  background-color: var(--btn-secondary);
+  border: 1px solid var(--datatable-border);
+  color: var(--datatable-text);
+}
+
+.dark .admin-page .edit-btn:hover {
+  background-color: var(--btn-primary);
+  border-color: var(--btn-primary);
+  color: white;
+}
+
+.dark .admin-page .delete-btn:hover {
+  background-color: var(--btn-danger);
+  border-color: var(--btn-danger);
+  color: white;
+}
+
+.dark .admin-page .view-btn:hover {
+  background-color: var(--btn-success);
+  border-color: var(--btn-success);
+  color: white;
+}
+
+/* 狀態標籤按鈕 */
+.dark .admin-page .status-enabled {
+  background-color: var(--btn-success);
+  color: white;
+}
+
+.dark .admin-page .status-disabled {
+  background-color: var(--btn-secondary);
+  color: var(--datatable-text);
+}
+
+/* 按鈕激活效果 */
+.dark .admin-page .btn-primary:active,
+.dark .admin-page .button[class*="bg-blue"]:active,
+.dark .admin-page .button[class*="bg-indigo"]:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+/* 卡片懸停效果 */
+.dark .card:hover {
+  background: var(--admin-card-hover);
+  border-color: var(--admin-border-hover);
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* 卡片標題 */
+.dark .card-title {
+  color: var(--admin-text-primary);
+  font-size: 1.125rem;
+  font-weight: 600;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+/* 卡片內容 */
+.dark .card-body {
+  padding: 1.5rem;
+  color: var(--admin-text-secondary);
+}
+
+/* 卡片底部 */
+.dark .card-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--admin-border);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* 框線元素基礎樣式 */
+.dark .bordered {
+  border: 1px solid var(--admin-border);
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+/* 框線元素懸停效果 */
+.dark .bordered:hover {
+  border-color: var(--admin-border-hover);
+}
+
+/* 框線元素激活狀態 */
+.dark .bordered:active,
+.dark .bordered.active {
+  border-color: var(--admin-border-active);
+}
+
+/* 分隔線 */
+.dark hr,
+.dark .divider {
+  border-color: var(--admin-border);
+  margin: 1rem 0;
+}
+
+/* 圓角框線 */
+.dark .rounded-box {
+  border: 1px solid var(--admin-border);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  background: var(--admin-card-bg);
+}
+
+/* 陰影框線 */
+.dark .shadow-box {
+  border: 1px solid var(--admin-border);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background: var(--admin-card-bg);
+  border-radius: 0.75rem;
+}
+
+/* 內容區塊 */
+.dark .content-section {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* DataTable 樣式 */
+.dark .datatable-container {
+  background-color: var(--datatable-bg);
+  border: 1px solid var(--datatable-border);
+}
+
+/* 表格控制列 */
+.dark .datatable-container>div:first-child {
+  background: var(--datatable-control-bg);
+  border-bottom: 1px solid var(--datatable-border);
+}
+
+/* 下拉選單 */
+.dark .datatable-container select {
+  background-color: var(--datatable-bg);
+  border: 1px solid var(--datatable-border);
+  color: var(--datatable-text);
+}
+
+/* 搜尋框 */
+.dark .datatable-container input[type="text"] {
+  background-color: var(--datatable-bg);
+  border: 1px solid var(--datatable-border);
+  color: var(--datatable-text);
+}
+
+/* 表格標題列 */
+.dark .datatable-container thead {
+  background: var(--datatable-header-bg);
+}
+
+.dark .datatable-container th {
+  color: var(--datatable-text);
+  border-bottom: 2px solid var(--datatable-border);
+  font-weight: 600;
+}
+
+/* 表格內容 */
+.dark .datatable-container td {
+  color: var(--datatable-text-secondary);
+  border-bottom: 1px solid var(--datatable-border);
+}
+
+/* 表格行懸停效果 */
+.dark .datatable-container tbody tr:hover {
+  background-color: var(--datatable-hover);
+}
+
+/* 分頁控制區 */
+.dark .datatable-container>div:last-child {
+  background: var(--datatable-control-bg);
+  border-top: 1px solid var(--datatable-border);
+  color: var(--datatable-text);
+}
+
+/* 分頁按鈕 */
+.dark .datatable-container button {
+  background-color: var(--btn-unselected);
+  border: 1px solid var(--datatable-border);
+  color: var(--btn-unselected-text);
+  transition: all 0.2s ease;
+}
+
+.dark .datatable-container button:hover:not(:disabled) {
+  background-color: var(--btn-unselected-hover);
+  border-color: var(--datatable-pagination-active-border);
+}
+
+.dark .datatable-container button:disabled {
+  background-color: var(--datatable-stripe);
+  color: var(--datatable-text-secondary);
+  cursor: not-allowed;
+}
+
+/* 當前頁碼按鈕 */
+.dark .datatable-container button[class*="bg-blue-500"] {
+  background-color: var(--datatable-pagination-active) !important;
+  border-color: var(--datatable-pagination-active-border) !important;
+  color: white;
+  font-weight: 600;
+}
+
+/* 表格內的圖示 */
+.dark .datatable-container .fa-search {
+  color: var(--admin-text-accent);
+}
+
+
+/* 上傳圖片區域樣式 */
+.dark label[class*="px-4 py-2 bg-gray-100"] {
+  background-color: var(--admin-bg-tertiary) !important;
+  border: 1px dashed var(--admin-border);
+  color: var(--admin-text-secondary);
+  transition: all 0.2s ease;
+}
+
+/* 上傳圖片區域懸停效果 */
+.dark label[class*="px-4 py-2 bg-gray-100"]:hover {
+  background-color: var(--admin-bg-secondary) !important;
+  border-color: var(--admin-text-accent);
+  color: var(--admin-text-primary);
+  cursor: pointer;
+}
+
+/* 上傳圖片圖標 */
+.dark label[class*="px-4 py-2 bg-gray-100"] i {
+  color: var(--admin-text-accent);
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* 上傳圖片文字 */
+.dark label[class*="px-4 py-2 bg-gray-100"] span {
+  color: var(--admin-text-secondary);
+}
+
+/* 上傳圖片區域激活狀態 */
+.dark label[class*="px-4 py-2 bg-gray-100"].active {
+  background-color: rgba(99, 102, 241, 0.1) !important;
+  border-color: var(--admin-text-accent);
+}
+
+/* 上傳圖片預覽容器 */
+.dark .image-preview {
+  background-color: var(--admin-bg-tertiary);
+  border: 1px solid var(--admin-border);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+/* 上傳圖片錯誤提示 */
+.dark .upload-error {
+  color: var(--btn-danger);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* 未選中的標籤按鈕 */
+.dark .tab-button:not(.active) {
+  background-color: var(--btn-unselected);
+  color: var(--btn-unselected-text);
+  border: 1px solid transparent;
+}
+
+.dark .tab-button:not(.active):hover {
+  background-color: var(--btn-unselected-hover);
+  color: var(--admin-text-primary);
+}
+
+/* 按鈕圖標基礎樣式 */
+.dark button i {
+  /* color: var(--btn-icon-color); */
+  transition: all 0.2s ease;
+}
+
+/* 按鈕圖標懸停效果 */
+.dark button:hover:not(:disabled) i {
+  color: var(--primary-dark);
+}
+
+/* 禁用按鈕圖標 */
+.dark button:disabled i {
+  color: var(--btn-icon-disabled);
+}
+
+/* 危險按鈕圖標 */
+.dark button[class*="bg-red"] i,
+.dark .delete-btn i {
+  color: var(--btn-icon-danger);
+}
+
+/* 成功按鈕圖標 */
+.dark button[class*="bg-green"] i,
+.dark button[class*="bg-emerald"] i {
+  color: var(--btn-icon-success);
+}
+
+/* 編輯按鈕圖標 */
+.dark .edit-btn i {
+  color: var(--admin-text-accent);
+}
+
+/* 操作按鈕圖標懸停效果 */
+.dark .edit-btn:hover i,
+.dark .delete-btn:hover i,
+.dark .view-btn:hover i {
+  color: var(--btn-icon-hover);
+}
+
+/* 知識庫管理頁面樣式 */
+.dark .knowledge-container {
+  background-color: var(--admin-bg-primary);
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+/* 知識庫標題區域 */
+.dark .knowledge-header {
+  background: linear-gradient(to right,
+      rgba(45, 47, 54, 0.95),
+      rgba(36, 38, 45, 0.95));
+  border-bottom: 1px solid var(--admin-border);
+  padding: 1.5rem;
+}
+
+/* 知識庫上傳區域 */
+.dark .knowledge-upload {
+  background-color: var(--admin-bg-secondary);
+  border: 2px dashed var(--admin-border);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  transition: all 0.2s ease;
+}
+
+/* 知識庫上傳區域懸停效果 */
+.dark .knowledge-upload:hover {
+  background-color: rgba(99, 102, 241, 0.1);
+  border-color: var(--admin-text-accent);
+}
+
+/* 知識庫上傳圖標 */
+.dark .knowledge-upload i {
+  color: var(--admin-text-accent);
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+/* 知識庫上傳文字 */
+.dark .knowledge-upload-text {
+  color: var(--admin-text-secondary);
+  font-size: 0.875rem;
+}
+
+/* 知識庫輸入框 */
+.dark .knowledge-input {
+  background-color: var(--admin-bg-tertiary);
+  border: 1px solid var(--admin-border);
+  border-radius: 0.375rem;
+  color: var(--admin-text-primary);
+  padding: 0.75rem 1rem;
+}
+
+/* 知識庫輸入框懸停效果 */
+.dark .knowledge-input:hover {
+  border-color: var(--admin-border-hover);
+}
+
+/* 知識庫輸入框聚焦效果 */
+.dark .knowledge-input:focus {
+  border-color: var(--admin-text-accent);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* 知識庫按鈕 */
+.dark .knowledge-btn {
+  background-color: var(--btn-primary);
+  color: white;
+  border-radius: 0.375rem;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s ease;
+}
+
+/* 知識庫按鈕懸停效果 */
+.dark .knowledge-btn:hover {
+  background-color: var(--btn-primary-hover);
+}
+
+/* 知識庫支援格式文字 */
+.dark .knowledge-format-text {
+  color: var(--admin-text-secondary);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+
+/* 搜尋條件區塊 */
+.dark .bg-white\/50 {
+  background-color: rgba(45, 47, 54, 0.6) !important;
+  backdrop-filter: blur(8px);
+}
+
+/* 標籤文字 */
+.dark .text-gray-700.font-medium {
+  color: var(--admin-text-primary);
+}
+
+/* 輸入框和下拉選單 */
+.dark .bg-gray-50 {
+  background-color: var(--admin-bg-tertiary);
+  border-color: var(--admin-border);
+  color: var(--admin-text-primary);
+}
+
+.dark .bg-gray-50:hover {
+  border-color: var(--admin-border-hover);
+}
+
+.dark .bg-gray-50:focus {
+  border-color: var(--admin-text-accent);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* 對話群組容器 */
+.dark .bg-white.rounded-xl {
+  background-color: rgba(45, 47, 54, 0.8);
+  border-color: var(--admin-border);
+}
+
+.dark .bg-white.rounded-xl:hover {
+  border-color: var(--admin-border-hover);
+}
+
+/* 對話群組標題 */
+.dark .bg-gray-50.rounded-t-xl {
+  background-color: rgba(36, 38, 45, 0.9);
+  border-color: var(--admin-border);
+}
+
+/* 時間和編號文字 */
+.dark .text-gray-700.font-medium {
+  color: var(--admin-text-primary);
+}
+
+.dark .text-gray-500.text-xs {
+  color: var(--admin-text-secondary);
+}
+
+/* 對話內容區域 */
+.dark .divide-gray-100>* {
+  border-color: rgba(99, 102, 241, 0.1);
+}
+
+.dark .hover\:bg-gray-50:hover {
+  background-color: rgba(55, 65, 81, 0.3);
+}
+
+/* 發送者頭像 */
+.dark .bg-blue-100 {
+  background-color: rgba(99, 102, 241, 0.2);
+}
+
+.dark .bg-gray-100 {
+  background-color: rgba(99, 102, 241, 0.6);
+  color: var(--admin-text-primary);
+}
+
+.dark .text-blue-500,
+.dark .text-gray-700,
+.dark .text-gray-900 {
+  color: var(--admin-text-accent);
+}
+
+/* 發送者名稱和時間 */
+.dark .text-blue-600 {
+  color: var(--admin-text-accent);
+}
+
+.dark .text-gray-400 {
+  color: var(--admin-text-secondary);
+}
+
+/* 訊息內容 */
+.dark .text-gray-600.text-sm {
+  color: var(--admin-text-primary);
+}
+
+/* 無資料提示 */
+.dark .text-gray-500.text-center {
+  color: var(--admin-text-secondary);
+}
+
+/* 刪除按鈕 */
+.dark .text-gray-400.hover\:text-red-500 {
+  color: var(--admin-text-secondary);
+}
+
+.dark .text-gray-400.hover\:text-red-500:hover {
+  color: var(--btn-danger);
+}
+
+.dark .border-white\/20 {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* 用戶訊息樣式 */
+.dark div[data-v-435023cb].max-w-\[70\%\].bg-blue-500 {
+  background: linear-gradient(to right, rgba(99, 102, 241, 0.7), rgba(168, 85, 247, 0.7)) !important;
+  color: var(--title-light) !important;
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  border-bottom-right-radius: 0.25rem;
+}
+
+/* AI 回應訊息樣式 */
+.dark div[data-v-435023cb].w-8.h-8 {
+  background: linear-gradient(to right, rgba(99, 102, 241, 0.5), rgba(168, 85, 247, 0.5)) !important;
+  color: var(--title-light) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+}
+
+/* 後台管理系統容器樣式 */
+.dark .admin-container {
+  min-height: calc(100vh - 4rem);  /* 減去頂部導航欄高度 */
+  background-color: var(--admin-bg-primary);
+}
+
+/* 後台內容區域樣式 */
+.dark .admin-content {
+  padding: 1.5rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* 後台頁面標題區塊 */
+.dark .page-header {
+  margin-bottom: 2rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+/* 後台頁面標題圖片容器 */
+.dark .page-header-image {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* 後台頁面標題圖片 */
+.dark .page-header-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 後台統計卡片容器 */
+.dark .stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Dialog 對話框樣式 */
+.dark dialog {
+  background-color: var(--admin-bg-secondary);
+  border: 1px solid var(--admin-border);
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-lg);
+}
+
+/* Dialog 標題樣式 */
+.dark dialog h2,
+.dark dialog h3 {
+  color: var(--admin-text-primary);
+}
+
+/* Dialog 內容樣式 */
+.dark dialog p {
+  color: var(--admin-text-secondary);
+}
+
+/* Dialog 輸入框樣式 */
+.dark dialog input,
+.dark dialog textarea {
+  background-color: var(--admin-input-bg);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-primary);
+}
+
+.dark dialog input:hover,
+.dark dialog textarea:hover {
+  background-color: var(--admin-input-hover);
+  border-color: var(--admin-border-hover);
+}
+
+.dark dialog input:focus,
+.dark dialog textarea:focus {
+  background-color: var(--admin-input-focus);
+  border-color: var(--admin-text-accent);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* Dialog 按鈕樣式 */
+.dark dialog button {
+  background-color: var(--btn-secondary);
+  color: var(--admin-text-primary);
+  border: 1px solid var(--admin-border);
+  transition: all 0.2s ease;
+}
+
+.dark dialog button:hover {
+  background-color: var(--btn-secondary-hover);
+  border-color: var(--admin-border-hover);
+}
+
+/* Dialog 確認按鈕樣式 */
+.dark dialog button[type="submit"],
+.dark dialog .confirm-btn {
+  background-color: var(--btn-primary);
+  color: white;
+}
+
+.dark dialog button[type="submit"]:hover,
+.dark dialog .confirm-btn:hover {
+  background-color: var(--btn-primary-hover);
+}
+
+/* Dialog 取消按鈕樣式 */
+.dark dialog .cancel-btn {
+  background-color: transparent;
+  color: var(--admin-text-secondary);
+  border: 1px solid var(--admin-border);
+}
+
+.dark dialog .cancel-btn:hover {
+  background-color: var(--admin-hover-light);
+  color: var(--admin-text-primary);
+}
+
+/* 未追蹤文件區塊樣式 */
+.dark .mb-4 {
+  background-color: var(--admin-bg-secondary);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+/* 未追蹤文件標題 */
+.dark .text-sm.font-semibold.text-gray-600.mb-2 {
+  color: var(--admin-text-primary);
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+/* 未追蹤文件列表容器 */
+.dark .bg-yellow-50.rounded-lg.p-4.border.border-yellow-100 {
+  background-color: rgba(234, 179, 8, 0.1);
+  border-color: rgba(234, 179, 8, 0.2);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+/* 未追蹤文件項目 */
+.dark .bg-blue-50.rounded-lg.p-4.border.border-blue-100 {
+  background-color: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.2);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* 文件路徑文字 */
+.dark .text-sm.text-gray-600 {
+  color: var(--admin-text-secondary);
+  font-size: 0.875rem;
+}
+
+/* 表格樣式調整 */
+.dark table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: var(--admin-bg-secondary);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* 表格標題列 */
+.dark thead tr {
+  background-color: var(--datatable-header-bg);
+}
+
+/* 表格標題單元格 */
+.dark th {
+  color: var(--admin-text-primary);
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--datatable-border);
+}
+
+/* 表格內容列 */
+.dark tbody tr {
+  border-bottom: 1px solid var(--datatable-border);
+}
+
+/* 表格內容列懸停效果 */
+.dark tbody tr:hover {
+  background-color: var(--datatable-hover);
+}
+
+/* 表格單元格 */
+.dark td {
+  padding: 0.75rem 1rem;
+  color: var(--admin-text-secondary);
+}
+
+/* 表格狀態標籤 */
+.dark .status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* 表格操作按鈕 */
+.dark .table-action-btn {
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+  background-color: transparent;
+}
+
+.dark .table-action-btn:hover {
+  background-color: var(--admin-hover-light);
 }

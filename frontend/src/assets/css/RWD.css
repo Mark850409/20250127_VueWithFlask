@@ -199,12 +199,6 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  /* 導航欄固定定位 */
-  .fixed {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
-
   /* 導航欄動畫 */
   .nav-transition {
     transition: all 0.3s ease;

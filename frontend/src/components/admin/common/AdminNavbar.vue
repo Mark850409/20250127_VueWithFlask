@@ -94,6 +94,14 @@
             >
               <MenuItems class="absolute right-0 mt-2 w-40 sm:w-48 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none">
                 <div class="py-1">
+                   <!-- 回首頁按鈕 -->
+                  <router-link 
+                    to="/" 
+                    class="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-indigo-50 cursor-pointer"
+                  >
+                    <i class="ri-home-line w-5 text-indigo-500"></i>
+                    <span>回首頁</span>
+                  </router-link>
                   <MenuItem v-slot="{ active }">
                     <a @click="handleLogout" 
                        class="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-indigo-50 cursor-pointer">
@@ -105,6 +113,8 @@
               </MenuItems>
             </transition>
           </Menu>
+
+         
         </div>
       </div>
     </div>

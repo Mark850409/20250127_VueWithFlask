@@ -68,6 +68,9 @@ export default {
         existingThemeLink.remove()
       }
 
+      // 先設置 class，確保基礎樣式優先載入
+      document.documentElement.className = themeName
+      
       try {
         // 使用 glob 導入 CSS
         const cssPath = `../assets/css/${themeName}.css`
@@ -77,6 +80,8 @@ export default {
           // 創建新的 style 元素
           const styleElement = document.createElement('style')
           styleElement.id = 'theme-css'
+          // 增加樣式優先級
+          styleElement.setAttribute('data-priority', 'theme')
           styleElement.textContent = cssModule.default
           document.head.appendChild(styleElement)
         }
@@ -91,11 +96,6 @@ export default {
       localStorage.setItem('theme', theme.value)
       loadThemeCSS(theme.value)
     }
-
-    // 監聽主題變化
-    watch(() => theme.value, (newTheme) => {
-      loadThemeCSS(newTheme)
-    })
 
     onMounted(() => {
       // 初始化主題

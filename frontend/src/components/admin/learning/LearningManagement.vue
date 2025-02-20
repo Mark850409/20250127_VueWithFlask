@@ -22,7 +22,7 @@
           <div class="flex space-x-1">
             <button @click="viewMode = 'card'"
                     :class="[
-                      'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                      'px-4 py-2 rounded-md text-sm font-medium transition-colors view-change-card-btn',
                       viewMode === 'card' 
                         ? 'bg-blue-50 text-blue-600 shadow-sm border border-blue-200' 
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
@@ -31,7 +31,7 @@
             </button>
             <button @click="viewMode = 'list'"
                     :class="[
-                      'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                      'px-4 py-2 rounded-md text-sm font-medium transition-colors view-change-lst-btn',
                       viewMode === 'list'
                         ? 'bg-blue-50 text-blue-600 shadow-sm border border-blue-200'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
@@ -69,7 +69,7 @@
         :name="viewMode === 'card' ? 'layout-card' : 'layout-list'"
         tag="div"
         :class="[
-          viewMode === 'card' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'
+          viewMode === 'card' ? 'learning-management-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'learning-management-container space-y-4'
         ]">
         <!-- 無資料時顯示 -->
         <div v-if="!filteredSections.length" 
@@ -91,11 +91,11 @@
         <div v-for="section in filteredSections" 
              :key="section.id" 
              :class="[
-               'bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 border-2 border-blue-100',
+               'bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 border-2 border-blue-100 learning-card-content',
                viewMode === 'list' ? 'max-w-5xl mx-auto' : ''
              ]">
           <!-- 卡片標題區 -->
-          <div class="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-100">
+          <div class="learning-card-title p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-100">
             <div class="flex justify-between items-start mb-4">
               <div>
                 <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full mb-2 inline-block">
@@ -110,7 +110,7 @@
                   <i class="fas fa-plus-circle"></i>
                 </button>
                 <button @click="editSection(section)"
-                        class="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+                        class="bg-green p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
                   <i class="fas fa-edit"></i>
                 </button>
                 <button @click="deleteSection(section.id)"
@@ -143,7 +143,7 @@
               <div v-for="subsection in section.subsections" 
                    :key="subsection.id"
                    class="group p-4 bg-white rounded-lg border border-gray-200 
-                          hover:border-blue-200 hover:shadow-md transition-all duration-200">
+                          hover:border-blue-200 hover:shadow-md transition-all duration-200 learning-subsection-content">
                 <div class="flex justify-between items-start">
                   <div class="flex-1 mr-4">
                     <!-- 標題區域 -->
@@ -187,7 +187,7 @@
                   <!-- 操作按鈕 -->
                   <div class="flex space-x-1">
                     <button @click="editSubsection(subsection)"
-                            class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg 
+                            class="bg-green p-2 text-gray-600 hover:bg-gray-100 rounded-lg 
                                    transition-colors">
                       <i class="fas fa-edit"></i>
                     </button>

@@ -61,7 +61,6 @@
 <script>
 import { ref, onMounted } from 'vue'
 import DataTable from '../common/DataTable.vue'
-import BackToHome from '../common/BackToHome.vue'
 import { useLogger } from '@/composables/useLogger'
 import { favoriteAPI } from '@/api'
 import Swal from 'sweetalert2'

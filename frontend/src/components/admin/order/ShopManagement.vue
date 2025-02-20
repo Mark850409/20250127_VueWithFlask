@@ -315,7 +315,6 @@
         </div>
       </div>
     </div>
-    <BackToHome />
   </div>
 </template>
 
@@ -323,15 +322,13 @@
 import { ref, onMounted } from 'vue'
 import Swal from 'sweetalert2'
 import DataTable from '../common/DataTable.vue'
-import BackToHome from '../common/BackToHome.vue'
 import { useLogger } from '@/composables/useLogger'
 import { shopAPI } from '@/api'
 
 export default {
   name: 'ShopManagement',
   components: {
-    DataTable,
-    BackToHome
+    DataTable
   },
   setup() {
     const shops = ref([])

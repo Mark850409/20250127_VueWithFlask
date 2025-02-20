@@ -34,7 +34,7 @@
     <div v-if="currentTab === 'upload'" 
          class="bg-white rounded-lg shadow-sm overflow-hidden">
       <!-- 表單標題 -->
-      <div class="px-6 py-4 border-b border-gray-200">
+      <div class="knowledge-header px-6 py-4 border-b border-gray-200">
         <h2 class="text-xl font-semibold text-gray-800">上傳知識庫文件</h2>
         <p class="mt-1 text-sm text-gray-500">請填寫必要資訊並選擇要上傳的檔案</p>
       </div>
@@ -192,7 +192,7 @@
     <div v-else-if="currentTab === 'manage'" 
          class="bg-white/50 backdrop-blur-sm rounded-xl shadow-sm overflow-hidden border border-white/20">
       <!-- 查詢條件 -->
-      <div class="px-8 py-6 border-b border-gray-100/50 bg-white/80">
+      <div class="knowledge-header px-8 py-6 border-b border-gray-100/50 bg-white/80">
         <div class="flex justify-between items-center">
           <div>
             <h2 class="text-xl font-semibold text-gray-800">查詢知識庫文件</h2>

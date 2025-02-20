@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex" :class="{ 'dark': isDark }">
+  <div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex" :class="theme">
     <!-- 側邊欄 -->
     <aside :class="[
       'fixed top-0 left-0 h-full bg-white dark:bg-gray-800 border-r dark:border-gray-700 z-40 flex flex-col transition-all duration-300',
@@ -122,11 +122,24 @@
 
       <!-- 登出按鈕 -->
       <div v-show="!isSidebarCollapsed" class="flex-shrink-0 p-4 border-t dark:border-gray-700">
-        <button @click="logout" 
-          class="flex items-center justify-center w-full px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-          <i class="ri-logout-box-r-line text-lg w-6"></i>
-          <span class="ml-3">登出</span>
-        </button>
+        <!-- 主題切換和登出按鈕容器 -->
+        <div class="flex items-center gap-2">
+          <!-- 主題切換按鈕 -->
+          <button @click="toggleTheme" 
+            class="flex items-center justify-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+            <i :class="[
+              theme === 'dark' ? 'ri-sun-line text-yellow-400' : 'ri-moon-line text-gray-600',
+              'text-lg w-6'
+            ]"></i>
+          </button>
+          
+          <!-- 登出按鈕 -->
+          <button @click="logout" 
+            class="flex items-center justify-center flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+            <i class="ri-logout-box-r-line text-lg w-6"></i>
+            <span class="ml-3">登出</span>
+          </button>
+        </div>
       </div>
     </aside>
 
@@ -145,8 +158,10 @@
         class="z-30"
       />
 
+      
+
       <!-- 內容區域 -->
-      <div class="dashboard-card flex-1 p-3 xs:p-4 md:p-6 mt-4">
+      <div class="admin-page dashboard-card flex-1 p-3 xs:p-4 md:p-6">
         <!-- Banner -->
         <div class="bg-white shadow-sm rounded-lg overflow-hidden mb-6">
           <div class="relative banner-bg">
@@ -167,6 +182,8 @@
 
         <!-- 路由內容 -->
         <router-view></router-view>
+
+        <AIChatAssistant />
       </div>
 
       <!-- Footer -->
@@ -186,19 +203,21 @@ import AdminNavbar from './common/AdminNavbar.vue'
 import AdminFooter from './common/AdminFooter.vue'
 import axios from '@/utils/axios'
 import Swal from 'sweetalert2'
+import AIChatAssistant from '@/components/chat/AIChatAssistant.vue'
 import { onBeforeMount, onMounted, ref, onUnmounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { menuAPI } from '@/api'
-import os from 'os'
 
 export default {
   name: 'AdminLayout',
   components: {
     AdminNavbar,
-    AdminFooter
+    AdminFooter,
+    AIChatAssistant
   },
   setup() {
     const router = useRouter()
+    const route = useRoute()
     const tokenExpireTime = ref(null)
     const remainingTime = ref(0)
     const timerInterval = ref(null)
@@ -215,27 +234,76 @@ export default {
     })
     const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
     const windowWidth = ref(window.innerWidth)
-    const isDark = ref(document.documentElement.classList.contains('dark'))
+    const theme = ref('light')
+    
+    // 動態載入 CSS
+    const loadThemeCSS = async (themeName) => {
+      // 移除所有主題相關的 style 標籤
+      const existingStyles = document.querySelectorAll('style[data-theme]')
+      existingStyles.forEach(style => style.remove())
+
+      try {
+        // 使用 glob 導入 CSS
+        const themes = import.meta.glob('../../assets/css/*.css', { query: '?inline' })
+        const cssPath = `../../assets/css/${themeName}.css`
+        if (themes[cssPath]) {
+          const cssModule = await themes[cssPath]()
+          
+          // 創建新的 style 元素
+          const styleElement = document.createElement('style')
+          styleElement.setAttribute('data-theme', themeName)
+          styleElement.setAttribute('data-priority', 'high')
+          styleElement.textContent = cssModule.default
+          document.head.appendChild(styleElement)
+          
+          // 強制重新應用樣式
+          document.documentElement.className = ''
+          requestAnimationFrame(() => {
+            document.documentElement.className = themeName
+          })
+        }
+      } catch (error) {
+        console.error('載入主題 CSS 失敗:', error)
+      }
+    }
+    
+    // 同步主題設置
+    const syncTheme = async () => {
+      const savedTheme = localStorage.getItem('theme')
+      theme.value = savedTheme || 'light'
+      await loadThemeCSS(theme.value)
+    }
+    
+    // 切換主題
+    const toggleTheme = async () => {
+      theme.value = theme.value === 'dark' ? 'light' : 'dark'
+      localStorage.setItem('theme', theme.value)
+      await loadThemeCSS(theme.value)
+    }
     
     // 監聽主題變化
-    const handleThemeChange = (e) => {
+    const handleThemeChange = async (e) => {
       if (e.key === 'theme') {
-        const newTheme = e.newValue === 'dark'
-        isDark.value = newTheme
-        if (newTheme) {
-          document.documentElement.classList.add('dark')
-        } else {
-          document.documentElement.classList.remove('dark')
-        }
+        theme.value = e.newValue
+        await loadThemeCSS(e.newValue)
       }
     }
 
-    onMounted(() => {
+    // 監聽路由變化
+    router.beforeEach(async (to, from, next) => {
+      // 確保在路由切換時重新應用主題
+      await syncTheme()
+      next()
+    })
+
+    onMounted(async () => {
       window.addEventListener('storage', handleThemeChange)
+      await syncTheme()
     })
 
     onUnmounted(() => {
       window.removeEventListener('storage', handleThemeChange)
+      window.removeEventListener('storage', () => {})
     })
 
     // 開始計時器
@@ -362,10 +430,10 @@ export default {
       }
 
       try {
-        // 只在初始化時進行一次驗證，之後由計時器定期檢查
         const response = await axios.get('/users/verify')
         if (response.status === 200) {
           startExpirationTimer() // 驗證成功後開始計時
+          await syncTheme() // 同步主題設置
         }
         return true
       } catch (error) {
@@ -404,7 +472,9 @@ export default {
       userInfo,
       defaultAvatar,
       windowWidth,
-      isDark
+      theme,
+      syncTheme,
+      toggleTheme
     }
   },
   computed: {

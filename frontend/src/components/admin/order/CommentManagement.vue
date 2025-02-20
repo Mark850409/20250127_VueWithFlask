@@ -193,15 +193,11 @@
 </template>
 
 <script>
-import BackToHome from '../common/BackToHome.vue'
 import { messageAPI } from '@/api'
 import Swal from 'sweetalert2'
 
 export default {
   name: 'CommentManagement',
-  components: {
-    BackToHome
-  },
   data() {
     return {
       searchQuery: '',

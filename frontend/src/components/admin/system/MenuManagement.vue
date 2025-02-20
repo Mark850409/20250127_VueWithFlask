@@ -195,7 +195,7 @@
                          v-model="menuForm.icon" 
                          :class="{'border-red-500': errors.icon, 'flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500': true}">
                   <button @click="showIconPicker = true"
-                          class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+                          class="icon-select-label px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
                     <i class="fas fa-icons"></i>
                   </button>
                 </div>
@@ -252,7 +252,7 @@
               <button v-for="icon in group.icons"
                   :key="icon"
                   @click="selectIcon(icon)"
-                      class="p-3 hover:bg-blue-50 rounded-lg text-xl relative group/icon">
+                      class="choose-icon p-3 hover:bg-blue-50 rounded-lg text-xl relative group/icon">
             <i :class="icon"></i>
                 <span class="absolute bottom-0 left-1/2 -translate-x-1/2 transform px-2 py-1 bg-gray-800 text-white text-xs rounded 
                            opacity-0 group-hover/icon:opacity-100 transition-opacity whitespace-nowrap">
@@ -271,14 +271,12 @@
       </div>
     </div>
 
-    <BackToHome />
   </div>
 </template>
 
 <script>
 import { defineComponent } from 'vue'
 import draggable from 'vuedraggable'
-import BackToHome from '../common/BackToHome.vue'
 import { menuAPI } from '@/api'
 import { useLogger } from '@/composables/useLogger'
 import Swal from 'sweetalert2'
@@ -286,8 +284,7 @@ import Swal from 'sweetalert2'
 export default defineComponent({
   name: 'MenuManagement',
   components: {
-    draggable,
-    BackToHome
+    draggable
   },
   setup() {
     const { logOperation } = useLogger()

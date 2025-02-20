@@ -37,6 +37,21 @@
       
       <!-- 卡片列表 -->
       <div class="grid grid-cols-1 gap-6">
+        <!-- 查無資料顯示 -->
+        <div v-if="!sections || sections.length === 0" 
+             class="flex flex-col items-center justify-center py-12 px-4 bg-white rounded-xl shadow-sm">
+          <div class="w-16 h-16 mb-4 rounded-full bg-indigo-50 flex items-center justify-center">
+            <i class="ri-file-search-line text-2xl text-indigo-500"></i>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">
+            尚無學習內容
+          </h3>
+          <p class="text-sm text-gray-500 text-center max-w-sm">
+            目前還沒有任何學習內容。請稍後再回來查看，或聯繫管理員了解更多資訊。
+          </p>
+        </div>
+        
+        <!-- 學習內容列表 -->
         <div v-for="section in sections" 
              :key="section.id"
              class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300">

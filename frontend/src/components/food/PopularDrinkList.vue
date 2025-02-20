@@ -20,7 +20,8 @@
         >
         <!-- 促銷標籤 -->
         <div v-if="drink.promotion" class="absolute top-4 left-4">
-          <span class="px-3 py-1 text-sm bg-purple-500 text-white rounded-full inline-flex items-center shadow-md">
+          <span class="px-3 py-1 text-sm bg-purple-600 bg-opacity-70 text-white rounded-full inline-flex items-center shadow-md">
+            <i class="fas fa-tag text-xs mr-1.5"></i>
             {{ drink.promotion }}
           </span>
         </div>
@@ -55,6 +56,7 @@
         <!-- 店家標籤 -->
         <div v-if="drink.tag" class="mb-3 flex">
           <span class="px-3 py-1 text-sm bg-purple-400 bg-opacity-20 text-purple-600 rounded-full inline-flex items-center">
+            <i class="fas fa-tag text-xs mr-1.5"></i>
             {{ drink.tag }}
           </span>
         </div>
