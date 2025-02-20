@@ -6,12 +6,42 @@ import bcrypt
 import logging
 from services.mail_service import MailService
 from flask import current_app
+import firebase_admin
+from firebase_admin import auth as firebase_auth
+from firebase_admin import credentials
+import os
+from datetime import datetime
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+# 獲取專案根目錄
+BASE_DIR = Path(__file__).parent.parent
+
+def initialize_firebase():
+    """初始化 Firebase Admin SDK"""
+    try:
+        # 檢查是否已經初始化
+        if not firebase_admin._apps:
+            # 優先使用環境變數中的路徑
+            cred_path = os.getenv('FIREBASE_ADMIN_SDK_PATH')
+            if not cred_path:
+                cred_path = BASE_DIR / 'config' / 'firebase-adminsdk.json'
+            
+            if not Path(cred_path).exists():
+                raise FileNotFoundError(f'Firebase 憑證文件不存在: {cred_path}')
+            
+            cred = credentials.Certificate(str(cred_path))
+            firebase_admin.initialize_app(cred)
+            logger.info('Firebase 初始化成功')
+    except Exception as e:
+        logger.error(f"Firebase 初始化錯誤: {str(e)}", exc_info=True)
+        raise
 
 class UserService:
     def __init__(self):
         self.dao = UserDAO()
+        initialize_firebase()  # 在服務初始化時確保 Firebase 已初始化
     
     def get_all_users(self) -> List[User]:
         """獲取所有用戶"""
@@ -149,4 +179,64 @@ class UserService:
             return user is not None
         except Exception as e:
             logger.error(f"驗證重設密碼 token 錯誤: {str(e)}")
+            raise 
+
+    def verify_firebase_token(self, token: str) -> dict:
+        """驗證 Firebase token"""
+        try:
+            if not firebase_admin._apps:
+                raise ValueError('Firebase 尚未初始化')
+            # 驗證 ID token
+            decoded_token = firebase_auth.verify_id_token(
+                token,
+                check_revoked=True,
+                clock_skew_seconds=10  # 允許10秒的時間差
+            )
+            return decoded_token
+        except Exception as e:
+            logger.error(f"Firebase token 驗證錯誤: {str(e)}")
+            raise ValueError('無效的 Firebase token')
+
+    def firebase_login(self, token: str, provider: str) -> Optional[User]:
+        """Firebase 社群登入"""
+        try:
+            # 驗證 Firebase token
+            user_info = self.verify_firebase_token(token)
+
+            # 優先通過 firebase_uid 查找用戶
+            user = User.query.filter_by(firebase_uid=user_info['uid']).first()
+            if not user:
+                # 如果找不到，則通過 email 查找
+                user = self.dao.get_user_by_email(user_info['email'])
+            
+            if user:
+                # 更新用戶資訊
+                update_data = {
+                    'last_login': datetime.utcnow(),
+                    'firebase_uid': user_info['uid'],
+                    'provider': provider
+                }
+                
+                # 如果用戶沒有頭像，則使用社群頭像
+                if not user.avatar and 'picture' in user_info:
+                    update_data['avatar'] = user_info['picture']
+                
+                self.dao.update_user(user.id, update_data)
+            else:
+                # 創建新用戶
+                user_data = {
+                    'username': user_info.get('name', ''),
+                    'email': user_info['email'],
+                    'firebase_uid': user_info['uid'],
+                    'avatar': user_info.get('picture', ''),
+                    'status': 'Enabled',
+                    'provider': provider,
+                    'password': None  # 社群登入用戶不需要密碼
+                }
+                user = self.dao.create_user(user_data)
+
+            return user
+            
+        except Exception as e:
+            logger.error(f"Firebase 登入錯誤: {str(e)}")
             raise 

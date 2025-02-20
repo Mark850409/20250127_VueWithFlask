@@ -238,4 +238,17 @@ class VerifyResetTokenResponse(BaseModel):
             }
         }
 
+class FirebaseLoginSchema(BaseModel):
+    """Firebase 登入請求參數"""
+    token: str = Field(..., description='Firebase ID token')
+    provider: str = Field(..., description='登入提供者 (google, facebook, github)')
+
+    class Config:
+        schema_extra = {
+            'example': {
+                'token': 'firebase_id_token',
+                'provider': 'google'
+            }
+        }
+
 

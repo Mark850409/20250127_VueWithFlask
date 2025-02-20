@@ -24,17 +24,17 @@
       </div>
 
       <!-- 使用者資訊 -->
-      <div class="flex-shrink-0 p-4 border-b dark:border-gray-700 overflow-hidden">
+      <div class="flex-shrink-0 p-6 border-b dark:border-gray-700 overflow-hidden">
         <div class="flex flex-col items-center text-center">
           <img :src="getAvatarUrl"
                alt="User Avatar" 
-               class="w-14 h-14 md:w-16 md:h-16 rounded-full mb-2"
+               class="w-16 h-16 md:w-[96px] md:h-[96px] rounded-full mb-4"
                @error="handleAvatarError">
           <div class="overflow-hidden w-full">
-            <div class="text-base md:text-lg font-medium text-indigo-600 dark:text-indigo-400 mb-1">
+            <div class="text-lg md:text-xl font-medium text-indigo-600 dark:text-indigo-400 mb-2">
               嗨 ~ {{ userInfo.username }} 你好
             </div>
-            <div class="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+            <div class="text-sm md:text-base text-gray-500 dark:text-gray-400">
               歡迎使用後台管理系統
             </div>
           </div>
@@ -204,9 +204,10 @@ import AdminFooter from './common/AdminFooter.vue'
 import axios from '@/utils/axios'
 import Swal from 'sweetalert2'
 import AIChatAssistant from '@/components/chat/AIChatAssistant.vue'
-import { onBeforeMount, onMounted, ref, onUnmounted, watch } from 'vue'
+import { onBeforeMount, onMounted, ref, onUnmounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { menuAPI } from '@/api'
+import { useAuthStore } from '@/stores/auth'
 
 export default {
   name: 'AdminLayout',
@@ -235,6 +236,7 @@ export default {
     const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
     const windowWidth = ref(window.innerWidth)
     const theme = ref('light')
+    const authStore = useAuthStore()
     
     // 動態載入 CSS
     const loadThemeCSS = async (themeName) => {
@@ -385,31 +387,38 @@ export default {
 
     // 處理 token 過期
     const handleLogout = async () => {
-      // 先清除計時器
-      clearInterval(timerInterval.value)
-      clearInterval(tokenCheckInterval.value)
-      timerInterval.value = null
-      tokenCheckInterval.value = null
-      
-      await Swal.fire({
-        icon: 'warning',
-        title: '登入已過期',
-        text: '請重新登入',
-        confirmButtonText: '確定',
-        allowOutsideClick: false
-      })
-      
-      // 清除所有相關的 localStorage 項目
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      localStorage.removeItem('loginTime')
-      localStorage.removeItem('isAdmin')
-      
-      // 重置計時相關的狀態
-      remainingTime.value = 0
-      tokenExpireTime.value = null
-      
-      router.push('/login')
+      try {
+        // 先清除計時器
+        clearInterval(timerInterval.value)
+        clearInterval(tokenCheckInterval.value)
+        timerInterval.value = null
+        tokenCheckInterval.value = null
+        
+        await Swal.fire({
+          icon: 'warning',
+          title: '登入已過期',
+          text: '請重新登入',
+          confirmButtonText: '確定',
+          allowOutsideClick: false
+        })
+        
+        // 使用 auth store 的 clearAuth 方法
+        await authStore.clearAuth()
+        
+        // 重置計時相關的狀態
+        remainingTime.value = 0
+        tokenExpireTime.value = null
+        
+        router.push('/login')
+      } catch (error) {
+        console.error('登出失敗:', error)
+        Swal.fire({
+          icon: 'error',
+          title: '登出失敗',
+          text: '請稍後再試',
+          confirmButtonText: '確定'
+        })
+      }
     }
 
     // 檢查用戶是否已登入
@@ -460,6 +469,28 @@ export default {
       }
     })
 
+    const getAvatarUrl = computed(() => {
+      const user = JSON.parse(localStorage.getItem('user'))
+      
+      if (!user) return defaultAvatar
+      
+      if (!user.avatar) return defaultAvatar
+      
+      // 判斷是否為完整的 URL（Google 頭像）
+      if (user.avatar.startsWith('http')) {
+        return user.avatar
+      }
+      
+      // 本地上傳的頭像
+      if (user.avatar.includes('/')) {
+        // 已經是完整路徑
+        return `${import.meta.env.VITE_BACKEND_URL}/api/users/avatar/${user.avatar.split('/').pop()}`
+      } else {
+        // 只有檔名
+        return `${import.meta.env.VITE_BACKEND_URL}/uploads/avatars/${user.avatar}`
+      }
+    })
+
     return {
       remainingTime,
       formatTime,
@@ -474,16 +505,12 @@ export default {
       windowWidth,
       theme,
       syncTheme,
-      toggleTheme
+      toggleTheme,
+      getAvatarUrl,
+      handleLogout
     }
   },
   computed: {
-    getAvatarUrl() {
-      if (this.userInfo.avatar) {
-        return `${import.meta.env.VITE_BACKEND_URL}/api/users/avatar/${this.userInfo.avatar.split('/').pop()}`
-      }
-      return this.defaultAvatar
-    },
     getBannerTitle() {
       const route = this.$route.name
       const titles = {
@@ -606,42 +633,6 @@ export default {
         console.error('獲取用戶信息失敗:', error)
         localStorage.removeItem('token')
         this.router.push('/login')
-      }
-    },
-    async logout() {
-      try {
-        const result = await Swal.fire({
-          title: '確定要登出嗎？',
-          icon: 'question',
-          showCancelButton: true,
-          confirmButtonText: '確定',
-          cancelButtonText: '取消',
-          confirmButtonColor: '#dc2626',
-          cancelButtonColor: '#6b7280',
-        })
-
-        if (result.isConfirmed) {
-          await axios.post('/users/logout')
-          localStorage.removeItem('token')
-          localStorage.removeItem('user')
-          localStorage.removeItem('loginTime')
-          this.$router.push('/login')
-          
-          Swal.fire({
-            icon: 'success',
-            title: '已成功登出',
-            timer: 1500,
-            showConfirmButton: false
-          })
-        }
-      } catch (error) {
-        console.error('登出失敗:', error)
-        Swal.fire({
-          icon: 'error',
-          title: '登出失敗',
-          text: '請稍後再試',
-          confirmButtonText: '確定'
-        })
       }
     },
     handleResize() {

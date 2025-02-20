@@ -64,3 +64,6 @@ frontend/dist/
 # docker
 data/
 data/**
+
+# Firebase
+**/firebase-adminsdk.json

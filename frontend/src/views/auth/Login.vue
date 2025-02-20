@@ -179,28 +179,49 @@
           </form>
 
           <!-- 社群登入按鈕樣式調整 -->
-          <div class="grid grid-cols-3 gap-2 md:gap-4 mt-6 md:mt-8">
-            <button 
-              class="w-full inline-flex justify-center py-3 px-4 
-                     border border-white/30 rounded-xl backdrop-blur-sm 
-                     bg-white/10 text-white hover:bg-white/20 
-                     transition-all duration-200 shadow-lg shadow-black/5">
-              <i class="ri-google-line"></i>
-            </button>
-            <button @click="socialLogin('facebook')"
-                    class="w-full inline-flex justify-center py-3 px-4 
-                     border border-white/30 rounded-xl backdrop-blur-sm 
-                     bg-white/10 text-white hover:bg-white/20 
-                     transition-all duration-200 shadow-lg shadow-black/5">
-              <i class="ri-messenger-line"></i>
-            </button>
-            <button @click="socialLogin('line')"
-                    class="w-full inline-flex justify-center py-3 px-4 
-                     border border-white/30 rounded-xl backdrop-blur-sm 
-                     bg-white/10 text-white hover:bg-white/20 
-                     transition-all duration-200 shadow-lg shadow-black/5">
-              <i class="ri-line-line"></i>
-            </button>
+          <div class="mt-6">
+            <div class="relative">
+              <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-gray-300 dark:border-gray-700 opacity-50"></div>
+              </div>
+              <div class="relative flex justify-center text-sm">
+                <span class="px-4 text-gray-400">
+                  或使用以下方式登入
+                </span>
+              </div>
+            </div>
+
+            <div class="mt-6 grid grid-cols-3 gap-3">
+              <!-- Google 登入 -->
+              <button
+                @click="handleGoogleSignIn"
+                class="w-full inline-flex justify-center items-center py-2 px-4 rounded-md shadow-sm 
+                        bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700
+                        text-white transition-all duration-200 transform hover:scale-105"
+              >
+                <i class="ri-google-line text-xl"></i>
+              </button>
+
+              <!-- Facebook 登入 -->
+              <button
+                @click="handleFacebookSignIn"
+                class="w-full inline-flex justify-center items-center py-2 px-4 rounded-md shadow-sm 
+                        bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700
+                        text-white transition-all duration-200 transform hover:scale-105"
+              >
+                <i class="ri-messenger-line text-xl"></i>
+              </button>
+
+              <!-- GitHub 登入 -->
+              <button
+                @click="handleGithubSignIn"
+                class="w-full inline-flex justify-center items-center py-2 px-4 rounded-md shadow-sm 
+                        bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900
+                        text-white transition-all duration-200 transform hover:scale-105"
+              >
+                <i class="ri-github-line text-xl"></i>
+              </button>
+            </div>
           </div>
 
           <!-- 切換登入/註冊按鈕 -->
@@ -251,11 +272,21 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import accountApi from '@/api/modules/account'
+import { useAuthStore } from '@/stores/auth'
+import { auth } from '@/config/firebase'
+import { 
+  GoogleAuthProvider, 
+  FacebookAuthProvider,
+  GithubAuthProvider,
+  signInWithPopup,
+  fetchSignInMethodsForEmail
+} from 'firebase/auth'
 
 export default {
   name: 'Login',
   setup() {
     const router = useRouter()
+    const authStore = useAuthStore()
     const isLogin = ref(true)
     const defaultAvatar = 'https://api.dicebear.com/9.x/shapes/svg?seed=Liliana&flip=true&backgroundType=gradientLinear'
     const avatarPreview = ref('')
@@ -477,7 +508,7 @@ export default {
             })
 
             // 判斷是否為管理員帳號
-            if (userData.email === 'xiaoyan850409@gmail.com') {
+            if (userData.username === 'MarkHSU') {
               localStorage.setItem('isAdmin', 'true')
               router.push('/admin')
             } else {
@@ -497,17 +528,209 @@ export default {
       }
     }
 
-    const socialLogin = async (provider) => {
+    const handleGoogleSignIn = async () => {
       try {
-        // TODO: 實作社群登入邏輯
-        console.log('Social login with:', provider)
+        const provider = new GoogleAuthProvider()
+        provider.addScope('profile')
+        provider.addScope('email')
+        
+        const result = await signInWithPopup(auth, provider)
+        console.log('Google 登入結果:', result)  // 調試用
+        
+        const token = await result.user.getIdToken()
+        console.log('Firebase token:', token)  // 調試用
+        
+        const response = await accountApi.firebaseLogin({
+          token,
+          provider: 'google'
+        })
+        
+        console.log('後端回應:', response.data)  // 調試用
+        
+        if (response.data && response.data.token) {
+          // 先設置 localStorage
+          localStorage.setItem('token', response.data.token)
+          localStorage.setItem('user', JSON.stringify(response.data.user))
+
+          const userData = response.data.user
+          
+          // 更新 auth store
+          await authStore.setAuth({
+            token: response.data.token,
+            user: response.data.user
+          })
+
+          // 判斷是否為管理員帳號
+          if (userData.username === '徐小彥') {
+              localStorage.setItem('isAdmin', 'true')
+              router.push('/admin')
+            } else {
+              localStorage.setItem('isAdmin', 'false')
+              router.push('/')
+          }
+          
+        } else {
+          throw new Error('登入回應格式錯誤')
+        }
+        
       } catch (error) {
-        console.error('Social Login Error:', error)
-        // 特殊的社群登入錯誤處理
-        await Swal.fire({
+        console.error('Google 登入錯誤:', error)
+        
+        // 根據錯誤類型顯示不同的錯誤訊息
+        let errorMessage = '使用 Google 登入時發生錯誤，請稍後再試'
+        
+        if (error.code === 'auth/popup-closed-by-user') {
+          errorMessage = '登入視窗被關閉'
+        } else if (error.code === 'auth/cancelled-popup-request') {
+          errorMessage = '登入請求已取消'
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message
+        }
+        
+        Swal.fire({
           icon: 'error',
-          title: '社群登入失敗',
-          text: '請稍後再試',
+          title: '登入失敗',
+          text: errorMessage,
+          confirmButtonText: '確定'
+        })
+      }
+    }
+
+    const handleFacebookSignIn = async () => {
+      try {
+        const provider = new FacebookAuthProvider()
+        const result = await signInWithPopup(auth, provider)
+        
+        const token = await result.user.getIdToken()
+        const response = await accountApi.firebaseLogin({
+          token,
+          provider: 'facebook'
+        })
+        
+        localStorage.setItem('token', response.data.token)
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        await authStore.setAuth(response.data)
+        router.push('/')
+        
+      } catch (error) {
+        console.error('Facebook 登入失敗:', error)
+        Swal.fire({
+          icon: 'error',
+          title: '登入失敗',
+          text: '使用 Facebook 登入時發生錯誤，請稍後再試'
+        })
+      }
+    }
+
+    const handleGithubSignIn = async () => {
+      try {
+        const provider = new GithubAuthProvider()
+        provider.addScope('user:email')
+        
+        const result = await signInWithPopup(auth, provider)
+        console.log('GitHub 登入結果:', result.user)
+        
+        if (result) {
+          try {
+            const token = await result.user.getIdToken()
+            console.log('Firebase token:', token)
+            
+            // 準備要傳給後端的用戶資料
+            const userData = {
+              username: result.user.displayName || result.user.email.split('@')[0],
+              email: result.user.email,
+              avatar: result.user.photoURL,
+              provider: 'github',
+              status: 'Enabled',
+              uid: result.user.uid  // 添加 Firebase UID
+            }
+            console.log('準備發送給後端的用戶資料:', userData)
+            
+            // 呼叫後端 API 進行登入或註冊
+            const response = await accountApi.firebaseLogin({
+              token: token,
+              provider: 'github',
+              userData: userData
+            })
+            console.log('後端回應:', response.data)
+            
+            if (response.data && response.data.token) {
+              // 確保資料正確存儲
+              localStorage.setItem('token', response.data.token)
+              localStorage.setItem('user', JSON.stringify(response.data.user))
+              console.log('已存儲用戶資料:', response.data.user)
+              
+              await authStore.setAuth(response.data)
+              
+              // 判斷是否為管理員帳號
+              if (response.data.user.username === '徐小彥') {
+                localStorage.setItem('isAdmin', 'true')
+                console.log('管理員登入，準備跳轉到後台')
+                router.push('/admin')
+              } else {
+                localStorage.setItem('isAdmin', 'false')
+                console.log('一般用戶登入，準備跳轉到首頁')
+                router.push('/')
+              }
+              
+              // 顯示登入成功訊息
+              await Swal.fire({
+                icon: 'success',
+                title: '登入成功',
+                text: `歡迎回來，${response.data.user.username}！`,
+                timer: 1500,
+                showConfirmButton: false
+              })
+            } else {
+              console.error('後端回應缺少必要資料')
+              throw new Error('登入回應格式錯誤')
+            }
+          } catch (error) {
+            // 處理特定的 Firebase 錯誤
+            if (error.code === 'auth/user-disabled') {
+              Swal.fire({
+                icon: 'error',
+                title: '帳號已被停用',
+                text: '此 GitHub 帳號已被系統停用，請聯繫管理員或使用其他方式登入',
+                confirmButtonText: '確定'
+              })
+              return
+            }
+            
+            if (error.code === 'auth/account-exists-with-different-credential') {
+              const methods = await fetchSignInMethodsForEmail(auth, result.user.email)
+              
+              Swal.fire({
+                icon: 'warning',
+                title: '此 Email 已被使用',
+                text: `請使用 ${methods.join(', ')} 登入`,
+                confirmButtonText: '確定'
+              })
+            } else {
+              throw error
+            }
+          }
+        }
+      } catch (error) {
+        console.error('GitHub 登入錯誤:', error)
+        let errorMessage = '使用 GitHub 登入時發生錯誤，請稍後再試'
+        
+        if (error.code === 'auth/popup-closed-by-user') {
+          errorMessage = '登入視窗被關閉'
+        } else if (error.code === 'auth/cancelled-popup-request') {
+          errorMessage = '登入請求已取消'
+        } else if (error.code === 'auth/account-exists-with-different-credential') {
+          errorMessage = '此 Email 已使用其他方式登入，請使用原有的登入方式'
+        } else if (error.code === 'auth/user-disabled') {
+          errorMessage = '此 GitHub 帳號已被系統停用，請聯繫管理員或使用其他方式登入'
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message
+        }
+        
+        Swal.fire({
+          icon: 'error',
+          title: '登入失敗',
+          text: errorMessage,
           confirmButtonText: '確定'
         })
       }
@@ -568,10 +791,12 @@ export default {
       avatarFile,
       handleAvatarChange,
       handleSubmit,
-      socialLogin,
       showForgotPasswordModal,
       forgotPasswordEmail,
-      handleForgotPassword
+      handleForgotPassword,
+      handleGoogleSignIn,
+      handleFacebookSignIn,
+      handleGithubSignIn
     }
   }
 }

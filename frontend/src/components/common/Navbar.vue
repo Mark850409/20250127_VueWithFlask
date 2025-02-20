@@ -188,6 +188,9 @@
 <script>
 import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import Swal from 'sweetalert2'
+import accountApi from '@/api/modules/account'
 
 export default {
   name: 'Navbar',
@@ -202,6 +205,7 @@ export default {
     const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
     const isMobileMenuOpen = ref(false)
     const isAdmin = ref(false)
+    const authStore = useAuthStore()
     
     // Banner 圖片
     const bannerImages = [
@@ -222,34 +226,23 @@ export default {
 
     // 計算頭像 URL
     const getAvatarUrl = computed(() => {
-      if (!isLoggedIn.value) return defaultAvatar
+      const user = JSON.parse(localStorage.getItem('user'))
+      if (!user) return defaultAvatar
       
-      let user = {}
-      try {
-        user = JSON.parse(localStorage.getItem('user') || '{}')
-        console.log(user)
-      } catch (error) {
-        console.error('解析用戶數據失敗:', error)
-        return defaultAvatar
-      }
+      if (!user.avatar) return defaultAvatar
       
-      const baseUrl = import.meta.env.VITE_BACKEND_URL
-      
-      if (!user || typeof user !== 'object') {
-        return defaultAvatar
-      }
-
-      if (user.avatar && user.avatar.startsWith('http')) {
+      // 判斷是否為完整的 URL（Google 頭像）
+      if (user.avatar.startsWith('http')) {
         return user.avatar
-      } else if (user.avatar) {
-        if (!baseUrl) {
-          console.error('後端 URL 未設置')
-          return defaultAvatar
-        }
-        console.log(`${baseUrl}/api/users/avatar/${user.avatar.split('/').pop()}`)
-        return `${baseUrl}/api/users/avatar/${user.avatar.split('/').pop()}`
+      }
+      
+      // 本地上傳的頭像
+      if (user.avatar.includes('/')) {
+        // 已經是完整路徑
+        return `${import.meta.env.VITE_BACKEND_URL}/api/users/avatar/${user.avatar.split('/').pop()}`
       } else {
-        return `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username || 'default'}`
+        // 只有檔名
+        return `${import.meta.env.VITE_BACKEND_URL}/uploads/avatars/${user.avatar}`
       }
     })
 
@@ -292,15 +285,45 @@ export default {
     }
 
     // 處理登出
-    const handleLogout = () => {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      localStorage.removeItem('isAdmin')
-      isLoggedIn.value = false
-      isAdmin.value = false
-      userName.value = ''
-      isDropdownOpen.value = false
-      router.push('/login')
+    const handleLogout = async () => {
+      try {
+        const result = await Swal.fire({
+          title: '確定要登出嗎？',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: '確定',
+          cancelButtonText: '取消'
+        })
+
+        if (result.isConfirmed) {
+          // 先呼叫後端登出 API
+          await accountApi.logout()
+          
+          // 使用 auth store 的 clearAuth 方法處理 Firebase 登出和清除狀態
+          await authStore.clearAuth()
+          
+          isLoggedIn.value = false
+          isAdmin.value = false
+          userName.value = ''
+          isDropdownOpen.value = false
+          router.push('/login')
+          
+          // 顯示登出成功訊息
+          await Swal.fire({
+            icon: 'success',
+            title: '已成功登出',
+            timer: 1500,
+            showConfirmButton: false
+          })
+        }
+      } catch (error) {
+        console.error('登出失敗:', error)
+        Swal.fire({
+          icon: 'error',
+          title: '登出失敗',
+          text: '請稍後再試'
+        })
+      }
     }
 
     // 處理頭像加載錯誤

@@ -9,7 +9,8 @@ from schemas.user_schema import (
     UserPath, UserRegisterFileSchema, UserRegisterFormSchema, UserAvatarParamsSchema,
     UserAvatarSchema, FileUploadResponse, UserRegisterResponse,
     UserRegisterMultipartSchema, UploadFileForm, ForgotPasswordSchema,
-    ResetPasswordSchema, VerifyResetTokenResponse, VerifyResetTokenParams
+    ResetPasswordSchema, VerifyResetTokenResponse, VerifyResetTokenParams,
+    FirebaseLoginSchema
 )
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 from werkzeug.utils import secure_filename
@@ -630,4 +631,40 @@ def verify_reset_token(path: VerifyResetTokenParams):
             'success': False,
             'message': '驗證 token 失敗'
         }), 500
+
+@user_bp.post('/firebase', tags=[user_tag])
+def firebase_login(body: FirebaseLoginSchema):
+    """Firebase 社群登入
+    
+    Args:
+        body (FirebaseLoginSchema): Firebase 登入數據
+            
+    Returns:
+        200: 登入成功
+            token (str): JWT token
+            user (UserResponseSchema): 用戶信息
+        400: 參數錯誤
+        401: 登入失敗
+    """
+    try:
+        service = UserService()
+        user = service.firebase_login(body.token, body.provider)
+        
+        if not user:
+            return {'message': '登入失敗'}, 401
+            
+        user_id = str(user.id)
+        access_token = create_access_token(
+            identity=user_id,
+            additional_claims={'type': 'access'}
+        )
+            
+        return {
+            'token': access_token,
+            'user': user.to_dict()
+        }
+    except ValueError as e:
+        return {'message': str(e)}, 400
+    except Exception as e:
+        return {'message': f'登入失敗: {str(e)}'}, 500
 

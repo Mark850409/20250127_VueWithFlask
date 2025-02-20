@@ -22,11 +22,14 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
+    password = db.Column(db.String(255), nullable=True)  # 社群登入可能沒有密碼
     avatar = db.Column(db.String(255))
-    status = db.Column(db.String(20), default='Enabled')  # Enabled/Disabled
+    status = db.Column(db.String(20), nullable=False, default='Enabled')
     register_time = db.Column(db.DateTime, default=datetime.utcnow)
     update_time = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_login = db.Column(db.DateTime, nullable=True)
+    firebase_uid = db.Column(db.String(128), unique=True, nullable=True)  # Firebase 用戶 ID
+    provider = db.Column(db.String(20), nullable=True)  # 登入提供者 (google, facebook, github)
     
     # 新增重設密碼相關欄位
     reset_password_token = db.Column(db.String(100), unique=True)

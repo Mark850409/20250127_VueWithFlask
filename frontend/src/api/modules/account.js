@@ -91,5 +91,31 @@ export default {
         console.error('Reset Password Error:', error.response?.data || error.message)
         throw error
       })
+  },
+
+  // 登出
+  logout: async () => {
+    try {
+      const response = await axios.post('/users/logout')
+      return response
+    } catch (error) {
+      console.error('登出 API 錯誤:', error)
+      throw error
+    }
+  },
+
+  // Firebase 社群登入
+  firebaseLogin: async (data) => {
+    try {
+      const response = await axios.post('/users/firebase', {
+        token: data.token,
+        provider: data.provider,
+        userData: data.userData
+      })
+      return response
+    } catch (error) {
+      console.error('Firebase 登入 API 錯誤:', error)
+      throw error
+    }
   }
 } 

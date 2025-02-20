@@ -77,7 +77,7 @@
             <MenuButton class="flex items-center space-x-2 sm:space-x-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-indigo-50 transition-all duration-200">
               <img :src="userInfo.avatar || defaultAvatar"
                    alt="User Avatar"
-                   class="h-7 w-7 sm:h-8 sm:w-8 rounded-full ring-2 ring-indigo-100">
+                   class="h-7 w-7 sm:h-8 sm:w-8 rounded-full">
               <span class="hidden md:block font-medium text-gray-700">
                 {{ userInfo.username }}
               </span>
@@ -123,7 +123,7 @@
 
 <script>
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
-import { ref, onMounted, watch, inject } from 'vue'
+import { ref, onMounted, watch, inject, computed } from 'vue'
 import axios from '@/utils/axios'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
@@ -160,34 +160,34 @@ export default {
     const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
 
     // 獲取用戶信息
-    const getUserInfo = async () => {
-      try {
-        const userData = JSON.parse(localStorage.getItem('user'))
-        if (userData?.id) {
-          const response = await axios.get(`/users/${userData.id}`)
-          const { username, email, avatar } = response.data
-          
-          // 設置基本信息
-          userInfo.value = {
-            username,
-            email,
-            avatar: avatar ? `${import.meta.env.VITE_API_URL}/users/avatar/${response.data.avatar.split('/').pop()}` : defaultAvatar
-          }
+    const getUserInfo = computed(() => {
+      const user = JSON.parse(localStorage.getItem('user') || '{}')
+      
+      // 處理頭像
+      let avatarUrl = defaultAvatar
+      
+      if (user.avatar) {
+        // 判斷是否為完整的 URL（Google 頭像）
+        if (user.avatar.startsWith('http')) {
+          avatarUrl = user.avatar
+        } else if (user.avatar.includes('/')) {
+          // 完整路徑
+          avatarUrl = `${import.meta.env.VITE_BACKEND_URL}/api/users/avatar/${user.avatar.split('/').pop()}`
+        } else {
+          // 只有檔名
+          avatarUrl = `${import.meta.env.VITE_BACKEND_URL}/api/users/avatar/${user.avatar}`
         }
-      } catch (error) {
-        console.error('獲取用戶信息失敗:', error)
-        Swal.fire({
-          icon: 'error',
-          title: '獲取用戶信息失敗',
-          text: '請重新登入',
-          confirmButtonText: '確定'
-        })
-        userInfo.value.avatar = defaultAvatar
       }
-    }
+
+      return {
+        username: user.username || '使用者',
+        email: user.email || '',
+        avatar: avatarUrl
+      }
+    })
 
     onMounted(() => {
-      getUserInfo()
+      userInfo.value = getUserInfo.value
     })
 
     const handleLogout = async () => {
