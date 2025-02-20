@@ -1,11 +1,11 @@
 <template>
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
     <!-- 表格控制列 -->
-    <div class="px-4 md:px-6 py-3 md:py-4 border-b dark:border-gray-700 flex flex-col md:flex-row md:justify-between md:items-center space-y-3 md:space-y-0 bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-gray-700 dark:to-gray-800">
+    <div class="px-4 md:px-6 py-3 md:py-4 border-b dark:border-gray-700 flex flex-col md:flex-row md:justify-between md:items-center space-y-3 md:space-y-0 bg-gradient-to-r from-slate-50 to-gray-50 dark:from-gray-800 dark:to-gray-900">
       <div class="flex items-center space-x-2 w-full md:w-auto">
         <span class="text-sm text-gray-700 dark:text-gray-300">顯示</span>
         <select v-model="pageSize" 
-                class="bg-white dark:bg-gray-700 border border-indigo-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm rounded-md px-3 py-1.5 pr-8 focus:ring-1 focus:ring-indigo-400 dark:focus:ring-indigo-500 focus:border-indigo-400 dark:focus:border-indigo-500 w-20">
+                class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-md px-3 py-1.5 pr-8 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 w-20">
           <option value="10">10</option>
           <option value="25">25</option>
           <option value="50">50</option>
@@ -21,7 +21,7 @@
             <input type="text" 
                    v-model="searchQuery" 
                    placeholder="搜尋..." 
-                   class="bg-white dark:bg-gray-700 border border-indigo-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 pl-8 pr-4 py-1.5 rounded-md w-full focus:ring-1 focus:ring-indigo-400 dark:focus:ring-indigo-500 focus:border-indigo-400 dark:focus:border-indigo-500 placeholder-gray-500 dark:placeholder-gray-400">
+                   class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 pl-8 pr-4 py-1.5 rounded-md w-full focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 placeholder-gray-500 dark:placeholder-gray-400">
             <i class="fas fa-search absolute left-3 top-2.5 text-gray-500 dark:text-gray-400"></i>
           </div>
 
@@ -29,12 +29,12 @@
           <div class="flex items-center gap-2 order-2">
             <button v-if="selectedItems.length" 
                     @click="batchDelete"
-                    class="flex-1 md:flex-none px-4 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-md hover:bg-red-200 dark:hover:bg-red-900/50 text-sm transition-colors duration-200 border border-red-200 dark:border-red-800">
+                    class="flex-1 md:flex-none px-4 py-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md text-sm transition-colors duration-200 border border-red-200 dark:border-red-800">
               <i class="fas fa-trash-alt mr-2"></i>批次刪除
             </button>
             <button v-if="showAddButton" 
                     @click="$emit('add')"
-                    class="flex-1 md:flex-none inline-flex items-center justify-center px-4 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-sm rounded-md hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors duration-200 border border-emerald-200 dark:border-emerald-800">
+                    class="flex-1 md:flex-none px-4 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-sm rounded-md text-sm transition-colors duration-200 border border-emerald-200 dark:border-emerald-800">
               <i class="fas fa-plus mr-1.5"></i>新增
             </button>
           </div>
@@ -45,7 +45,7 @@
     <!-- 表格內容 -->
     <div class="overflow-x-auto scrollbar-thin">
       <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-        <thead class="bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-gray-700 dark:to-gray-800 sticky top-0">
+        <thead class="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-gray-800 dark:to-gray-900 sticky top-0">
           <tr>
             <th v-if="selectable" scope="col" class="w-12 px-3 py-3">
               <input type="checkbox" 
@@ -71,7 +71,7 @@
           </tr>
         </thead>
         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-          <tr v-for="item in paginatedData" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
+          <tr v-for="item in paginatedData" :key="item.id" class="hover:bg-slate-50 dark:hover:bg-gray-800/50 transition-colors duration-150">
             <td v-if="selectable" class="w-12 px-3 py-4">
               <input type="checkbox" 
                      v-model="selectedItems"
@@ -124,7 +124,7 @@
     </div>
 
     <!-- 分頁區域 -->
-    <div class="px-4 md:px-6 py-3 md:py-4 flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0 border-t dark:border-gray-700 bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-gray-700 dark:to-gray-800">
+    <div class="px-4 md:px-6 py-3 md:py-4 flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0 border-t dark:border-gray-700 bg-gradient-to-r from-slate-50 to-gray-50 dark:from-gray-800 dark:to-gray-900">
       <div class="text-sm text-gray-700 dark:text-gray-300">
         顯示第 {{ startIndex + 1 }} 至 {{ endIndex }} 筆，共 {{ totalItems }} 筆資料
       </div>
@@ -160,8 +160,8 @@
                 :class="[
                   'px-4 py-2 rounded-lg border transition-colors duration-200 min-w-[40px]',
                   currentPage === page 
-                    ? 'bg-indigo-500 dark:bg-indigo-600 text-white border-indigo-500 dark:border-indigo-600 hover:bg-indigo-600 dark:hover:bg-indigo-700'
-                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                    ? 'bg-blue-500 dark:bg-blue-600 text-white border-blue-500 dark:border-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700'
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
                 ]">
           {{ page }}
         </button>
@@ -357,25 +357,5 @@ select {
 .scrollbar-thin {
   scrollbar-width: thin;
   -webkit-overflow-scrolling: touch;
-}
-
-/* 確保表格在小螢幕上可以水平滾動 */
-@media (max-width: 640px) {
-  .overflow-x-auto {
-    max-width: 100vw;
-    margin: 0 -1rem;
-    padding: 0 1rem;
-  }
-}
-
-/* 優化手機版按鈕觸控區域 */
-@media (max-width: 768px) {
-  .p-1\.5 {
-    min-width: 32px;
-    min-height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
 }
 </style> 

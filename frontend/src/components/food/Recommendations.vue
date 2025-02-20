@@ -1,7 +1,7 @@
 <template>
   <div v-if="isLoggedIn">
     <!-- 熱門飲料店推薦 -->
-    <section class="bg-white dark:bg-gray-900">
+    <section class="popular-drink-section bg-white dark:bg-gray-900">
       <div class="container mx-auto px-4">
         <!-- 排序和視圖切換選項 -->
         <div class="max-w-7xl mx-auto">
@@ -13,7 +13,7 @@
                 :key="sort.value"
                 @click="currentSort = sort.value"
                 :class="[
-                  'px-4 py-2 rounded-full transition duration-300 flex items-center justify-center space-x-2 text-sm md:text-base',
+                  'sort-btn px-4 py-2 rounded-full transition duration-300 flex items-center justify-center space-x-2 text-sm md:text-base',
                   currentSort === sort.value 
                     ? 'bg-blue-500 text-white' 
                     : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
@@ -28,7 +28,7 @@
               <button 
                 @click="viewMode = 'grid'"
                 :class="[
-                  'p-2 rounded transition duration-300',
+                  'p-2 rounded transition duration-300 grid-btn',
                   viewMode === 'grid' 
                     ? 'bg-blue-500 text-white' 
                     : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
@@ -39,7 +39,7 @@
               <button 
                 @click="viewMode = 'list'"
                 :class="[
-                  'p-2 rounded transition duration-300',
+                  'p-2 rounded transition duration-300 list-btn',
                   viewMode === 'list' 
                     ? 'bg-blue-500 text-white' 
                     : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
@@ -72,11 +72,11 @@
       <div class="container mx-auto px-4">
         <!-- 標題區塊 -->
         <div class="text-center mb-16">
-          <span class="inline-block px-4 py-1 bg-blue-50 text-blue-500 font-medium rounded-full mb-4">
+          <span class="span-title inline-block px-4 py-1 bg-blue-50 text-blue-500 font-medium rounded-full mb-4">
             RECOMMENDED DRINKS
           </span>
           <h2 class="text-4xl font-bold text-gray-900">
-            為您推薦 <span class="text-blue-500">的飲料店</span>
+            為您推薦 <span class="span-subtitle text-blue-500">的飲料店</span>
           </h2>
         </div>
 
@@ -90,7 +90,7 @@
                 :key="sort.value"
                 @click="recommendSort = sort.value"
                 :class="[
-                  'px-4 py-2 rounded-full transition duration-300 flex items-center justify-center space-x-2 text-sm md:text-base',
+                  'sort-btn px-4 py-2 rounded-full transition duration-300 flex items-center justify-center space-x-2 text-sm md:text-base',
                   recommendSort === sort.value 
                     ? 'bg-blue-500 text-white' 
                     : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
@@ -105,7 +105,7 @@
               <button 
                 @click="recommendViewMode = 'grid'"
                 :class="[
-                  'p-2 rounded transition duration-300',
+                  'p-2 rounded transition duration-300 grid-btn',
                   recommendViewMode === 'grid' 
                     ? 'bg-blue-500 text-white' 
                     : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
@@ -116,7 +116,7 @@
               <button 
                 @click="recommendViewMode = 'list'"
                 :class="[
-                  'p-2 rounded transition duration-300',
+                  'p-2 rounded transition duration-300 list-btn',
                   recommendViewMode === 'list' 
                     ? 'bg-blue-500 text-white' 
                     : 'bg-blue-50 text-blue-600 hover:bg-blue-100'

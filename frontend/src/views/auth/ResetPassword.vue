@@ -133,7 +133,7 @@
 </template>
 
 <script>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import accountApi from '@/api/modules/account'
 import Swal from 'sweetalert2'
@@ -268,6 +268,18 @@ export default {
       }
     }
 
+    // 初始化暗色模式
+    onMounted(() => {
+      // 檢查本地存儲的主題設置
+      if (localStorage.theme === 'dark' || 
+          (!('theme' in localStorage) && 
+           window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    })
+
     return {
       form,
       errors,
@@ -304,29 +316,6 @@ input:-webkit-autofill:focus {
   color: rgb(252, 165, 165);
 }
 
-/* 手機版特定樣式 */
-@media (max-width: 768px) {
-  .min-h-screen {
-    min-height: 100vh;
-    padding: 1rem 0;
-  }
-
-  /* 調整輸入框在手機版的大小 */
-  input {
-    font-size: 16px; /* 防止 iOS 自動縮放 */
-  }
-
-  /* 調整錯誤提示文字在手機版的大小 */
-  .text-xs {
-    font-size: 0.7rem;
-  }
-
-  /* 調整密碼提示文字在手機版的大小 */
-  .text-sm {
-    font-size: 0.8rem;
-  }
-}
-
 /* 確保背景圖片在所有設備上都能完整顯示 */
 .absolute.inset-0 img {
   object-fit: cover;
@@ -361,15 +350,4 @@ button:hover .ri-eye-off-line {
   opacity: 1;
 }
 
-/* 調整手機版按鈕大小 */
-@media (max-width: 768px) {
-  .ri-eye-line,
-  .ri-eye-off-line {
-    font-size: 1.1rem;
-  }
-  
-  button.absolute {
-    padding: 0.5rem;
-  }
-}
 </style> 

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex">
+  <div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex" :class="{ 'dark': isDark }">
     <!-- 側邊欄 -->
     <aside :class="[
       'fixed top-0 left-0 h-full bg-white dark:bg-gray-800 border-r dark:border-gray-700 z-40 flex flex-col transition-all duration-300',
@@ -146,7 +146,7 @@
       />
 
       <!-- 內容區域 -->
-      <div class="flex-1 p-3 xs:p-4 md:p-6 mt-4">
+      <div class="dashboard-card flex-1 p-3 xs:p-4 md:p-6 mt-4">
         <!-- Banner -->
         <div class="bg-white shadow-sm rounded-lg overflow-hidden mb-6">
           <div class="relative banner-bg">
@@ -186,7 +186,7 @@ import AdminNavbar from './common/AdminNavbar.vue'
 import AdminFooter from './common/AdminFooter.vue'
 import axios from '@/utils/axios'
 import Swal from 'sweetalert2'
-import { onBeforeMount, onMounted, ref, onUnmounted } from 'vue'
+import { onBeforeMount, onMounted, ref, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { menuAPI } from '@/api'
 import os from 'os'
@@ -215,6 +215,28 @@ export default {
     })
     const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
     const windowWidth = ref(window.innerWidth)
+    const isDark = ref(document.documentElement.classList.contains('dark'))
+    
+    // 監聽主題變化
+    const handleThemeChange = (e) => {
+      if (e.key === 'theme') {
+        const newTheme = e.newValue === 'dark'
+        isDark.value = newTheme
+        if (newTheme) {
+          document.documentElement.classList.add('dark')
+        } else {
+          document.documentElement.classList.remove('dark')
+        }
+      }
+    }
+
+    onMounted(() => {
+      window.addEventListener('storage', handleThemeChange)
+    })
+
+    onUnmounted(() => {
+      window.removeEventListener('storage', handleThemeChange)
+    })
 
     // 開始計時器
     const startExpirationTimer = () => {
@@ -381,7 +403,8 @@ export default {
       isSidebarVisible,
       userInfo,
       defaultAvatar,
-      windowWidth
+      windowWidth,
+      isDark
     }
   },
   computed: {
@@ -632,12 +655,12 @@ export default {
 <style scoped>
 /* 基礎樣式 */
 .banner-bg {
-  background-image: url('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1920&auto=format&fit=crop');
-  background-repeat: no-repeat;
+  background-image: url('https://images.unsplash.com/photo-1512512784918-05fb649635ef?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
   background-attachment: fixed;
-  background-position: center;
+  background-position: center center;
+  background-repeat: no-repeat;
   background-size: cover;
-  min-height: 180px;
+  height: 300px;
   position: relative;
 }
 
@@ -650,75 +673,6 @@ export default {
 /* 文字陰影效果 */
 .text-white {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-/* RWD 樣式 */
-/* 手機版 (小於 640px) */
-@media (max-width: 639px) {
-  .banner-bg {
-    min-height: 180px;
-  }
-  
-  /* 調整內容區域的間距 */
-  .flex-1.p-6 {
-    padding: 1rem;
-  }
-  
-  /* 調整 Banner 內容的間距和字體大小 */
-  .banner-bg .px-8.py-16 {
-    padding: 1.5rem 1rem;
-  }
-  
-  .banner-bg h1 {
-    font-size: 1.5rem;
-  }
-  
-  .banner-bg p {
-    font-size: 1rem;
-  }
-}
-
-/* 平板版 (640px - 1023px) */
-@media (min-width: 640px) and (max-width: 1023px) {
-  .banner-bg {
-    min-height: 200px;
-  }
-  
-  /* 調整側邊欄寬度 */
-  .w-64 {
-    width: 16rem;
-  }
-  
-  /* 調整內容區域的間距 */
-  .flex-1.p-6 {
-    padding: 1.5rem;
-  }
-}
-
-/* 電腦版 (大於 1024px) */
-@media (min-width: 1024px) {
-  /* 保持原有樣式 */
-}
-
-/* 確保側邊欄在所有裝置上都能正常顯示 */
-.sidebar-transition {
-  transition: all 0.3s ease-in-out;
-}
-
-/* 確保內容區域在所有裝置上都能正常顯示 */
-.content-transition {
-  transition: margin-left 0.3s ease-in-out;
-}
-
-/* 優化表格和卡片在小螢幕上的顯示 */
-@media (max-width: 767px) {
-  .overflow-x-auto {
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  .grid {
-    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
-  }
 }
 
 /* 移除原有的動態光影效果 */
@@ -736,13 +690,6 @@ export default {
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 300ms;
-}
-
-/* 防止側邊欄出現時body滾動 */
-@media (max-width: 767px) {
-  :root {
-    overflow: hidden;
-  }
 }
 
 /* 優化滾動條 */

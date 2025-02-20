@@ -124,7 +124,7 @@
 
           <!-- 子區塊列表 -->
           <div :class="[
-            'divide-y p-4',
+            'p-4',
             viewMode === 'card' ? 'space-y-4' : 'space-y-2'
           ]">
             <!-- 無次標題時顯示 -->
@@ -134,38 +134,69 @@
               <p>尚無次標題內容</p>
             </div>
             
-            <div v-for="subsection in section.subsections" 
-                 :key="subsection.id"
-                 class="p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-200 transition-all">
-              <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full mb-2 inline-block">
-                次標題
-              </span>
-              <div class="flex justify-between items-start">
-                <div class="flex-1 mr-4">
-                  <h4 class="font-medium text-gray-800 mb-2 text-lg">{{ subsection.title }}</h4>
-                  <p class="text-sm text-gray-600 line-clamp-2">{{ subsection.content }}</p>
-                  <!-- 圖片預覽 -->
-                  <div v-if="subsection.images && subsection.images.length > 0" 
-                       class="mt-4 flex flex-wrap gap-2">
-                    <div v-for="(image, index) in subsection.images" 
-                         :key="index"
-                         class="relative group">
-                      <img :src="getImageUrl(image)"
-                           class="w-20 h-20 rounded-lg object-cover cursor-zoom-in hover:opacity-75 transition-opacity shadow-sm"
-                           @click="previewImage(getImageUrl(image))"
-                           @error="handleImageError($event)">
+            <!-- 次標題列表 -->
+            <div v-else class="grid gap-4"
+                 :class="[
+                   viewMode === 'card' ? 'grid-cols-1' : 'grid-cols-1',
+                   section.subsections.length > 1 ? 'max-h-[300px] overflow-y-auto pr-2' : ''
+                 ]">
+              <div v-for="subsection in section.subsections" 
+                   :key="subsection.id"
+                   class="group p-4 bg-white rounded-lg border border-gray-200 
+                          hover:border-blue-200 hover:shadow-md transition-all duration-200">
+                <div class="flex justify-between items-start">
+                  <div class="flex-1 mr-4">
+                    <!-- 標題區域 -->
+                    <div class="flex items-center space-x-2 mb-2">
+                      <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs 
+                                 font-medium rounded-full">
+                        次標題
+                      </span>
+                      <h4 class="font-medium text-gray-800 text-lg">
+                        {{ subsection.title }}
+                      </h4>
+                    </div>
+                    
+                    <!-- 內容區域 -->
+                    <p class="text-sm text-gray-600 mb-3 line-clamp-2 group-hover:line-clamp-none 
+                              transition-all duration-300">
+                      {{ subsection.content }}
+                    </p>
+                    
+                    <!-- 圖片預覽 -->
+                    <div v-if="subsection.images && subsection.images.length > 0" 
+                         class="flex flex-wrap gap-2">
+                      <div v-for="(image, index) in subsection.images.slice(0, 4)" 
+                           :key="index"
+                           class="relative group/image">
+                        <img :src="getImageUrl(image)"
+                             class="w-16 h-16 rounded-lg object-cover cursor-zoom-in 
+                                    hover:opacity-75 transition-opacity shadow-sm"
+                             @click="previewImage(getImageUrl(image))"
+                             @error="handleImageError($event)">
+                        <!-- 如果有更多圖片，顯示數量提示 -->
+                        <div v-if="index === 3 && subsection.images.length > 4"
+                             class="absolute inset-0 bg-black/50 rounded-lg flex items-center 
+                                    justify-center text-white text-sm font-medium">
+                          +{{ subsection.images.length - 4 }}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div class="flex space-x-2">
-                  <button @click="editSubsection(subsection)"
-                          class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button @click="deleteSubsection(subsection.id)"
-                          class="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors">
-                    <i class="fas fa-trash"></i>
-                  </button>
+                  
+                  <!-- 操作按鈕 -->
+                  <div class="flex space-x-1">
+                    <button @click="editSubsection(subsection)"
+                            class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg 
+                                   transition-colors">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button @click="deleteSubsection(subsection.id)"
+                            class="p-2 text-red-600 hover:bg-red-100 rounded-lg 
+                                   transition-colors">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -178,7 +209,7 @@
     <div v-if="showModal" 
         class="fixed inset-0 z-[9999]">
       <!-- 背景遮罩 -->
-      <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+      <div class="fixed inset-0 bg-black bg-opacity-50"></div>
       
       <!-- Modal 內容 -->
       <div class="absolute inset-0 overflow-y-auto">
@@ -254,7 +285,7 @@
     <div v-if="showSubsectionModal" 
         class="fixed inset-0 z-[9999]">
       <!-- 背景遮罩 -->
-      <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+      <div class="fixed inset-0 bg-black bg-opacity-50"></div>
       
       <!-- Modal 內容 -->
       <div class="absolute inset-0 overflow-y-auto">
@@ -891,5 +922,35 @@ export default {
 .select-none {
   user-select: none;
   -webkit-user-select: none;
+}
+
+/* 自定義滾動條樣式 */
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(203, 213, 225, 0.5) transparent;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: rgba(203, 213, 225, 0.5);
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(203, 213, 225, 0.8);
+}
+
+/* 平滑過渡效果 */
+.line-clamp-2 {
+  transition: -webkit-line-clamp 0.3s ease;
 }
 </style> 

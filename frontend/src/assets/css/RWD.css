@@ -1,0 +1,346 @@
+/* 手機版選單動畫 */
+.mobile-menu-enter-active,
+.mobile-menu-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.mobile-menu-enter-from,
+.mobile-menu-leave-to {
+  opacity: 0;
+}
+
+/* RWD 樣式 */
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1140px;
+  }
+}
+
+/* 電腦版 (大於 1024px) */
+@media (min-width: 1024px) {
+  /* 保持原有樣式 */
+}
+
+/* 確保側邊欄在所有裝置上都能正常顯示 */
+.sidebar-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+/* 確保內容區域在所有裝置上都能正常顯示 */
+.content-transition {
+  transition: margin-left 0.3s ease-in-out;
+}
+
+
+/* 調整標題在手機版的樣式 */
+@media (max-width: 768px) {
+  .min-h-screen {
+    min-height: 100vh;
+  }
+
+  /* 調整輸入框在手機版的大小 */
+  input {
+    font-size: 16px;
+    /* 防止 iOS 自動縮放 */
+  }
+
+  /* 調整社群登入按鈕在手機版的大小 */
+  .grid-cols-3 button {
+    padding: 0.5rem;
+  }
+
+  /* 調整錯誤提示文字在手機版的大小 */
+  .text-xs {
+    font-size: 0.7rem;
+  }
+
+  /* 調整標題文字大小 */
+  .text-sm {
+    font-size: 0.813rem;
+    /* 13px */
+  }
+
+  /* Logo 圖示大小調整 */
+  .text-lg {
+    font-size: 1.125rem;
+    /* 18px */
+  }
+
+  /* Logo 和標題的間距調整 */
+  .space-x-1>*+* {
+    margin-left: 0.25rem;
+    /* 4px */
+  }
+
+  /* 漢堡選單圖示大小 */
+  .fa-bars {
+    font-size: 1.125rem;
+    /* 18px */
+  }
+
+  /* 漢堡選單按鈕內邊距 */
+  .p-1 {
+    padding: 0.25rem;
+    /* 4px */
+  }
+
+  .inline-flex {
+    padding: 0.5rem 1.5rem;
+    /* 稍微縮小按鈕尺寸 */
+    font-size: 0.875rem;
+    /* 縮小文字大小 */
+  }
+
+  .banner-bg {
+    background-attachment: scroll;
+  }
+
+  .p-1\.5 {
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ri-eye-line,
+  .ri-eye-off-line {
+    font-size: 1.1rem;
+  }
+
+  button.absolute {
+    padding: 0.5rem;
+  }
+}
+
+/* 優化表格和卡片在小螢幕上的顯示 */
+@media (max-width: 767px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+  .login-btn{
+    display: none;
+   }
+}
+
+/* 平板版 (640px - 1023px) */
+@media (min-width: 640px) and (max-width: 1023px) {
+  /* Navbar 相關樣式 */
+  .navbar-container {
+    padding: 0.75rem 1.5rem;  /* 調整導航欄內邊距 */
+  }
+
+  /* Logo 區域 */
+  .logo-section {
+    gap: 0.5rem;  /* Logo 和文字間距 */
+  }
+
+  .logo-text {
+    font-size: 1.25rem;  /* 20px */
+  }
+
+  /* 導航選單 */
+  .nav-menu {
+    gap: 1.5rem;  /* 選單項目間距 */
+  }
+
+  .nav-item {
+    font-size: 0.938rem;  /* 15px */
+    padding: 0.5rem 0.75rem;
+  }
+
+  /* 登入按鈕 */
+  .login-btn {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.938rem;
+  }
+
+  /* 漢堡選單圖示 */
+  .menu-icon {
+    font-size: 1.5rem;
+    padding: 0.375rem;
+  }
+
+  /* 導航欄陰影和背景 */
+  .nav-shadow {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  /* 滾動時的導航欄樣式 */
+  .nav-scrolled {
+    padding: 0.5rem 1.5rem;
+  }
+
+  /* Banner 相關調整 */
+  .banner-bg {
+    min-height: 200px;
+  }
+
+  /* 側邊欄寬度 */
+  .w-64 {
+    width: 16rem;
+  }
+
+  /* 內容區域間距 */
+  .flex-1.p-6 {
+    padding: 1.5rem;
+  }
+
+  /* 表格捲動 */
+  .overflow-x-auto {
+    max-width: 100vw;
+    margin: 0 -1rem;
+    padding: 0 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 導航欄固定定位 */
+  .fixed {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* 導航欄動畫 */
+  .nav-transition {
+    transition: all 0.3s ease;
+  }
+
+  /* 文字大小調整 */
+  h1, .h1 {
+    font-size: 2rem !important;      /* 32px */
+    line-height: 2.5rem !important;  /* 40px */
+  }
+
+  h2, .h2 {
+    font-size: 1.75rem !important;   /* 28px */
+    line-height: 2.25rem !important; /* 36px */
+  }
+
+  h3, .h3 {
+    font-size: 1.5rem !important;    /* 24px */
+    line-height: 2rem !important;    /* 32px */
+  }
+
+  h4, .h4 {
+    font-size: 1.25rem !important;   /* 20px */
+    line-height: 1.75rem !important; /* 28px */
+  }
+
+  h5, .h5 {
+    font-size: 1.125rem !important;  /* 18px */
+    line-height: 1.75rem !important; /* 28px */
+  }
+
+  h6, .h6 {
+    font-size: 1rem !important;      /* 16px */
+    line-height: 1.5rem !important;  /* 24px */
+  }
+
+  p {
+    font-size: 1rem !important;      /* 16px */
+    line-height: 1.625rem !important; /* 26px */
+  }
+
+  /* 段落間距 */
+  p + p {
+    margin-top: 1rem !important;
+  }
+}
+
+/* 手機版 (小於 640px) */
+@media (max-width: 639px) {
+  .banner-bg {
+    min-height: 180px;
+  }
+
+  /* 調整內容區域的間距 */
+  .flex-1.p-6 {
+    padding: 1rem;
+  }
+
+  /* 調整 Banner 內容的間距和字體大小 */
+  .banner-bg .px-8.py-16 {
+    padding: 1.5rem 1rem;
+  }
+
+  .banner-bg h1 {
+    font-size: 1.5rem;
+  }
+
+  .banner-bg p {
+    font-size: 1rem;
+  }
+  .login-btn{
+    display: none;
+   }
+
+  /* 文字大小調整 */
+  h1, .h1 {
+    font-size: 1.75rem !important;   /* 28px */
+    line-height: 2.25rem !important; /* 36px */
+  }
+
+  h2, .h2 {
+    font-size: 1.5rem !important;    /* 24px */
+    line-height: 2rem !important;    /* 32px */
+  }
+
+  h3, .h3 {
+    font-size: 1.25rem !important;   /* 20px */
+    line-height: 1.75rem !important; /* 28px */
+  }
+
+  h4, .h4 {
+    font-size: 1.125rem !important;  /* 18px */
+    line-height: 1.75rem !important; /* 28px */
+  }
+
+  h5, .h5 {
+    font-size: 1rem !important;      /* 16px */
+    line-height: 1.5rem !important;  /* 24px */
+  }
+
+  h6, .h6 {
+    font-size: 0.875rem !important;  /* 14px */
+    line-height: 1.25rem !important; /* 20px */
+  }
+
+  p {
+    font-size: 0.938rem !important;  /* 15px */
+    line-height: 1.5rem !important;  /* 24px */
+  }
+
+  /* 段落間距 */
+  p + p {
+    margin-top: 0.875rem !important;
+  }
+
+  /* Banner 文字大小調整 */
+  .banner-title {
+    font-size: 1.75rem !important;   /* 28px */
+    line-height: 2.25rem !important; /* 36px */
+  }
+
+  .banner-subtitle {
+    font-size: 1rem !important;      /* 16px */
+    line-height: 1.5rem !important;  /* 24px */
+  }
+
+  /* 其他文字元素調整 */
+  .text-base {
+    font-size: 0.938rem !important;  /* 15px */
+  }
+
+  .text-sm {
+    font-size: 0.813rem !important;  /* 13px */
+  }
+
+  .text-xs {
+    font-size: 0.75rem !important;   /* 12px */
+  }
+}

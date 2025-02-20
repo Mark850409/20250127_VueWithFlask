@@ -7,7 +7,7 @@
     </div>
 
     <!-- 內容 -->
-    <div class="relative container mx-auto px-4 text-center text-white py-20">
+    <div class="call-to-action-section relative container mx-auto px-4 text-center text-white py-20">
       <h2 class="text-4xl font-bold mb-6">
         尋找您的完美飲品
       </h2>
@@ -18,7 +18,7 @@
       </p>
       <a href="#home" 
          @click.prevent="scrollToTop"
-         class="inline-flex items-center px-8 py-3 bg-white text-black 
+         class="call-to-action-btn inline-flex items-center px-8 py-3 bg-white text-black 
                 hover:bg-white/90 rounded-full transition duration-300
                 font-semibold text-lg">
         開始探索
@@ -49,12 +49,6 @@ export default {
   margin-right: auto;
 }
 
-@media (min-width: 1280px) {
-  .container {
-    max-width: 1140px;
-  }
-}
-
 /* 背景固定效果 */
 .banner-bg {
   background-image: url('https://images.unsplash.com/photo-1483536999439-9c9c911cc1a2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
@@ -73,9 +67,4 @@ export default {
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
-@media (max-width: 768px) {
-  .banner-bg {
-    background-attachment: scroll;
-  }
-}
 </style> 

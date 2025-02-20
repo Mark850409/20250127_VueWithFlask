@@ -3,11 +3,11 @@
     <div class="container mx-auto px-4 max-w-6xl">
       <!-- 標題區塊 -->
       <div class="text-center mb-16">
-        <span class="inline-block px-4 py-1 bg-blue-50 text-blue-500 font-medium rounded-full mb-4">
+        <span class="span-title inline-block px-4 py-1 bg-blue-50 text-blue-500 font-medium rounded-full mb-4">
           SERVICES
         </span>
         <h2 class="text-4xl font-bold text-gray-900">
-          了解更多 <span class="text-blue-500">服務</span>
+          了解更多 <span class="span-subtitle text-blue-500">服務</span>
         </h2>
       </div>
 
@@ -77,9 +77,4 @@
   margin-right: auto;
 }
 
-@media (min-width: 1280px) {
-  .container {
-    max-width: 1140px;
-  }
-}
 </style> 

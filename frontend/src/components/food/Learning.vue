@@ -3,7 +3,7 @@
     <div class="container mx-auto px-4 max-w-6xl">
       <!-- 標題區塊 -->
       <div class="text-center mb-16">
-        <span class="inline-block px-4 py-1 bg-blue-50 text-blue-500 font-medium rounded-full mb-4">
+        <span class="span-title inline-block px-4 py-1 bg-blue-50 text-blue-500 font-medium rounded-full mb-4">
           LEARNING
         </span>
         <h2 class="text-4xl font-bold text-gray-900">
@@ -49,7 +49,7 @@
 
       <!-- 探索更多按鈕 -->
       <div class="text-center mt-12">
-        <a href="/learning" class="inline-flex items-center px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition duration-300">
+        <a href="/learning" class="learning-btn inline-flex items-center px-8 py-3 bg-white text-black hover:bg-white/90 rounded-full transition duration-300 font-semibold text-lg">
           <i class="fas fa-search mr-2"></i>
           探索更多資源
         </a>
@@ -62,11 +62,5 @@
 .container {
   margin-left: auto;
   margin-right: auto;
-}
-
-@media (min-width: 1280px) {
-  .container {
-    max-width: 1140px;
-  }
 }
 </style> 

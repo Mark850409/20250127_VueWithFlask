@@ -247,7 +247,7 @@
 </template>
 
 <script>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import accountApi from '@/api/modules/account'
@@ -547,6 +547,18 @@ export default {
       }
     }
 
+    // 初始化暗色模式
+    onMounted(() => {
+      // 檢查本地存儲的主題設置
+      if (localStorage.theme === 'dark' || 
+          (!('theme' in localStorage) && 
+           window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    })
+
     return {
       isLogin,
       form,
@@ -613,33 +625,6 @@ input[type="checkbox"]:checked {
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* 手機版特定樣式 */
-@media (max-width: 768px) {
-  .min-h-screen {
-    min-height: 100vh;
-    padding: 1rem 0;
-  }
-
-  /* 調整輸入框在手機版的大小 */
-  input {
-    font-size: 16px; /* 防止 iOS 自動縮放 */
-  }
-
-  /* 調整社群登入按鈕在手機版的大小 */
-  .grid-cols-3 button {
-    padding: 0.5rem;
-  }
-
-  /* 調整錯誤提示文字在手機版的大小 */
-  .text-xs {
-    font-size: 0.7rem;
-  }
-
-  /* 調整密碼提示文字在手機版的大小 */
-  .text-sm {
-    font-size: 0.8rem;
-  }
-}
 
 /* 確保背景圖片在所有設備上都能完整顯示 */
 .absolute.inset-0 img {

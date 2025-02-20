@@ -1,0 +1,373 @@
+/* ===== Material Design 3 Light Theme - Lavender ===== */
+.light {
+  /* 主色系 - Material Design Lavender */
+  --primary-main: #9575CD;          /* Primary - 主紫色 */
+  --primary-light: #EDE7F6;         /* Primary Container - 淺紫背景 */
+  --primary-dark: #7E57C2;          /* On Primary Container - 深紫色 */
+  --primary-hover: #B39DDB;         /* Primary Fixed - 中紫色 */
+  --primary-gradient: linear-gradient(135deg, var(--primary-light), var(--primary-main));
+
+  /* 文字顏色 - 淺紫色系 */
+  --text-primary: #9575CD;          /* On Surface - 主要淺紫 */
+  --text-light: #B39DDB;            /* Surface Dim - 更淺的紫 */
+  --text-dark: #7E57C2;             /* Surface Bright - 稍深的紫 */
+
+  /* 背景顏色 */
+  --bg-primary: #FFFFFF;            /* Background - 純白 */
+  --bg-secondary: #F5F5F5;          /* Surface Container Low - 淺灰 */
+  --bg-accent: rgba(149, 117, 205, 0.08);  /* Surface Container Lowest - 淺紫透明 */
+
+  /* 狀態顏色 */
+  --hover-light: rgba(149, 117, 205, 0.08);  /* Surface Container High */
+  --hover-dark: rgba(149, 117, 205, 0.12);   /* Surface Container Highest */
+
+  /* 排序按鈕相關顏色 */
+  --sort-btn-bg: #F5F5F5;                    /* Surface Container Low */
+  --sort-btn-text: #9575CD;                  /* Primary */
+  --sort-btn-selected-bg: #EDE7F6;           /* Primary Container */
+  --sort-btn-selected-text: #7E57C2;         /* On Primary Container */
+  --sort-btn-unselected-bg: #FFFFFF;         /* Background */
+  --sort-btn-unselected-text: #9575CD;       /* Surface Dim - 使用淺紫色 */
+  --sort-btn-hover-bg: #EDE7F6;              /* Primary Container */
+  --sort-btn-hover-text: #9575CD;            /* Primary */
+
+  /* 視圖切換按鈕顏色 */
+  --view-btn-active-bg: #EDE7F6;             /* Primary Container */
+  --view-btn-active-text: #7E57C2;           /* On Primary Container */
+  --view-btn-default-bg: #F5F5F5;            /* Surface Container Low */
+  --view-btn-default-text: #9575CD;          /* Primary */
+
+  /* 陰影效果 */
+  --shadow-sm: 0 1px 3px rgba(149, 117, 205, 0.08);  /* 使用淺紫色陰影 */
+  --shadow-md: 0 2px 6px rgba(149, 117, 205, 0.12);
+  --shadow-lg: 0 4px 12px rgba(149, 117, 205, 0.15);
+
+  /* 標題顏色 */
+  --heading-primary: #7E57C2;       /* 主標題 - 稍深紫色 */
+  --heading-secondary: #9575CD;     /* 次標題 - 中等紫色 */
+  --heading-tertiary: #B39DDB;      /* 小標題 - 淺紫色 */
+
+  /* 邊框顏色 */
+  --border-color: #D1C4E9;          /* Outline - 非常淺的紫色 */
+  --border-accent: #9575CD;         /* Primary */
+  --border-hover: rgba(149, 117, 205, 0.5);  /* Primary with opacity */
+
+  /* 錯誤狀態 */
+  --error: #EF5350;                 /* Error - 柔和的紅 */
+  --on-error: #FFFFFF;              /* On Error */
+  --error-container: #FFEBEE;       /* Error Container */
+  --on-error-container: #EF5350;    /* On Error Container */
+
+  /* 成功狀態 */
+  --success: #81C784;               /* Success - 柔和的綠 */
+  --on-success: #FFFFFF;            /* On Success */
+  --success-container: #E8F5E9;     /* Success Container */
+  --on-success-container: #2E7D32;  /* On Success Container */
+
+  /* 警告狀態 */
+  --warning: #FFB74D;               /* Warning - 柔和的橙 */
+  --on-warning: #FFFFFF;            /* On Warning */
+  --warning-container: #FFF3E0;     /* Warning Container */
+  --on-warning-container: #FFB74D;  /* On Warning Container */
+
+  /* 標題顏色變數 */
+  --title-primary: #1a1a1a;    /* 近黑色 */
+  --title-secondary: #333333;  /* 深灰色 */
+  --title-tertiary: #4a4a4a;   /* 中灰色 */
+  --title-quaternary: #666666; /* 淺灰色 */
+  --title-quinary: #808080;    /* 更淺的灰色 */
+  --title-senary: #999999;     /* 最淺的灰色 */
+  --title-light: #ffffff;      /* 白色，用於深色背景 */
+}
+
+/* ===== 全域通用基礎樣式 ===== */
+h1,
+.h1 {
+  color: var(--title-primary) !important;
+  font-weight: 700;
+}
+
+h2,
+.h2 {
+  color: var(--title-secondary) !important;
+  font-weight: 600;
+}
+
+h3,
+.h3 {
+  color: var(--title-tertiary) !important;
+  font-weight: 500;
+}
+
+h4,
+.h4 {
+  color: var(--title-quaternary) !important;
+  font-weight: 500;
+}
+
+h5,
+.h5 {
+  color: var(--title-quinary) !important;
+  font-weight: 500;
+}
+
+h6,
+.h6 {
+  color: var(--title-senary) !important;
+  font-weight: 500;
+}
+
+.banner-title,.call-to-action-section h2,.front-footer h2 ,.front-footer h3{
+  color: var(--title-light) !important;
+}
+
+.bg-gray-50 {
+  background-color: var(--bg-secondary) !important;
+}
+.bg-white {
+  background-color: var(--bg-primary) !important;
+}
+
+/* 按鈕深色模式 */
+.bg-gray-50,
+.hover\:bg-gray-50:hover {
+  background-color: var(--bg-secondary);
+}
+
+/* ===== 全域按鈕基礎樣式 ===== */
+#pricing .basic-btn,
+#pricing .professional-btn,
+#pricing .enterprise-btn,
+#pricing .pricing-btn,
+#learning .learning-btn,
+#recommend .location-btn,
+.chatbot-btn,
+#home .banner-btn,
+#call-to-action .call-to-action-btn,
+.login-btn {
+  background-color: var(--primary-light) !important;
+  color: var(--text-primary) !important;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+/* 按鈕懸停效果 */
+#pricing .basic-btn:hover,
+#pricing .professional-btn:hover,
+#pricing .enterprise-btn:hover,
+#pricing .pricing-btn:hover,
+#learning .learning-btn:hover,
+#recommend .location-btn:hover,
+.chatbot-btn:hover,
+#home .banner-btn:hover,
+#call-to-action .call-to-action-btn:hover,
+.login-btn:hover {
+  background-color: transparent !important;
+  border: 2px solid var(--primary-main) !important;
+  color: var(--primary-main) !important;
+  transform: translateY(-2px);
+}
+
+/* 按鈕點擊效果 */
+#pricing .basic-btn:active,
+#pricing .professional-btn:active,
+#pricing .enterprise-btn:active,
+#pricing .pricing-btn:active,
+#learning .learning-btn:active,
+#recommend .location-btn:active,
+.chatbot-btn:active,
+#home .banner-btn:active,
+#call-to-action .call-to-action-btn:active,
+.login-btn:active {
+  transform: translateY(0);
+}
+
+/* ===== 文字和連結樣式 ===== */
+/* 連結顏色 */
+#about a,
+#pricing a,
+#learning a {
+  color: var(--text-primary) !important;
+}
+
+/* 圖標顏色 */
+i,
+.front-footer i {
+  color: inherit;  /* 改為繼承父元素顏色 */
+}
+
+/* ===== 標題樣式 ===== */
+/* 標題背景樣式 */
+#about .span-title,
+#features .span-title,
+#call-to-action .span-title,
+#recommend .span-title,
+#learning .span-title,
+#pricing .span-title {
+  background-color: var(--primary-light) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 副標題樣式 */
+#about .span-subtitle,
+#features .span-subtitle,
+#call-to-action .span-subtitle,
+#recommend .span-subtitle,
+#learning .span-subtitle,
+#pricing .span-subtitle {
+  color: var(--text-primary) !important;
+}
+
+/* ===== 推薦系統相關樣式 ===== */
+#recommend .location-span {
+  background: var(--primary-gradient) !important;
+  color: var(--text-primary) !important;
+}
+
+#recommend .location-span-text {
+  color: var(--text-primary) !important;
+}
+
+/* 排序按鈕基礎樣式 */
+.sort-btn {
+  background-color: var(--sort-btn-bg) !important;
+  color: var(--sort-btn-text) !important;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;  /* rounded-full */
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* 排序按鈕圖標基礎樣式 */
+.sort-btn i {
+  color: inherit;  /* 繼承父元素文字顏色 */
+  transition: all 0.3s ease;
+}
+
+/* 選中狀態樣式 - 使用 bg-blue-500 text-white 的等效樣式 */
+.sort-btn.bg-blue-500 {
+  background-color: var(--sort-btn-selected-bg) !important;
+  color: var(--sort-btn-selected-text) !important;
+}
+
+/* 選中狀態圖標樣式 */
+.sort-btn.bg-blue-500 i {
+  color: var(--sort-btn-selected-text) !important;  /* 白色 */
+}
+
+/* 未選中狀態樣式 - 使用 bg-blue-50 text-blue-600 hover:bg-blue-100 的等效樣式 */
+.sort-btn.bg-blue-50 {
+  background-color: var(--sort-btn-bg) !important;
+  color: var(--sort-btn-text) !important;
+}
+
+/* 未選中狀態圖標樣式 */
+.sort-btn.bg-blue-50 i {
+  color: var(--text-primary) !important;  /* 主要紫色 */
+}
+
+.sort-btn.bg-blue-50:hover {
+  background-color: var(--sort-btn-hover-bg) !important;
+  color: var(--sort-btn-hover-text) !important;
+}
+
+/* 視圖切換按鈕基礎樣式 */
+.grid-btn,
+.list-btn {
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  transition: all 0.3s ease;
+}
+
+/* 視圖切換按鈕選中狀態 */
+.grid-btn.bg-blue-500,
+.list-btn.bg-blue-500 {
+  background-color: var(--sort-btn-selected-bg) !important;
+  color: var(--sort-btn-selected-text) !important;
+}
+
+/* 視圖切換按鈕選中狀態圖標 */
+.grid-btn.bg-blue-500 i,
+.list-btn.bg-blue-500 i {
+  color: var(--sort-btn-selected-text) !important;  /* 白色 */
+}
+
+/* 視圖切換按鈕未選中狀態 */
+.grid-btn.bg-blue-50,
+.list-btn.bg-blue-50 {
+  background-color: var(--sort-btn-bg) !important;
+  color: var(--sort-btn-text) !important;
+}
+
+/* 視圖切換按鈕未選中狀態圖標 */
+.grid-btn.bg-blue-50 i,
+.list-btn.bg-blue-50 i {
+  color: var(--text-primary) !important;  /* 主要紫色 */
+}
+
+.grid-btn.bg-blue-50:hover,
+.list-btn.bg-blue-50:hover {
+  background-color: var(--sort-btn-hover-bg) !important;
+  color: var(--sort-btn-hover-text) !important;
+}
+
+/* 圖標樣式 */
+.sort-btn i,
+.grid-btn i,
+.list-btn i {
+  color: inherit;  /* 繼承父元素文字顏色 */
+  transition: all 0.3s ease;
+}
+
+/* 圖標懸停效果 */
+.sort-btn:hover i,
+.grid-btn:hover i,
+.list-btn:hover i {
+  transform: scale(1.1);
+}
+
+/* ===== 聊天機器人樣式 ===== */
+.toggleChat {
+  background: var(--primary-gradient) !important;
+}
+
+.toggleChat:hover {
+  background: var(--primary-gradient) !important;
+  opacity: 0.9;
+}
+
+.chatbot-title {
+  background: var(--primary-gradient) !important;
+}
+
+.chatbot-input{
+    background-color: var(--primary-light) !important;
+}
+.chatbot-input input{
+    border: 2px solid var(--primary-main) !important;
+}
+
+/* ===== 學習中心樣式 ===== */
+/* 學習中心卡片圖標 */
+#learning i,#pricing i,#features i,#about i {
+    color: var(--text-primary) !important;
+}
+
+/* ===== 定價樣式 ===== */
+/* 專業版卡片 */
+.professional-card {
+  border: 2px solid var(--primary-main) !important;
+  transition: all 0.3s ease;
+}
+
+.professional-card:hover {
+  box-shadow: 0 4px 20px rgba(171, 120, 225, 0.2);
+  transform: translateY(-4px);
+}
+
+.professional-card span,.basic-card span,.enterprise-card span,.learning-card span{
+    color: var(--text-primary) !important;
+  }

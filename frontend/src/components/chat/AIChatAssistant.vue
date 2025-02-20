@@ -1,9 +1,9 @@
 <template>
-  <div class="fixed bottom-4 right-4 z-[9999]">
+  <div class="chatbot fixed bottom-4 right-4 z-[9999]">
     <!-- 聊天氣泡按鈕 - 始終顯示 -->
     <button @click="toggleChat"
             :class="[
-              'w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-lg flex items-center justify-center text-white hover:shadow-xl transition-all duration-200',
+              'toggleChat w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-lg flex items-center justify-center text-white hover:shadow-xl transition-all duration-200',
               isOpen ? 'opacity-50' : 'transform hover:-translate-y-1'
             ]">
       <i class="fas fa-robot text-2xl"></i>
@@ -13,7 +13,7 @@
     <div v-show="isOpen" 
          class="absolute bottom-20 right-0 w-96 bg-white rounded-lg shadow-xl animate-fade-in z-[9999]">
       <!-- 聊天視窗標題 -->
-      <div class="flex justify-between items-center p-4 border-b bg-gradient-to-r from-blue-500 to-blue-600 rounded-t-lg">
+      <div class="chatbot-title flex justify-between items-center p-4 border-b bg-gradient-to-r from-blue-500 to-blue-600 rounded-t-lg">
         <div class="flex items-center">
           <i class="fas fa-robot text-white mr-2"></i>
           <h3 class="font-semibold text-white">AI小助手</h3>
@@ -74,7 +74,7 @@
         </div>
 
         <!-- 快速問答區塊 -->
-        <div v-if="quickQuestions.length > 0" class="p-3 border-t border-gray-100 bg-gray-50">
+        <div v-if="quickQuestions.length > 0" class="quick-section p-3 border-t border-gray-100 bg-gray-50">
           <div class="flex items-center justify-between mb-2 px-2">
             <div class="text-sm font-medium text-gray-600">
               快速問答：
@@ -100,7 +100,7 @@
         </div>
 
         <!-- 輸入區域 -->
-        <div class="p-4 border-t bg-white">
+        <div class="p-4 border-t bg-white chatbot-input">
           <div class="flex gap-2">
             <input v-model="userInput"
                    @keyup.enter="sendMessage"
@@ -109,7 +109,7 @@
                    class="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             <button @click="sendMessage"
                     :disabled="isLoading"
-                    class="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-400 transition-colors duration-200">
+                    class="chatbot-btn px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-400 transition-colors duration-200">
               <i :class="['fas', isLoading ? 'fa-spinner fa-spin' : 'fa-paper-plane']"></i>
             </button>
           </div>

@@ -39,15 +39,15 @@
     <!-- Banner 內容 -->
     <div class="absolute inset-0 flex items-center justify-center pt-16 z-20">
       <div class="container mx-auto px-4 text-center text-white">
-        <h1 class="text-5xl font-bold mb-4">{{ title }}</h1>
-        <p class="text-xl mb-6">{{ subtitle }}</p>
-        <p class="text-lg mb-8 max-w-2xl mx-auto text-gray-200">
+        <h1 class="banner-title text-5xl font-bold mb-4">{{ title }}</h1>
+        <p class="banner-subtitle text-xl mb-6">{{ subtitle }}</p>
+        <p class="banner-description text-lg mb-8 max-w-2xl mx-auto text-gray-200">
           {{ description }}
         </p>
         <div class="flex justify-center">
           <a href="#features" 
              @click.prevent="scrollToSection('features')"
-             class="inline-flex items-center px-8 py-3 bg-white text-black 
+             class="banner-btn inline-flex items-center px-8 py-3 bg-white text-black 
                     hover:bg-white/90 rounded-full transition duration-300
                     font-semibold text-lg">
             GET STARTED

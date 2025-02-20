@@ -34,11 +34,11 @@
         <div id="recommend" v-if="isLoggedIn" class="py-20 bg-white">
           <!-- 標題區塊 -->
           <div class="text-center mb-16">
-            <span class="inline-block px-4 py-1 bg-blue-50 text-blue-500 font-medium rounded-full mb-4">
+            <span class="span-title inline-block px-4 py-1 bg-blue-50 text-blue-500 font-medium rounded-full mb-4">
               POPULAR DRINKS
             </span>
             <h2 class="text-4xl font-bold text-gray-900">
-              尋找更多 <span class="text-blue-500">熱門飲料店</span>
+              尋找更多 <span class="span-subtitle text-blue-500">熱門飲料店</span>
             </h2>
           </div>
 
@@ -51,7 +51,7 @@
                   <div class="relative">
                     <button 
                       @click="getCurrentLocation"
-                      class="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 
+                      class="location-btn flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 
                              text-white rounded-lg transition-all duration-300 
                              shadow-md hover:shadow-lg"
                       :class="{ 'opacity-50 cursor-not-allowed': isLocating }"
@@ -80,12 +80,12 @@
 
               <!-- 當前位置顯示 -->
               <div v-if="currentCity" 
-                   class="flex items-center text-gray-600 bg-gradient-to-r from-blue-50 
+                   class="location-span flex items-center text-gray-600 bg-gradient-to-r from-blue-50 
                           to-blue-100/50 px-6 py-4 rounded-xl shadow-sm border 
                           border-blue-100 mb-8">
                 <i class="fas fa-map-marker-alt mr-3 text-blue-500"></i>
                 <span class="text-gray-500">目前位置：
-                  <span class="font-medium text-blue-700 ml-1">{{ currentCity }}</span>
+                  <span class="location-span-text font-medium text-blue-700 ml-1">{{ currentCity }}</span>
                 </span>
               </div>
             </div>
@@ -283,7 +283,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-/* 移除之前的 fade-in-section 相關樣式 */
-</style> 

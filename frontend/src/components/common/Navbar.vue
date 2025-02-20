@@ -1,5 +1,5 @@
 <template>
-  <nav class="fixed top-0 left-0 right-0 z-[9999] transition-all duration-300"
+  <nav class="login-section fixed top-0 left-0 right-0 z-[9999] transition-all duration-300"
        :class="[
          scrolled 
            ? 'bg-[rgba(0,0,0,0.85)]' 
@@ -53,8 +53,9 @@
 
         <!-- 登入按鈕和漢堡選單容器 -->
         <div class="flex items-center">
-          <!-- 登入/登出按鈕 (桌面版) -->
-          <div class="hidden md:block">
+          <!-- 登入按鈕和主題切換按鈕 -->
+          <div class="flex items-center gap-6">
+            <!-- 登入按鈕 -->
             <template v-if="isLoggedIn">
               <div class="relative" @click.stop>
                 <!-- 個人頭像 -->
@@ -95,14 +96,16 @@
               </div>
             </template>
             <template v-else>
-              <!-- 登入按鈕 -->
               <router-link to="/login" 
+                         class="login-btn inline-flex items-center px-8 py-3 bg-white text-black font-semibold rounded-full transition duration-300"
                          :class="[
-                           'text-white border-white hover:bg-white/10',
-                           'flex items-center px-4 py-2 border-2 rounded-lg transition-all duration-200'
+                           scrolled 
+                             ? 'bg-white text-black hover:bg-gray-100 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700' 
+                             : 'bg-white text-black hover:bg-gray-100 dark:bg-white/10 dark:text-white dark:hover:bg-white/20',
+                           'transform hover:-translate-y-0.5 hover:shadow-lg'
                          ]">
-                <i class="fas fa-user-circle text-lg mr-2"></i>
-                <span>登入 / 註冊</span>
+                <i class="fas fa-user-circle text-lg"></i>
+                <span class="ml-2">登入 / 註冊</span>
               </router-link>
             </template>
           </div>
@@ -395,12 +398,6 @@ img {
   margin-right: auto;
 }
 
-@media (min-width: 1280px) {
-  .container {
-    max-width: 1140px;
-  }
-}
-
 /* 添加底線動畫效果 */
 .after\:scale-x-0::after {
   transform: scaleX(0);
@@ -415,42 +412,63 @@ img {
   transform: scaleX(1);
 }
 
-/* 手機版選單動畫 */
-.mobile-menu-enter-active,
-.mobile-menu-leave-active {
-  transition: opacity 0.3s ease;
+/* 按鈕動畫效果 */
+button {
+  transition: all 0.2s ease;
 }
 
-.mobile-menu-enter-from,
-.mobile-menu-leave-to {
-  opacity: 0;
+button:hover {
+  transform: scale(1.05);  /* 稍微降低放大效果 */
 }
 
-/* 調整標題在手機版的樣式 */
-@media (max-width: 768px) {
-  /* 調整標題文字大小 */
-  .text-sm {
-    font-size: 0.813rem; /* 13px */
-  }
-  
-  /* Logo 圖示大小調整 */
-  .text-lg {
-    font-size: 1.125rem; /* 18px */
-  }
-  
-  /* Logo 和標題的間距調整 */
-  .space-x-1 > * + * {
-    margin-left: 0.25rem; /* 4px */
-  }
-  
-  /* 漢堡選單圖示大小 */
-  .fa-bars {
-    font-size: 1.125rem; /* 18px */
-  }
-  
-  /* 漢堡選單按鈕內邊距 */
-  .p-1 {
-    padding: 0.25rem; /* 4px */
-  }
+/* 圖標動畫效果 */
+svg {
+  transition: all 0.3s ease;
 }
+
+/* 確保按鈕在各種狀態下都有合適的背景 */
+button.p-2.rounded-lg {
+  position: relative;
+  isolation: isolate;
+  min-width: 36px;  /* 確保按鈕有最小寬度 */
+  min-height: 36px;  /* 確保按鈕有最小高度 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 亮色模式下的按鈕背景 */
+button.p-2.rounded-lg:not(.dark) {
+  background-color: rgba(243, 244, 246, 0.9);  /* gray-100 with opacity */
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(209, 213, 219, 0.4);  /* gray-300 with opacity */
+}
+
+
+/* 按鈕基礎樣式 */
+.inline-flex {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* 按鈕懸停效果 */
+.inline-flex:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+              0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* 按鈕動畫效果 */
+.inline-flex {
+  transition: all 0.3s ease;
+}
+
+
+/* 確保圖標和文字垂直對齊 */
+.inline-flex i,
+.inline-flex span {
+  display: inline-flex;
+  align-items: center;
+}
+
 </style> 

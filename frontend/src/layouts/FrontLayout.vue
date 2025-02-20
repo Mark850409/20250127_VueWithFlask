@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col">
+  <div class="min-h-screen flex flex-col" :class="theme">
     <!-- 前台 Navbar -->
     <Navbar />
     
@@ -12,11 +12,28 @@
       </router-view>
     </main>
 
-        <!-- 在最外層 div 結尾前添加 AI 聊天助手 -->
     <AIChatAssistant />
-
-    <!-- 前台 Footer -->
     <Footer />
+
+    <!-- 主題切換按鈕 -->
+    <button 
+      @click="toggleTheme" 
+      class="fixed bottom-4 left-4 p-3 rounded-full shadow-lg transition-all duration-300 z-[999]"
+      :class="[
+        theme === 'dark' 
+          ? 'bg-gray-800/90 hover:bg-gray-700' 
+          : 'bg-white/90 hover:bg-gray-100'
+      ]"
+    >
+      <i 
+        class="text-xl block"
+        :class="[
+          theme === 'dark' 
+            ? 'ri-sun-line text-yellow-400' 
+            : 'ri-moon-line text-gray-600'
+        ]"
+      ></i>
+    </button>
   </div>
 </template>
 
@@ -24,9 +41,12 @@
 import Navbar from '../components/common/Navbar.vue'
 import Footer from '../components/common/Footer.vue'
 import AIChatAssistant from '../components/chat/AIChatAssistant.vue'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import axios from '@/utils/axios'
+
+// 預加載 CSS 文件
+const themes = import.meta.glob('../assets/css/*.css', { query: '?inline' })
 
 export default {
   name: 'FrontLayout',
@@ -38,8 +58,67 @@ export default {
   setup() {
     const authStore = useAuthStore()
     let tokenCheckInterval = null
+    const theme = ref('light')
 
-    // 檢查登入狀態和 token 有效性
+    // 動態載入 CSS
+    const loadThemeCSS = async (themeName) => {
+      // 移除現有的主題 CSS
+      const existingThemeLink = document.getElementById('theme-css')
+      if (existingThemeLink) {
+        existingThemeLink.remove()
+      }
+
+      try {
+        // 使用 glob 導入 CSS
+        const cssPath = `../assets/css/${themeName}.css`
+        if (themes[cssPath]) {
+          const cssModule = await themes[cssPath]()
+          
+          // 創建新的 style 元素
+          const styleElement = document.createElement('style')
+          styleElement.id = 'theme-css'
+          styleElement.textContent = cssModule.default
+          document.head.appendChild(styleElement)
+        }
+      } catch (error) {
+        console.error('載入主題 CSS 失敗:', error)
+      }
+    }
+
+    // 切換主題
+    const toggleTheme = () => {
+      theme.value = theme.value === 'dark' ? 'light' : 'dark'
+      localStorage.setItem('theme', theme.value)
+      loadThemeCSS(theme.value)
+    }
+
+    // 監聽主題變化
+    watch(() => theme.value, (newTheme) => {
+      loadThemeCSS(newTheme)
+    })
+
+    onMounted(() => {
+      // 初始化主題
+      const savedTheme = localStorage.getItem('theme')
+      if (savedTheme) {
+        theme.value = savedTheme
+      }
+      loadThemeCSS(theme.value)
+
+      // 初始檢查登入狀態
+      checkLoginStatus()
+      tokenCheckInterval = setInterval(checkLoginStatus, 3600000)
+      window.addEventListener('storage', checkLoginStatus)
+    })
+
+    onUnmounted(() => {
+      if (tokenCheckInterval) {
+        clearInterval(tokenCheckInterval)
+      }
+      window.removeEventListener('storage', checkLoginStatus)
+    })
+
+    // 檢查登入狀態
     const checkLoginStatus = async () => {
       const token = localStorage.getItem('token')
       if (!token) {
@@ -48,7 +127,6 @@ export default {
       }
 
       try {
-        // 驗證 token 有效性
         const response = await axios.get('/users/verify')
         if (response.status === 200) {
           authStore.isLoggedIn = true
@@ -60,26 +138,9 @@ export default {
       }
     }
 
-    onMounted(() => {
-      // 初始檢查
-      checkLoginStatus()
-      
-      // 設定每小時檢查一次
-      tokenCheckInterval = setInterval(checkLoginStatus, 3600000)
-      
-      // 監聽 localStorage 變化
-      window.addEventListener('storage', checkLoginStatus)
-    })
-
-    // 組件卸載時清理定時器
-    onUnmounted(() => {
-      if (tokenCheckInterval) {
-        clearInterval(tokenCheckInterval)
-      }
-      window.removeEventListener('storage', checkLoginStatus)
-    })
-
     return {
+      theme,
+      toggleTheme,
       checkLoginStatus
     }
   },
@@ -144,5 +205,19 @@ export default {
 /* 為了確保平滑滾動 */
 html {
   scroll-behavior: smooth;
+}
+
+/* 主題切換動畫 */
+.min-h-screen {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 按鈕動畫 */
+button i {
+  transition: transform 0.3s ease;
+}
+
+button:hover i {
+  transform: rotate(30deg);
 }
 </style> 

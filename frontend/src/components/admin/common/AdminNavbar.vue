@@ -72,17 +72,6 @@
 
         <!-- 右側功能區 -->
         <div class="flex items-center space-x-2 sm:space-x-4">
-          <!-- 深色模式切換 -->
-          <button @click="handleDarkModeToggle" 
-                  class="p-1.5 sm:p-2 rounded-lg transition-colors duration-200"
-                  :class="[
-                    isDarkMode 
-                      ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  ]">
-            <i :class="['text-lg sm:text-xl', isDarkMode ? 'fas fa-sun' : 'fas fa-moon']"></i>
-          </button>
-
           <!-- 用戶選單 -->
           <Menu as="div" class="relative">
             <MenuButton class="flex items-center space-x-2 sm:space-x-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-indigo-50 transition-all duration-200">
@@ -153,8 +142,6 @@ export default {
   },
   setup() {
     const router = useRouter()
-    const isDarkMode = inject('isDarkMode', ref(false))
-    const toggleDarkMode = inject('toggleDarkMode', () => {})
     const userInfo = ref({
       username: '',
       avatar: '',
@@ -232,16 +219,7 @@ export default {
       }
     }
 
-    // 處理深色模式切換
-    const handleDarkModeToggle = () => {
-      console.log('Toggling dark mode') // 用於調試
-      if (toggleDarkMode) {
-        toggleDarkMode()
-      }
-    }
-
     return {
-      isDarkMode,
       userInfo,
       defaultAvatar,
       handleLogout,
@@ -250,8 +228,7 @@ export default {
           active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
           'group flex items-center w-full px-4 py-2 text-sm cursor-pointer'
         ]
-      },
-      handleDarkModeToggle
+      }
     }
   }
 }

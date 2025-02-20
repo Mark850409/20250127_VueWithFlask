@@ -891,8 +891,4 @@ a:hover::after {
   pointer-events: none;
 }
 
-.dark a:hover::after {
-  background-color: rgba(255, 255, 255, 0.9);
-  color: black;
-}
 </style> 

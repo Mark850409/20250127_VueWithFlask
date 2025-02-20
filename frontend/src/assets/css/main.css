@@ -1,169 +1,185 @@
-/* 深色模式樣式 */
-.dark {
-  /* 背景色 */
-  --bg-primary: #1f2937;
-  --bg-secondary: #111827;
-  --bg-tertiary: #374151;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg transition-colors duration-200 font-medium;
+  }
   
-  /* 文字顏色 */
-  --text-primary: #f3f4f6;
-  --text-secondary: #9ca3af;
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white;
+  }
   
-  /* 邊框顏色 */
-  --border-color: #374151;
+  .btn-success {
+    @apply bg-green-600 hover:bg-green-700 text-white;
+  }
+  
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white;
+  }
+  
+  .btn-warning {
+    @apply bg-yellow-600 hover:bg-yellow-700 text-white;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg 
+           focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white;
+  }
+  
+  .card {
+    @apply bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700;
+  }
 }
 
-/* 基礎元素深色模式 */
-.dark body,
-.dark .min-h-screen {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+/* Sweetalert2 自定義樣式 */
+.swal2-popup {
+  @apply bg-gray-800 text-gray-100 !important;
 }
 
-/* Navbar 深色模式 */
-.dark nav.bg-white {
-  background-color: var(--bg-secondary);
-  border-color: var(--border-color);
+.swal2-title {
+  @apply text-gray-100 !important;
 }
 
-/* 側邊欄深色模式 */
-.dark aside.bg-white {
-  background-color: var(--bg-secondary);
-  border-color: var(--border-color);
+.swal2-html-container {
+  @apply text-gray-300 !important;
 }
 
-/* DataTable 深色模式 */
-.dark .bg-gradient-to-r.from-indigo-100.to-blue-100 {
-  background: var(--bg-tertiary);
+.swal2-textarea {
+  @apply bg-gray-700 border-gray-600 text-gray-100 !important;
 }
 
-.dark .bg-white {
-  background-color: var(--bg-secondary);
+.swal2-confirm {
+  @apply bg-blue-600 hover:bg-blue-700 !important;
 }
 
-.dark .divide-gray-200 > * {
-  border-color: var(--border-color);
+.swal2-cancel {
+  @apply bg-red-600 hover:bg-red-700 !important;
 }
 
-.dark .text-gray-700,
-.dark .text-gray-900 {
-  color: var(--text-primary);
+/* 提交訊息文本框樣式 */
+.commit-message-textarea {
+  @apply bg-gray-700 border-gray-600 text-gray-100 font-mono !important;
+  line-height: 1.5 !important;
 }
 
-.dark .text-gray-500,
-.dark .text-gray-600 {
-  color: var(--text-secondary);
+/* 提交歷史表格樣式 */
+.commit-history-table td {
+  vertical-align: top;
 }
 
-/* 表格行深色模式 */
-.dark tr:hover {
-  background-color: var(--bg-tertiary) !important;
+.commit-message-cell {
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-width: 50%;
 }
 
-.dark tbody tr {
-  background-color: var(--bg-secondary);
+/* 調整提交歷史模態框寬度 */
+.commit-history-modal {
+  @apply w-[90vw] max-w-[1200px] !important;
 }
 
-/* 輸入框深色模式 */
-.dark input,
-.dark select {
-  background-color: var(--bg-tertiary);
-  border-color: var(--border-color);
-  color: var(--text-primary);
+/* 自定義滾動條樣式 */
+.commit-history-modal ::-webkit-scrollbar {
+  @apply w-2;
 }
 
-.dark input::placeholder {
-  color: var(--text-secondary);
+.commit-history-modal ::-webkit-scrollbar-track {
+  @apply bg-gray-800 rounded-full;
 }
 
-/* 按鈕深色模式 */
-.dark .bg-gray-50,
-.dark .hover\:bg-gray-50:hover {
-  background-color: var(--bg-tertiary);
+.commit-history-modal ::-webkit-scrollbar-thumb {
+  @apply bg-gray-600 rounded-full hover:bg-gray-500 transition-colors;
 }
 
-.dark .border-gray-200,
-.dark .border-gray-300 {
-  border-color: var(--border-color);
+/* 提交信息樣式 */
+.commit-message {
+  @apply text-sm leading-relaxed;
 }
 
-/* 分頁按鈕深色模式 */
-.dark button.bg-white {
-  background-color: var(--bg-tertiary);
-  border-color: var(--border-color);
-  color: var(--text-primary);
+.commit-message-title {
+  @apply text-blue-400 font-semibold mb-1;
 }
 
-.dark button.bg-white:hover {
-  background-color: var(--bg-primary);
+.commit-message-body {
+  @apply text-gray-300 whitespace-pre-wrap;
 }
 
-/* 下拉選單深色模式 */
-.dark .bg-white.divide-y.divide-gray-100 {
-  background-color: var(--bg-secondary);
-  border-color: var(--border-color);
+/* 輸出區域樣式 */
+.output-container {
+  @apply bg-gray-900 p-4 rounded-lg overflow-auto max-h-[300px];
 }
 
-/* 陰影效果調整 */
-.dark .shadow-sm,
-.dark .shadow-md,
-.dark .shadow-lg {
-  --tw-shadow-color: rgba(0, 0, 0, 0.3);
+.output-content {
+  @apply text-sm font-mono text-gray-200 whitespace-pre-wrap;
 }
 
-/* 漸層背景調整 */
-.dark .bg-gradient-to-r {
-  background-image: none;
-}
-
-/* 全局卷軸樣式 */
+/* 自定義滾動條樣式 - 全局 */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 4px;  /* 更窄的卷軸 */
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #ffffff;  /* 純白色背景 */
-  border-radius: 8px;
+  background: transparent;  /* 透明背景 */
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #e2e8f0;  /* 非常淺的灰色 */
-  border-radius: 8px;
-  border: 2px solid #ffffff;
-  min-height: 40px;
+  background-color: rgba(203, 213, 225, 0.3);  /* 半透明的淺色 */
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #cbd5e1;  /* hover 時稍微加深，但仍保持淺色 */
-  cursor: pointer;
+  background-color: rgba(203, 213, 225, 0.5);  /* hover 時增加不透明度 */
 }
 
-/* 深色模式卷軸樣式 */
-.dark ::-webkit-scrollbar-track {
-  background: #1e293b;
-  border-color: #1e293b;
+/* 輸出區域特定的滾動條樣式 */
+.output-container::-webkit-scrollbar {
+  @apply w-2;
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background-color: #64748b;
-  border: 2px solid #1e293b;
-  opacity: 0.8;
+.output-container::-webkit-scrollbar-track {
+  @apply bg-gray-900 rounded-full;
 }
 
-.dark ::-webkit-scrollbar-thumb:hover {
-  background-color: #94a3b8;
-  opacity: 1;
+.output-container::-webkit-scrollbar-thumb {
+  @apply bg-gray-700 rounded-full hover:bg-gray-600 transition-colors;
 }
 
-/* 確保卷軸在深色背景上更容易看見 */
-.dark .overflow-y-auto::-webkit-scrollbar-thumb,
-.dark .overflow-x-auto::-webkit-scrollbar-thumb {
-  background-color: #64748b;
-  border: 2px solid #1e293b;
+/* 美化狀態信息 */
+.status-message {
+  @apply mb-2 p-2 rounded;
 }
 
-.dark .overflow-y-auto::-webkit-scrollbar-thumb:hover,
-.dark .overflow-x-auto::-webkit-scrollbar-thumb:hover {
-  background-color: #94a3b8;
+.status-success {
+  @apply bg-green-900/50 text-green-400;
+}
+
+.status-warning {
+  @apply bg-yellow-900/50 text-yellow-400;
+}
+
+.status-error {
+  @apply bg-red-900/50 text-red-400;
+}
+
+/* 導航欄連結樣式 */
+.nav-link {
+  @apply relative text-gray-600 hover:text-gray-800 py-2;
+}
+
+.nav-link::after {
+  content: '';
+  @apply absolute left-0 bottom-0 w-0 h-0.5 bg-gradient-to-r from-red-500 to-orange-500 
+         transition-all duration-300;
+}
+
+.nav-link:hover::after {
+  @apply w-full;
+}
+
+/* 頁腳漸變背景 */
+.footer-gradient {
+  background: linear-gradient(180deg, rgba(31,41,55,0) 0%, rgba(31,41,55,1) 100%);
 } 

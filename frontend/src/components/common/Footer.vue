@@ -1,5 +1,5 @@
 <template>
-  <footer class="relative py-16 overflow-hidden">
+  <footer class="front-footer relative py-16 overflow-hidden">
     <!-- 背景圖片 -->
     <div class="absolute inset-0 bg-fixed">
       <div class="w-full h-full bg-center bg-no-repeat bg-cover"
@@ -150,12 +150,6 @@ export default {
 .container {
   margin-left: auto;
   margin-right: auto;
-}
-
-@media (min-width: 1280px) {
-  .container {
-    max-width: 1140px;
-  }
 }
 
 /* 背景效果 */

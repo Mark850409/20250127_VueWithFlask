@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="dashboard-card-title space-y-6">
     <!-- 快速導航區 -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <template v-if="stats && stats.length > 0">
