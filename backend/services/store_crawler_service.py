@@ -41,6 +41,7 @@ class StoreCrawlerService:
             self.city_translation = {}
 
         self.dao = StoreDAO()
+        logger.info("初始化爬蟲服務")
 
     def generate_new_coordinates(self, county):
         """生成隨機經緯度"""

@@ -23,9 +23,7 @@ class RecommendService:
         """準備數據"""
         # 建立user對應ID的表格
         unique_users = self.ratings_df['user'].unique()
-        print(unique_users)
         self.user_to_id = {user: idx + 1 for idx, user in enumerate(unique_users)}
-        print(self.user_to_id)
         self.ratings_df['user_id'] = self.ratings_df['user'].map(self.user_to_id)
         
         # 準備評分數據

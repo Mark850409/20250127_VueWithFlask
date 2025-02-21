@@ -1,12 +1,13 @@
 import os
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager
 from flask_mail import Mail
 from models.database import db
 from extensions import jwt
 from services.googlemaps_service import GoogleMapsService
-from config.config import GOOGLE_MAPS_API_KEY
 from services.mail_service import mail
+import logging
+
+logger = logging.getLogger(__name__)
 
 def init_app(app):
     """初始化應用配置"""
@@ -16,10 +17,12 @@ def init_app(app):
     # JWT 錯誤處理
     @jwt.invalid_token_loader
     def invalid_token_callback(error):
+        logger.error(f"Invalid token error: {error}")
         return {'msg': '不合法的token，請重新輸入!!!'}, 401
 
     @jwt.unauthorized_loader
     def unauthorized_callback(error):
+        logger.error(f"Unauthorized error: {error}")
         return {'msg': '缺少正確的token驗證表頭，請重新輸入!!!'}, 401
 
     # 初始化數據庫
@@ -35,7 +38,7 @@ def init_app(app):
     setup_upload_folders(app)
     
     # 配置 Google Maps Service
-    GoogleMapsService(GOOGLE_MAPS_API_KEY)
+    GoogleMapsService(app.config['GOOGLE_MAPS_API_KEY'])
 
     # 初始化 Mail
     mail.init_app(app)

@@ -1,5 +1,4 @@
 import os
-from config.config import env
 from factory import create_app
 
 app = create_app()

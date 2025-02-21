@@ -1,6 +1,6 @@
 from flask_openapi3 import OpenAPI
 from flask import request, send_from_directory
-from config.config import Config
+from config.config import selected_config
 from config.api_info import info, servers, security_schemes
 from config.app_config import init_app
 from controllers import (
@@ -17,8 +17,7 @@ def create_app():
     app = OpenAPI(__name__, info=info, servers=servers)
     
     # 載入配置
-    app.config.from_object(Config)
-    
+    app.config.from_object(selected_config)
     
     # 註冊所有藍圖
     blueprints = [

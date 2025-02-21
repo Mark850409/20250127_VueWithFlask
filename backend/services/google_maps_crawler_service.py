@@ -26,14 +26,6 @@ from models.store import Store  # 導入 Store 模型
 from flask import current_app
 
 # 設置日誌
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('crawler.log'),
-        logging.StreamHandler()
-    ]
-)
 logger = logging.getLogger(__name__)
 
 class GoogleMapsCrawlerService:

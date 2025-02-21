@@ -4,15 +4,18 @@ import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
+  console.log('Current mode:', mode)
+  console.log('Current command:', command)
+
   // 載入環境變數，第三個參數改為空字串以載入所有環境變數
   const env = loadEnv(mode, path.resolve(__dirname), '')
   
   console.log('Environment Variables:', {
     mode,
+    command,
     VITE_API_URL: env.VITE_API_URL,
     VITE_BACKEND_URL: env.VITE_BACKEND_URL,
-    currentDir: __dirname,  // 調試用
-    env: env
+    currentDir: __dirname
   })
 
   return {
@@ -39,6 +42,11 @@ export default defineConfig(({ command, mode }) => {
           }
         }
       }
+    },
+    // 明確指定生產環境配置
+    build: {
+      sourcemap: false,
+      mode: 'production'
     },
     css: {
       postcss: {

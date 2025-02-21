@@ -10,8 +10,9 @@ import firebase_admin
 from firebase_admin import auth as firebase_auth
 from firebase_admin import credentials
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
+from flask_jwt_extended import create_access_token, create_refresh_token
 
 logger = logging.getLogger(__name__)
 
@@ -151,23 +152,29 @@ class UserService:
     def reset_password(self, token: str, new_password: str) -> bool:
         """重設密碼"""
         try:
+            # 檢查參數
+            if not token or not new_password:
+                raise ValueError('token 和新密碼不能為空')
+            
             # 驗證 token
             user = self.dao.verify_reset_token(token)
             if not user:
                 raise ValueError('無效的重設密碼連結或已過期')
 
             # 檢查新密碼是否與歷史密碼重複
-            if not user.check_password_history(new_password):
+            if user.check_password_history(new_password):
                 raise ValueError('新密碼不能與最近5次使用過的密碼相同')
 
             # 密碼加密
-            password = new_password.encode('utf-8')
-            salt = bcrypt.gensalt()
-            hashed = bcrypt.hashpw(password, salt)
-            new_password = hashed.decode('utf-8')
+            try:                    
+                # 使用 utils 中的 hash_password 函數
+                hashed_password = hash_password(new_password)
+            except Exception as e:
+                logger.error(f"密碼加密失敗: {str(e)}")
+                raise ValueError('密碼加密失敗')
 
             # 更新密碼
-            return self.dao.reset_password(user, new_password)
+            return self.dao.reset_password(user, hashed_password)
         except Exception as e:
             logger.error(f"重設密碼錯誤: {str(e)}")
             raise 
@@ -239,4 +246,21 @@ class UserService:
             
         except Exception as e:
             logger.error(f"Firebase 登入錯誤: {str(e)}")
+            raise 
+
+    def create_tokens(self, user_id):
+        try:
+            access_token = create_access_token(
+                identity=user_id,
+                fresh=True,
+                additional_claims={"sub": str(user_id)}  # 確保 user_id 是字符串
+            )
+            refresh_token = create_refresh_token(
+                identity=user_id,
+                additional_claims={"sub": str(user_id)}  # 確保 user_id 是字符串
+            )
+            logger.info(f"Tokens created for user {user_id}")
+            return access_token, refresh_token
+        except Exception as e:
+            logger.error(f"Token creation failed for user {user_id}: {str(e)}", exc_info=True)
             raise 

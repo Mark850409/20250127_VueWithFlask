@@ -105,21 +105,26 @@ class User(db.Model):
         return True
         
     def check_password_history(self, new_password: str) -> bool:
-        """檢查新密碼是否與歷史密碼重複
+        """檢查密碼是否在歷史記錄中
         
         Returns:
-            bool: True 如果密碼可以使用，False 如果密碼重複
+            bool: True 如果密碼在歷史記錄中，False 如果密碼不在歷史記錄中
         """
-        # 檢查當前密碼
-        if bcrypt.checkpw(new_password.encode('utf-8'), self.password.encode('utf-8')):
+        try:
+            # 檢查當前密碼
+            if self.password and bcrypt.checkpw(new_password.encode('utf-8'), self.password.encode('utf-8')):
+                return True
+
+            # 檢查密碼歷史
+            if self.password_history:
+                history_list = self.password_history.split(',')
+                for old_password in history_list:
+                    if old_password and bcrypt.checkpw(new_password.encode('utf-8'), old_password.encode('utf-8')):
+                        return True
             return False
-            
-        # 檢查密碼歷史
-        if self.password_history:
-            for old_password in self.password_history:
-                if bcrypt.checkpw(new_password.encode('utf-8'), old_password.encode('utf-8')):
-                    return False
-        return True
+        except Exception as e:
+            logger.error(f"檢查密碼歷史失敗: {str(e)}")
+            return False
         
     def update_password_history(self, old_password: str):
         """更新密碼歷史
