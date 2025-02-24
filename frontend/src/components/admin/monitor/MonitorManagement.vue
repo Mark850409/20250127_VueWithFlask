@@ -46,8 +46,8 @@
         </div>
         <div class="mt-2 flex justify-end">
           <button @click="handleSearch"
-                  class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2">
-            <i class="fas fa-search"></i>
+                  class="monitor-search-btn px-6 py-2.5 bg-purple-500 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2">
+            <i class="fas fa-search text-white"></i>
             <span>查詢</span>
           </button>
         </div>

@@ -103,21 +103,26 @@
               </div>
 
               <div>
-                <label for="password" class="block text-sm font-medium text-white/90">
+                <label class="block text-sm font-medium text-white/90">
                   密碼 <span class="text-red-500">*</span>
                 </label>
-                <input id="password" 
-                       v-model="form.password" 
-                       type="password" 
-                       required
-                       :class="{'border-red-500': errors.password}"
-                       class="appearance-none relative block w-full px-3 py-2 
-                              border border-white/30 bg-white/20 backdrop-blur-md
-                              placeholder-gray-300 text-white rounded-xl
-                              focus:outline-none focus:ring-2 focus:ring-indigo-400 
-                              focus:border-transparent transition-all duration-200
-                              hover:bg-white/30"
-                       placeholder="請輸入密碼">
+                <div class="relative">
+                  <input :type="showPassword ? 'text' : 'password'"
+                         v-model="form.password"
+                         class="appearance-none relative block w-full px-3 py-2 
+                                border border-white/30 bg-white/20 backdrop-blur-md
+                                placeholder-gray-300 text-white rounded-xl
+                                focus:outline-none focus:ring-2 focus:ring-indigo-400 
+                                focus:border-transparent transition-all duration-200
+                                hover:bg-white/30"
+                         :class="{'border-red-500': errors.password}"
+                         placeholder="請輸入密碼">
+                  <button type="button"
+                          @click="showPassword = !showPassword"
+                          class="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white/90">
+                    <i :class="showPassword ? 'ri-eye-line' : 'ri-eye-off-line'"></i>
+                  </button>
+                </div>
                 <p v-if="errors.password" class="mt-1 text-xs text-red-300">
                   {{ errors.password }}
                 </p>
@@ -130,18 +135,25 @@
                 <label for="confirmPassword" class="block text-sm font-medium text-white/90">
                   確認密碼 <span class="text-red-500">*</span>
                 </label>
-                <input id="confirmPassword" 
-                       v-model="form.confirmPassword" 
-                       type="password" 
-                       required
-                       :class="{'border-red-500': errors.confirmPassword}"
-                       class="appearance-none relative block w-full px-3 py-2 
-                              border border-white/30 bg-white/20 backdrop-blur-md
-                              placeholder-gray-300 text-white rounded-xl
-                              focus:outline-none focus:ring-2 focus:ring-indigo-400 
-                              focus:border-transparent transition-all duration-200
-                              hover:bg-white/30"
-                       placeholder="請再次輸入密碼">
+                <div class="relative">
+                  <input id="confirmPassword" 
+                         v-model="form.confirmPassword" 
+                         :type="showConfirmPassword ? 'text' : 'password'"
+                         required
+                         :class="{'border-red-500': errors.confirmPassword}"
+                         class="appearance-none relative block w-full px-3 py-2 
+                                border border-white/30 bg-white/20 backdrop-blur-md
+                                placeholder-gray-300 text-white rounded-xl
+                                focus:outline-none focus:ring-2 focus:ring-indigo-400 
+                                focus:border-transparent transition-all duration-200
+                                hover:bg-white/30"
+                         placeholder="請再次輸入密碼">
+                  <button type="button"
+                          @click="showConfirmPassword = !showConfirmPassword"
+                          class="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white/90">
+                    <i :class="showConfirmPassword ? 'ri-eye-line' : 'ri-eye-off-line'"></i>
+                  </button>
+                </div>
                 <p v-if="errors.confirmPassword" class="mt-1 text-xs text-red-500">{{ errors.confirmPassword }}</p>
               </div>
             </div>
@@ -314,6 +326,9 @@ export default {
     const forgotPasswordEmail = ref('')
 
     const bannerData = ref({})
+
+    const showPassword = ref(false)
+    const showConfirmPassword = ref(false)
   
 
     const validatePassword = (password) => {
@@ -856,7 +871,9 @@ export default {
       handleGoogleSignIn,
       handleFacebookSignIn,
       handleGithubSignIn,
-      bannerData
+      bannerData,
+      showPassword,
+      showConfirmPassword
     }
   }
 }
@@ -931,5 +948,17 @@ input[type="checkbox"]:checked {
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
   }
+}
+
+/* 眼睛圖標的過渡效果 */
+.ri-eye-line,
+.ri-eye-off-line {
+  transition: opacity 0.2s;
+}
+
+/* 眼睛按鈕懸停效果 */
+button:hover .ri-eye-line,
+button:hover .ri-eye-off-line {
+  opacity: 1;
 }
 </style> 

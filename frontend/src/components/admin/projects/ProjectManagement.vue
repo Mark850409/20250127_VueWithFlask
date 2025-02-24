@@ -7,9 +7,9 @@
         <div class="flex justify-between items-center">
           <h2 class="text-xl font-bold text-gray-800">專案管理</h2>
           <button @click="showAddModal = true"
-                  class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 
+                  class="project-create-btn px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-blue-600 
                          transition-colors duration-200 flex items-center">
-            <i class="fas fa-plus mr-2"></i>新增專案
+            <i class="fas fa-plus mr-2 text-white"></i>新增專案
           </button>
         </div>
 

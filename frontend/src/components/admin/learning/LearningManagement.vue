@@ -7,9 +7,9 @@
         <div class="flex justify-between items-center">
           <h2 class="text-xl font-bold text-gray-800">學習內容管理</h2>
           <button @click="showModal = true; editingSection = null"
-                  class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 
+                  class="learning-create-btn px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-blue-600 
                          transition-colors duration-200 flex items-center">
-            <i class="fas fa-plus mr-2"></i>新增主標題
+            <i class="fas fa-plus mr-2 text-white"></i>新增主標題
           </button>
         </div>
 
@@ -170,9 +170,9 @@
                            :key="index"
                            class="relative group/image">
                         <img :src="getImageUrl(image)"
-                             class="w-16 h-16 rounded-lg object-cover cursor-zoom-in 
+                             class="w-16 h-16 rounded-lg object-cover cursor-pointer 
                                     hover:opacity-75 transition-opacity shadow-sm"
-                             @click="previewImage(getImageUrl(image))"
+                             @click="previewImage(getImageUrl(image), subsection.images.map(i => getImageUrl(i)))"
                              @error="handleImageError($event)">
                         <!-- 如果有更多圖片，顯示數量提示 -->
                         <div v-if="index === 3 && subsection.images.length > 4"
@@ -335,30 +335,74 @@
                   </p>
                 </div>
 
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                <!-- 次標題圖片上傳 -->
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
                     圖片
+                    <span class="text-red-500">*</span>
                   </label>
-                  <input type="file"
-                         ref="fileInput"
-                         @change="handleFileChange"
-                         multiple
-                         accept="image/*"
-                         class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                </div>
-
-                <!-- 已上傳圖片預覽 -->
-                <div v-if="subsectionForm.images?.length" class="grid grid-cols-4 gap-2">
-                  <div v-for="(image, index) in subsectionForm.images"
-                       :key="index"
-                       class="relative group">
-                    <img :src="getImageUrl(image)"
-                         class="w-full h-20 object-cover rounded-lg"
-                         @error="handleImageError">
-                    <button @click="removeImage(index)"
-                            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600">
-                      <i class="fas fa-times"></i>
+                  <!-- 上傳區域 -->
+                  <div
+                    class="relative border border-dashed rounded-lg p-8 text-center transition-all min-h-[200px] flex flex-col items-center justify-center"
+                    :class="[
+                      isDraggingSubImage ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400',
+                      'dark:border-gray-600 dark:hover:border-blue-500',
+                      subImagePreviews.length === 0 ? 'bg-gray-50' : ''
+                    ]"
+                    @dragenter.prevent="isDraggingSubImage = true"
+                    @dragleave.prevent="isDraggingSubImage = false"
+                    @dragover.prevent
+                    @drop.prevent="handleSubImageDrop($event)">
+                    <!-- 雲朵圖示 -->
+                    <div class="mb-4">
+                      <i class="fas fa-cloud-upload-alt text-4xl text-gray-400"></i>
+                    </div>
+                    
+                    <!-- 上傳提示文字 -->
+                    <div class="mb-4 text-gray-600">
+                      <p class="text-sm">拖曳檔案至此處或點擊上傳</p>
+                      <p class="text-xs mt-1 text-gray-500">
+                        支援的檔案類型：JPG、PNG、GIF、WebP、SVG（單檔限制 5MB）
+                      </p>
+                    </div>
+                    
+                    <!-- 檔案選擇按鈕 -->
+                    <input type="file"
+                           multiple
+                           @change="handleSubImageSelect"
+                           accept=".jpg,.jpeg,.png,.gif,.webp,.svg"
+                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                    
+                    <!-- 選擇檔案按鈕 -->
+                    <button type="button"
+                            class="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                      選擇檔案
                     </button>
+                  </div>
+
+                  <!-- 多圖片預覽 -->
+                  <div v-if="subImagePreviews.length > 0" 
+                      class="mt-4 space-y-2">
+                    <div v-for="(preview, index) in subImagePreviews" 
+                         :key="index" 
+                        class="relative flex items-center bg-gray-50 p-2 rounded-lg group">
+                      <img :src="preview.url"
+                           class="w-16 h-16 object-cover rounded mr-3 cursor-pointer hover:opacity-75 transition-opacity"
+                           @click="previewImage(preview.url, subImagePreviews.map(p => p.url))">
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">
+                          {{ getImageName(preview) }}
+                        </p>
+                        <p class="text-xs text-gray-500 space-x-2">
+                          <span>{{ getImageType(preview) }}</span>
+                          <span>{{ getImageSize(preview) }}</span>
+                        </p>
+                      </div>
+                      <button @click="removeSubImage(index)"
+                              class="ml-2 text-gray-400 hover:text-red-500">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </form>
@@ -382,24 +426,37 @@
 
     <!-- 圖片預覽 Modal -->
     <div v-if="previewImageUrl" 
-        class="fixed inset-0 z-[9999]">
+        class="fixed inset-0 z-[9999] flex items-center justify-center">
       <!-- 背景遮罩 -->
-      <div class="absolute inset-0 bg-black bg-opacity-90 backdrop-blur-sm"></div>
+      <div class="fixed inset-0 bg-black"></div>
       
       <!-- Modal 內容 -->
-      <div class="fixed inset-0 overflow-y-auto">
-        <div class="flex items-center justify-center min-h-full p-4">
-          <!-- 關閉按鈕 -->
-          <button class="absolute top-4 right-4 text-white/80 hover:text-white transition-colors z-[100000]"
-                  @click="closePreview">
-            <i class="fas fa-times text-2xl"></i>
-          </button>
-          <!-- 圖片容器 -->
-          <img :src="previewImageUrl"
-               class="max-w-[90vw] max-h-[80vh] object-contain select-none rounded-lg shadow-2xl"
-               @click.stop
-               alt="圖片預覽">
-        </div>
+      <div class="relative w-full h-full flex items-center justify-center">
+        <!-- 關閉按鈕 -->
+        <button class="absolute top-4 right-4 text-white/80 hover:text-white transition-colors z-10"
+                @click="closePreview">
+          <i class="fas fa-times text-2xl"></i>
+        </button>
+        
+        <!-- 上一張按鈕 -->
+        <button v-if="currentImageIndex > 0"
+                class="absolute left-4 text-white/80 hover:text-white transition-colors z-10"
+                @click="showPreviousImage">
+          <i class="fas fa-chevron-left text-2xl"></i>
+        </button>
+        
+        <!-- 下一張按鈕 -->
+        <button v-if="currentImageIndex < totalImages - 1"
+                class="absolute right-4 text-white/80 hover:text-white transition-colors z-10"
+                @click="showNextImage">
+          <i class="fas fa-chevron-right text-2xl"></i>
+        </button>
+        
+        <!-- 圖片容器 -->
+        <img :src="previewImageUrl"
+             class="max-h-screen max-w-screen object-contain select-none"
+             @click.stop
+             alt="圖片預覽">
       </div>
     </div>
   </div>
@@ -578,7 +635,18 @@ export default {
       currentSectionId.value = subsection.section_id
       subsectionForm.title = subsection.title
       subsectionForm.content = subsection.content
-      subsectionForm.images = [...(subsection.images || [])]
+      // 重置圖片預覽狀態
+      resetSubImages()
+      // 載入已有的圖片
+      if (subsection.images?.length) {
+        subsection.images.forEach(image => {
+          subImagePreviews.value.push({
+            url: getImageUrl(image),
+            existingImage: true,  // 標記為已存在的圖片
+            path: image  // 保存原始路徑
+          })
+        })
+      }
       showSubsectionModal.value = true
     }
 
@@ -588,58 +656,167 @@ export default {
       editingSubsection.value = null
       currentSectionId.value = null
       initSubsectionForm()
+      // 重置圖片相關狀態
+      resetSubImages()
     }
 
-    // 處理文件選擇
-    const handleFileChange = async (event) => {
-      const files = event.target.files
-      if (!files.length) return
-
-      for (const file of files) {
-        const formData = new FormData()
-        formData.append('file', file)
-        try {
-          const response = await learningAPI.uploadImage(formData)
-          subsectionForm.images.push(response.data.url)
-        } catch (error) {
+    // 次標題圖片相關狀態
+    const isDraggingSubImage = ref(false)
+    const subImagePreviews = ref([])
+    const subImageFiles = ref([])
+    
+    // 處理次標題圖片選擇
+    const handleSubImageSelect = (event) => {
+      const files = Array.from(event.target.files)
+      handleSubImageFiles(files)
+    }
+    
+    // 處理次標題圖片拖放
+    const handleSubImageDrop = (event) => {
+      isDraggingSubImage.value = false
+      const files = Array.from(event.dataTransfer.files)
+      handleSubImageFiles(files)
+    }
+    
+    // 處理次標題圖片文件
+    const handleSubImageFiles = (files) => {
+      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+      const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+      
+      let errorMessage = '';
+      const validFiles = Array.from(files).filter(file => {
+        // 檢查檔案類型
+        if (!ALLOWED_TYPES.includes(file.type)) {
+          errorMessage = '請上傳 JPG、PNG、GIF、WebP 或 SVG 格式的圖片';
+          return false;
+        }
+        
+        // 檢查檔案大小
+        if (file.size > MAX_FILE_SIZE) {
+          errorMessage = '圖片大小不能超過 5MB';
+          return false;
+        }
+        
+        return true;
+      });
+      
+      if (validFiles.length === 0) {
+        // 先關閉 modal
+        closeSubsectionModal();
+        // 再顯示錯誤訊息
+        if (errorMessage) {
           Swal.fire({
             icon: 'error',
-            title: '圖片上傳失敗',
-            text: error.response?.data?.message || '請稍後再試'
-          })
+            title: '不支援的檔案格式',
+            text: errorMessage
+          });
         }
+        return;
       }
-      // 清空 input，允許重複上傳相同文件
-      fileInput.value.value = ''
-    }
 
-    // 移除圖片
-    const removeImage = (index) => {
-      subsectionForm.images.splice(index, 1)
+      validFiles.forEach(file => {
+        const url = URL.createObjectURL(file)
+        subImagePreviews.value.push({ 
+          url,
+          file,
+          existingImage: false
+        })
+        subImageFiles.value.push(file)
+      })
+    }
+    
+    // 移除次標題圖片
+    const removeSubImage = (index) => {
+      const image = subImagePreviews.value[index]
+      if (!image.existingImage) {
+        // 如果是新上傳的圖片，釋放 URL
+        URL.revokeObjectURL(image.url)
+      }
+      subImagePreviews.value.splice(index, 1)
+      if (!image.existingImage) {
+        // 只有新上傳的圖片才需要從 files 中移除
+        subImageFiles.value.splice(index, 1)
+      }
+    }
+    
+    // 重置次標題圖片
+    const resetSubImages = () => {
+      // 釋放所有預覽 URL
+      subImagePreviews.value.forEach(preview => {
+        if (!preview.existingImage) {
+          URL.revokeObjectURL(preview.url)
+        }
+      })
+      subImagePreviews.value = []
+      subImageFiles.value = []
     }
 
     // 提交次標題表單
     const handleSubsectionSubmit = async () => {
-      // 驗證
-      if (!subsectionForm.title) {
-        subsectionErrors.title = '請輸入標題'
-        return
+      // 表單驗證
+      const errors = {};
+      
+      if (!subsectionForm.title?.trim()) {
+        errors.title = '請輸入標題';
       }
-      if (!subsectionForm.content) {
-        subsectionErrors.content = '請輸入內容'
-        return
+      
+      if (!subsectionForm.content?.trim()) {
+        errors.content = '請輸入內容';
+      }
+      
+      // 如果有錯誤，顯示錯誤訊息並返回
+      if (Object.keys(errors).length > 0) {
+        Object.assign(subsectionErrors, errors);
+        return;
       }
 
       try {
+        // 準備圖片數據
+        const finalImages = []
+        
+        // 保留已存在的圖片路徑
+        subImagePreviews.value.forEach(image => {
+          if (image.existingImage) {
+            finalImages.push(image.path)
+          }
+        })
+        
+        // 上傳新圖片
+        for (const file of subImageFiles.value) {
+          const formData = new FormData()
+          formData.append('file', file)
+          try {
+            const response = await learningAPI.uploadImage(formData)
+            finalImages.push(response.data.url)
+          } catch (error) {
+            console.error('圖片上傳失敗:', error)
+            // 先關閉 modal
+            closeSubsectionModal()
+            // 等待 modal 關閉動畫完成後再顯示錯誤訊息
+            setTimeout(() => {
+              Swal.fire({
+                icon: 'error',
+                title: '圖片上傳失敗',
+                text: error.response?.data?.message || '請稍後再試'
+              })
+            }, 300)
+            return
+          }
+        }
+
+        const data = {
+          title: subsectionForm.title.trim(),
+          content: subsectionForm.content.trim(),
+          section_id: currentSectionId.value,
+          images: finalImages
+        }
+
         if (editingSubsection.value) {
-          await learningAPI.updateSubsection(editingSubsection.value.id, subsectionForm)
-          await logOperation(`【學習管理】更新次標題: ${subsectionForm.title}`, '修改')
+          await learningAPI.updateSubsection(editingSubsection.value.id, data)
+          await logOperation(`【學習管理】更新次標題: ${data.title}`, '修改')
         } else {
-          await learningAPI.createSubsection({
-            ...subsectionForm,
-            section_id: currentSectionId.value
-          })
-          await logOperation(`【學習管理】新增次標題: ${subsectionForm.title}`, '新增')
+          await learningAPI.createSubsection(data)
+          await logOperation(`【學習管理】新增次標題: ${data.title}`, '新增')
         }
         
         await fetchSections()
@@ -652,11 +829,16 @@ export default {
           showConfirmButton: false
         })
       } catch (error) {
-        Swal.fire({
-          icon: 'error',
-          title: `${editingSubsection.value ? '更新' : '新增'}失敗`,
-          text: error.response?.data?.message || '請稍後再試'
-        })
+        // 先關閉 modal
+        closeSubsectionModal()
+        // 等待 modal 關閉動畫完成後再顯示錯誤訊息
+        setTimeout(() => {
+          Swal.fire({
+            icon: 'error',
+            title: `${editingSubsection.value ? '更新' : '新增'}失敗`,
+            text: error.response?.data?.message || error.message || '請稍後再試'
+          })
+        }, 300)
       }
     }
 
@@ -731,22 +913,57 @@ export default {
       }
     }
 
+    // 圖片預覽相關
+    const currentImageIndex = ref(0)
+    const previewImages = ref([])
+    const totalImages = computed(() => previewImages.value.length)
+    
     // 圖片預覽
-    const previewImage = (url) => {
-      previewImageUrl.value = url
+    const previewImage = (url, images = [url]) => {
+      previewImages.value = images
+      currentImageIndex.value = images.indexOf(url)
+      previewImageUrl.value = images[currentImageIndex.value]
       document.body.style.overflow = 'hidden'
     }
-
+    
+    // 顯示上一張圖片
+    const showPreviousImage = () => {
+      if (currentImageIndex.value > 0) {
+        currentImageIndex.value--
+        previewImageUrl.value = previewImages.value[currentImageIndex.value]
+      }
+    }
+    
+    // 顯示下一張圖片
+    const showNextImage = () => {
+      if (currentImageIndex.value < totalImages.value - 1) {
+        currentImageIndex.value++
+        previewImageUrl.value = previewImages.value[currentImageIndex.value]
+      }
+    }
+    
     // 關閉預覽
     const closePreview = () => {
       previewImageUrl.value = null
+      previewImages.value = []
+      currentImageIndex.value = 0
       document.body.style.overflow = ''
     }
-
-    // 監聽 ESC 鍵關閉預覽
+    
+    // 監聽方向鍵切換圖片
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && previewImageUrl.value) {
-        closePreview()
+      if (!previewImageUrl.value) return
+      
+      switch (e.key) {
+        case 'Escape':
+          closePreview()
+          break
+        case 'ArrowLeft':
+          showPreviousImage()
+          break
+        case 'ArrowRight':
+          showNextImage()
+          break
       }
     }
 
@@ -769,6 +986,46 @@ export default {
         return matchSection || matchSubsections
       })
     })
+
+    // 格式化檔案大小
+    const formatFileSize = (bytes) => {
+      if (bytes === 0) return '0 Bytes'
+      const k = 1024
+      const sizes = ['Bytes', 'KB', 'MB', 'GB']
+      const i = Math.floor(Math.log(bytes) / Math.log(k))
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+    }
+
+    // 獲取圖片名稱
+    const getImageName = (preview) => {
+      if (preview.file) {
+        return preview.file.name
+      }
+      if (preview.path) {
+        return preview.path.split('/').pop()
+      }
+      return '已上傳圖片'
+    }
+
+    // 獲取圖片類型
+    const getImageType = (preview) => {
+      if (preview.file) {
+        return preview.file.type.split('/')[1].toUpperCase()
+      }
+      if (preview.path) {
+        const ext = preview.path.split('.').pop()
+        return ext ? ext.toUpperCase() : 'IMAGE'
+      }
+      return 'IMAGE'
+    }
+
+    // 獲取圖片大小
+    const getImageSize = (preview) => {
+      if (preview.file) {
+        return formatFileSize(preview.file.size)
+      }
+      return ''
+    }
 
     onMounted(async () => {
       await fetchSections()
@@ -806,11 +1063,24 @@ export default {
       editSubsection,
       closeSubsectionModal,
       handleSubsectionSubmit,
-      handleFileChange,
-      removeImage,
+      handleSubImageSelect,
+      handleSubImageDrop,
+      handleSubImageFiles,
+      removeSubImage,
+      resetSubImages,
       filteredSections,
       previewImageUrl,
-      closePreview
+      closePreview,
+      isDraggingSubImage,
+      subImagePreviews,
+      formatFileSize,
+      showPreviousImage,
+      showNextImage,
+      currentImageIndex,
+      totalImages,
+      getImageName,
+      getImageType,
+      getImageSize
     }
   }
 }

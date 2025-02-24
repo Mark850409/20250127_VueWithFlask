@@ -15,4 +15,8 @@ const pinia = createPinia()
 app.use(ElementPlus)
 app.use(pinia)
 app.use(router)
+
+// 注入 electron API
+app.config.globalProperties.$electron = window.electron
+
 app.mount('#app')

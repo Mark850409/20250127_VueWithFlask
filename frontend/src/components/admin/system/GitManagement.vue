@@ -7,8 +7,8 @@
         <div class="flex flex-col space-y-4">
           <div class="flex items-center space-x-4">
             <button @click="checkStatus" 
-                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
-              <i class="fas fa-sync-alt mr-2"></i>檢查狀態
+                    class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition flex items-center">
+              <i class="fas fa-sync-alt mr-2 text-white"></i>檢查狀態
             </button>
             <span class="text-gray-500 text-sm">
               <i class="fas fa-info-circle mr-1"></i>
@@ -58,16 +58,22 @@
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-lg font-semibold">Git 配置</h2>
         <button @click="setRepoPath" 
-                class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
-          <i class="fas fa-folder mr-2"></i>設置倉庫路徑
+                class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition flex items-center">
+          <i class="fas fa-folder mr-2 text-white"></i>設置倉庫路徑
         </button>
       </div>
       <!-- 顯示當前路徑 -->
       <div class="mb-4 p-4 bg-gray-50 rounded-lg">
-        <div class="flex items-center text-sm text-gray-600">
-          <i class="fas fa-folder-open mr-2"></i>
-          <span class="font-medium mr-2">當前倉庫路徑：</span>
-          <span class="font-mono">{{ repoPath || '尚未設置' }}</span>
+        <div class="flex items-center justify-between text-sm text-gray-600">
+          <div class="flex items-center">
+            <i class="fas fa-folder-open mr-2"></i>
+            <span class="font-medium mr-2">當前倉庫路徑：</span>
+            <span class="font-mono">{{ repoPath || '尚未設置' }}</span>
+          </div>
+          <button @click="selectDirectory" 
+                  class="px-3 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition flex items-center">
+            <i class="fas fa-folder-open mr-2"></i>瀏覽
+          </button>
         </div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -107,8 +113,8 @@
         </div>
       </div>
       <button @click="configureGit" 
-              class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-              >
+              class="mt-4 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition flex items-center">
+        <i class="fas fa-save mr-2 text-white"></i>
         保存配置
       </button>
     </div>
@@ -154,8 +160,8 @@
           </div>
         </div>
         <button @click="addRemote" 
-                class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-                >
+                class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition flex items-center">
+          <i class="fas fa-plus mr-2 text-white"></i>
           添加遠程倉庫
         </button>
       </div>
@@ -188,12 +194,12 @@
           </div>
           <div class="flex space-x-4">
             <button @click="addFiles" 
-                    class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
-              <i class="fas fa-plus mr-2"></i>添加文件
+                    class="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition flex items-center">
+              <i class="fas fa-plus mr-2 text-white"></i>添加文件
             </button>
             <button @click="commit" 
-                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
-              <i class="fas fa-check mr-2"></i>提交更改
+                    class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition flex items-center">
+              <i class="fas fa-check mr-2 text-white"></i>提交更改
             </button>
           </div>
         </div>
@@ -218,12 +224,12 @@
           </div>
           <div class="flex space-x-4">
             <button @click="createBranch" 
-                    class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
-              <i class="fas fa-code-branch mr-2"></i>創建分支
+                    class="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition flex items-center">
+              <i class="fas fa-code-branch mr-2 text-white"></i>創建分支
             </button>
             <button @click="switchBranch" 
-                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
-              <i class="fas fa-exchange-alt mr-2"></i>切換分支
+                    class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition flex items-center">
+              <i class="fas fa-exchange-alt mr-2 text-white"></i>切換分支
             </button>
           </div>
         </div>
@@ -234,16 +240,16 @@
         <h2 class="text-lg font-semibold mb-4">推送與拉取</h2>
         <div class="flex space-x-4">
           <button @click="pull" 
-                  class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
-            <i class="fas fa-download mr-2"></i>拉取更新
+                  class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition flex items-center">
+            <i class="fas fa-download mr-2 text-white"></i>拉取更新
           </button>
           <button @click="push" 
-                  class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
-            <i class="fas fa-upload mr-2"></i>推送更改
+                  class="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition flex items-center">
+            <i class="fas fa-upload mr-2 text-white"></i>推送更改
           </button>
           <button @click="forcePush" 
-                  class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">
-            <i class="fas fa-exclamation-triangle mr-2"></i>強制推送
+                  class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center">
+            <i class="fas fa-exclamation-triangle mr-2 text-white"></i>強制推送
           </button>
         </div>
       </div>
@@ -256,8 +262,8 @@
           <div class="flex justify-between items-center">
             <div class="flex items-center space-x-4">
               <button @click="getHistory" 
-                      class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
-                <i class="fas fa-history mr-2"></i>刷新歷史
+                      class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition flex items-center">
+                <i class="fas fa-history mr-2 text-white"></i>刷新歷史
               </button>
               <!-- 搜尋框 -->
               <div class="relative">
@@ -361,8 +367,12 @@
 
     <!-- 未配置時的提示 -->
     <div v-else class="bg-white rounded-lg shadow p-6">
-      <div class="text-center text-gray-500 py-4">
-        請先完成 Git 配置並添加遠程倉庫以啟用所有功能
+      <div class="flex flex-col items-center justify-center py-8 space-y-4">
+        <div class="text-purple-500">
+          <i class="ri-git-branch-line text-6xl"></i>
+        </div>
+        <h3 class="text-xl font-medium text-gray-700">尚無添加倉庫</h3>
+        <p class="text-gray-500">請先添加倉庫路徑</p>
       </div>
     </div>
 
@@ -1340,6 +1350,25 @@ export default {
         this.closeCommitConfirmDialog()
       } catch (error) {
         console.error('Error committing with files:', error)
+      }
+    },
+    async selectDirectory() {
+      try {
+        if (!window.electron) {
+          throw new Error('Electron API 未初始化')
+        }
+        
+        const result = await window.electron.showOpenDialog({
+          properties: ['openDirectory'],
+          title: '選擇 Git 倉庫目錄',
+          buttonLabel: '選擇此目錄'
+        })
+        if (!result.canceled && result.filePaths.length > 0) {
+          this.repoPath = result.filePaths[0]
+        }
+      } catch (error) {
+        console.error('選擇目錄失敗:', error)
+        ElMessage.error(error.message || '選擇目錄失敗')
       }
     },
   },

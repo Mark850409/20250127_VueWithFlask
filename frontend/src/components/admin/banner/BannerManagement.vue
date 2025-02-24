@@ -7,9 +7,9 @@
         <div class="flex justify-between items-center">
           <h2 class="text-xl font-bold text-gray-800">輪播圖管理</h2>
           <button @click="openCreateModal"
-                  class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 
+                  class="banner-create-btn px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 
                          transition-colors duration-200 flex items-center">
-            <i class="fas fa-plus mr-2"></i>新增輪播圖
+            <i class="fas fa-plus mr-2 text-white"></i>新增輪播圖
           </button>
         </div>
 
@@ -19,18 +19,47 @@
         <!-- 功能區 -->
         <div class="flex justify-between items-center">
           <!-- 左側：頁籤 -->
-          <div class="flex space-x-1">
-            <button v-for="tab in bannerTypeOptions" 
-                    :key="tab.value"
-                    @click="handleTabChange(tab.value)"
-                    :class="[
-                      'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-                      currentTab === tab.value 
-                        ? 'bg-blue-50 text-blue-600 shadow-sm border border-blue-200' 
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
-                    ]">
-              {{ tab.label }}
-            </button>
+          <div class="flex space-x-4">
+            <!-- 主要頁籤 -->
+            <div class="flex space-x-1">
+              <button v-for="tab in mainTabs" 
+                      :key="tab.value"
+                      @click="handleTabChange(tab.value)"
+                      :class="[
+                        'px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-2',
+                        currentTab === tab.value 
+                          ? 'bg-blue-50 text-blue-600 shadow-sm border border-blue-200' 
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
+                      ]">
+                <i :class="getTabIcon(tab.value)" class="w-4"></i>
+                <span>{{ tab.label }}</span>
+              </button>
+            </div>
+            
+            <!-- 更多頁籤下拉選單 -->
+            <div class="relative">
+              <button @click="showMoreTabs = !showMoreTabs"
+                      class="px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-1
+                             text-gray-600 hover:bg-gray-50 hover:text-gray-800">
+                <span>更多</span>
+                <i class="fas fa-chevron-down text-xs"></i>
+              </button>
+              
+              <!-- 下拉選單內容 -->
+              <div v-if="showMoreTabs" 
+                   class="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10
+                          min-w-[160px]">
+                <button v-for="tab in moreTabs" 
+                        :key="tab.value"
+                        @click="handleMoreTabSelect(tab.value)"
+                        class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors
+                               flex items-center space-x-2"
+                        :class="{'text-blue-600 bg-blue-50': currentTab === tab.value}">
+                  <i :class="getTabIcon(tab.value)" class="w-4"></i>
+                  <span>{{ tab.label }}</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- 右側：搜尋和視圖切換 -->
@@ -485,6 +514,7 @@ const bannerTypeOptions = [
   { label: '尋找美食', value: 'food' },
   { label: '頁腳', value: 'footer' },
   { label: '登入', value: 'login' },
+  { label: '忘記密碼', value: 'forgot-password' },
   { label: '後台', value: 'admin' }
 ]
 
@@ -508,7 +538,7 @@ const errors = ref({})
 const handledErrors = ref(new Set())
 
 // 當前選中的頁籤
-const currentTab = ref('home')
+const currentTab = ref('all')
 
 // 後台選單列表
 const menuList = ref([])
@@ -590,6 +620,10 @@ const getBannerTypeLabel = (type) => {
       return '頁腳'
     case 'login':
       return '登入'
+    case 'forgot-password':
+      return '忘記密碼'
+    case 'all':
+      return '全部'
     default:
       return '未知類型'
   }
@@ -949,6 +983,39 @@ const filteredBanners = computed(() => {
 const modalTitle = computed(() => {
   return isEditing.value ? '編輯輪播圖' : '新增輪播圖'
 })
+
+// 新增下拉選單狀態
+const showMoreTabs = ref(false)
+
+// 主要頁籤
+const mainTabs = [
+  { label: '全部', value: 'all', icon: 'ri-apps-line' },
+  { label: '首頁', value: 'home', icon: 'ri-home-4-line' },
+  { label: '特色功能', value: 'feature', icon: 'ri-star-line' },
+  { label: '學習中心', value: 'learning', icon: 'ri-book-open-line' }
+]
+
+// 更多頁籤
+const moreTabs = [
+  { label: '定價方案', value: 'pricing', icon: 'ri-money-dollar-circle-line' },
+  { label: '尋找美食', value: 'food', icon: 'ri-restaurant-2-line' },
+  { label: '頁腳', value: 'footer', icon: 'ri-layout-bottom-line' },
+  { label: '登入', value: 'login', icon: 'ri-login-circle-line' },
+  { label: '忘記密碼', value: 'forgot-password', icon: 'ri-key-2-line' },
+  { label: '後台', value: 'admin', icon: 'ri-settings-3-line' }
+]
+
+// 獲取頁籤圖標
+const getTabIcon = (value) => {
+  const tab = [...mainTabs, ...moreTabs].find(t => t.value === value)
+  return tab?.icon || 'ri-question-line'
+}
+
+// 處理更多頁籤選擇
+const handleMoreTabSelect = (value) => {
+  handleTabChange(value)
+  showMoreTabs.value = false
+}
 </script>
 
 <style scoped>

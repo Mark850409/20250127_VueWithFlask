@@ -106,4 +106,16 @@ class BannerService:
             BannerSchema.model_validate(self._convert_to_schema(banner))
             for banner in banners
         ]
-        return BannerListResponse(data=banner_list).model_dump() 
+        return BannerListResponse(data=banner_list).model_dump()
+
+    VALID_BANNER_TYPES = {
+        'home',
+        'feature', 
+        'learning',
+        'pricing',
+        'food',
+        'footer',
+        'login',
+        'forgot-password',
+        'admin'
+    } 

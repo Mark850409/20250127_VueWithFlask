@@ -2,11 +2,11 @@
   <!-- 修改背景和遮罩 -->
   <div class="min-h-screen relative flex items-center">
     <!-- 背景圖片 -->
-    <div class="absolute inset-0 z-0">
+    <div v-if="banner" class="absolute inset-0 z-0">
       <img 
-        src="https://images.unsplash.com/photo-1515059810521-a1d411d8517f?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        :src="banner.image_url"
         class="w-full h-full object-cover"
-        alt="背景圖片"
+        :alt="banner.alt || '背景圖片'"
       >
       <!-- 遮罩層 -->
       <div class="absolute inset-0 bg-black/60"></div>
@@ -20,19 +20,19 @@
           <div class="text-white space-y-6 md:space-y-8">
             <!-- Logo 和標題區域 -->
             <div class="text-center space-y-4 md:space-y-6">
-              <i class="ri-key-2-line text-5xl md:text-7xl text-white"></i>
-              <h2 class="text-3xl md:text-5xl font-extrabold tracking-wide text-white drop-shadow-lg">
-                重設密碼
+              <i :class="[banner?.icon || 'ri-key-2-line', 'text-5xl md:text-7xl text-white']"></i>
+              <h2 class="text-3xl md:text-5xl font-extrabold tracking-wide text-white drop-shadow-md">
+                {{ banner?.title || '重設密碼' }}
               </h2>
-              <p class="text-lg md:text-xl text-white drop-shadow-md">
-                請輸入新密碼
-              </p>
+              <h3 class="text-xl md:text-2xl font-medium text-white drop-shadow-md">
+                {{ banner?.subtitle || '請輸入新密碼' }}
+              </h3>
             </div>
             
             <!-- 關於密碼重設的說明 -->
             <div class="mt-6 md:mt-12 space-y-4 text-center">
               <p class="text-base md:text-lg text-white text-left drop-shadow-md leading-relaxed">
-                為了確保您的帳戶安全，請設定一個強度足夠的新密碼。建議使用包含大小寫字母、數字和特殊符號的組合。
+                {{ banner?.description || '為了確保您的帳戶安全，請設定一個強度足夠的新密碼。建議使用包含大小寫字母、數字和特殊符號的組合。' }}
               </p>
             </div>
           </div>
@@ -137,6 +137,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import accountApi from '@/api/modules/account'
 import Swal from 'sweetalert2'
+import { bannerAPI } from '@/api'
 
 export default {
   name: 'ResetPassword',
@@ -176,6 +177,20 @@ export default {
     // 添加密碼可見性控制
     const showPassword = ref(false)
     const showConfirmPassword = ref(false)
+
+    const banner = ref(null)
+
+    const fetchBanner = async () => {
+      try {
+        const response = await bannerAPI.getBannersByType('forgot-password')
+        if (response.data?.data && response.data.data.length > 0) {
+          // 如果有多個 banner，取第一個啟用的
+          banner.value = response.data.data.find(b => b.is_active) || response.data.data[0]
+        }
+      } catch (error) {
+        console.error('獲取 Banner 失敗:', error)
+      }
+    }
 
     const validatePassword = (password) => {
       const rules = {
@@ -278,6 +293,8 @@ export default {
       } else {
         document.documentElement.classList.remove('dark')
       }
+
+      fetchBanner()
     })
 
     return {
@@ -285,7 +302,8 @@ export default {
       errors,
       handleSubmit,
       showPassword,
-      showConfirmPassword
+      showConfirmPassword,
+      banner
     }
   }
 }
@@ -350,4 +368,24 @@ button:hover .ri-eye-off-line {
   opacity: 1;
 }
 
+/* Banner 背景漸變效果 */
+.bg-opacity-40 {
+  backdrop-filter: blur(2px);
+}
+
+/* Banner 文字動畫 */
+.text-4xl, .text-xl, .text-lg {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 </style> 

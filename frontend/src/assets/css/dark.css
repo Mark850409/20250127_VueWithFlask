@@ -1767,3 +1767,182 @@
 .dark .table-action-btn:hover {
   background-color: var(--admin-hover-light);
 }
+
+
+/* 按鈕樣式 */
+.banner-create-btn,
+.monitor-search-btn,
+.project-create-btn,
+.learning-create-btn,
+.git-configure-btn,
+.git-add-remote-btn {
+  background: var(--btn-primary);
+  color: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid transparent;
+}
+
+.banner-create-btn:hover,
+.monitor-search-btn:hover,
+.project-create-btn:hover,
+.learning-create-btn:hover,
+.git-configure-btn:hover,
+.git-add-remote-btn:hover {
+  background: transparent;
+  color: var(--btn-primary);
+  border: 1px solid var(--btn-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.banner-create-btn:active,
+.monitor-search-btn:active,
+.project-create-btn:active,
+.learning-create-btn:active,
+.git-configure-btn:active,
+.git-add-remote-btn:active {
+  background: var(--btn-primary-active);
+  color: white;
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* 按鈕內的圖標樣式 */
+.banner-create-btn i,
+.monitor-search-btn i,
+.project-create-btn i,
+.learning-create-btn i,
+.git-configure-btn i,
+.git-add-remote-btn i {
+  color: inherit !important;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.banner-create-btn:hover i,
+.monitor-search-btn:hover i,
+.project-create-btn:hover i,
+.learning-create-btn:hover i,
+.git-configure-btn:hover i,
+.git-add-remote-btn:hover i {
+  transform: scale(1.1);
+  color: var(--btn-primary) !important;
+}
+
+/* 波紋效果 */
+.banner-create-btn::after,
+.monitor-search-btn::after,
+.project-create-btn::after,
+.learning-create-btn::after,
+.git-configure-btn::after,
+.git-add-remote-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: var(--btn-primary);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+.banner-create-btn:focus::after,
+.monitor-search-btn:focus::after,
+.project-create-btn:focus::after,
+.learning-create-btn:focus::after,
+.git-configure-btn:focus::after,
+.git-add-remote-btn:focus::after {
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  20% {
+    transform: scale(25, 25);
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(40, 40);
+  }
+}
+
+/* 主要操作按鈕 */
+.git-configure-btn {
+  background: var(--btn-primary);
+  color: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid transparent;
+}
+
+/* 新增操作按鈕 */
+.git-add-btn {
+  background: var(--btn-success);
+  color: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid transparent;
+}
+
+/* 危險操作按鈕 */
+.git-danger-btn {
+  background: var(--btn-danger);
+  color: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid transparent;
+}
+
+/* 懸停效果 */
+.git-configure-btn:hover {
+  background: transparent;
+  color: var(--btn-primary-hover);
+  border: 1px solid var(--btn-primary-hover);
+}
+
+.git-add-btn:hover {
+  background: transparent;
+  color: var(--btn-success-hover);
+  border: 1px solid var(--btn-success-hover);
+}
+
+.git-danger-btn:hover {
+  background: transparent;
+  color: var(--btn-danger-hover);
+  border: 1px solid var(--btn-danger-hover);
+}
+
+/* 圖標樣式 */
+.git-configure-btn i,
+.git-add-btn i,
+.git-danger-btn i {
+  color: inherit !important;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.git-configure-btn:hover i {
+  color: var(--btn-primary-hover) !important;
+}
+
+.git-add-btn:hover i {
+  color: var(--btn-success-hover) !important;
+}
+
+.git-danger-btn:hover i {
+  color: var(--btn-danger-hover) !important;
+}

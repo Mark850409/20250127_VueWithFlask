@@ -57,5 +57,5 @@ class BannerTypeParam(BaseModel):
     banner_type: str = Field(
         ..., 
         description="輪播圖類型", 
-        pattern="^(home|feature|learning|pricing|food|footer|login|admin.*?)$"
+        pattern="^(home|feature|learning|pricing|food|footer|login|forgot-password|admin.*?)$"
     )
