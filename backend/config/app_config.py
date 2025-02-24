@@ -48,11 +48,11 @@ def setup_cors(app):
     CORS_ORIGINS = os.getenv('CORS_ORIGINS', '').split(',')
     CORS(app, 
         resources={
-            r"/*": {
+            r"/api/*": {
                 "origins": CORS_ORIGINS,
                 "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
                 "allow_headers": "*",
-                "expose_headers": ["Content-Type", "Authorization"],
+                "expose_headers": ["Content-Type", "Authorization", "x-api-key"],
                 "supports_credentials": True,
                 "max_age": 3600
             }

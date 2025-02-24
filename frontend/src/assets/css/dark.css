@@ -10,7 +10,7 @@
   --primary-hover: #B39DDB;
   /* Primary Fixed - 中紫色 */
   --primary-gradient: linear-gradient(135deg, var(--primary-light), var(--primary-main));
-
+  
   /* 文字顏色 */
   --text-primary: #E6E1E5;
   /* On Surface */
@@ -65,7 +65,7 @@
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
-
+  
   /* 標題顏色 */
   --title-primary: #E6E1E5;
   /* On Surface - 近白色 */
@@ -81,7 +81,7 @@
   /* Surface Container Low - 最深灰色 */
   --title-light: #FFFFFF;
   /* White - 純白色 */
-
+  
   /* 邊框顏色 */
   --border-color: #49454F;
   /* Outline */
@@ -1671,7 +1671,7 @@
 
 /* 未追蹤文件區塊樣式 */
 .dark .mb-4 {
-  background-color: var(--admin-bg-secondary);
+  /* background-color: var(--admin-bg-secondary); */
   border-radius: 0.5rem;
   padding: 1rem;
 }

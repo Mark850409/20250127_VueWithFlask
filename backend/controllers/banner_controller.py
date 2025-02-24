@@ -100,12 +100,15 @@ def get_banners_by_type(path: BannerTypeParam):
     """獲取指定類型的輪播圖（只返回已啟用的）
     
     Args:
-        banner_type: 輪播圖類型 (home/features/learning/pricing)
+        banner_type: 輪播圖類型
+            - 一般類型: home/feature/learning/pricing/food/footer/login
+            - 後台類型: admin (會返回所有包含 admin 的輪播圖)
+            - 特定後台頁面: admin_xxx (例如: admin_users, admin_dashboard)
     """
     try:
         banners = banner_service.get_banners_by_type(path.banner_type)
         return jsonify(banners)
     except ValueError as e:
         return jsonify({
-            'message': f'Invalid banner type. Must be one of: home, features, learning, pricing'
+            'message': '無效的輪播圖類型'
         }), 400 

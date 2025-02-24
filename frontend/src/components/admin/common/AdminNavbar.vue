@@ -124,8 +124,9 @@
 <script>
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { ref, onMounted, watch, inject, computed } from 'vue'
-import axios from '@/utils/axios'
+import accountApi from '@/api/modules/account'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import Swal from 'sweetalert2'
 
 export default {
@@ -152,6 +153,7 @@ export default {
   },
   setup() {
     const router = useRouter()
+    const authStore = useAuthStore()
     const userInfo = ref({
       username: '',
       avatar: '',
@@ -204,10 +206,14 @@ export default {
         })
         
         if (result.isConfirmed) {
-          await axios.post('/users/logout')
-          localStorage.removeItem('token')
-          localStorage.removeItem('user')
-          localStorage.removeItem('isAdmin')
+          await accountApi.logout()
+
+          // 使用 auth store 的 clearAuth 方法處理 Firebase 登出和清除狀態
+          await authStore.clearAuth()
+
+          // 清除所有本地存儲
+          localStorage.clear()
+     
           router.push('/login')
           
           // 顯示登出成功訊息

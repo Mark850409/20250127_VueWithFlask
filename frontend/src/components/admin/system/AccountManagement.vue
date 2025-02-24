@@ -32,7 +32,7 @@
       @batch-delete="batchDeleteAccounts">
         <!-- 自定義頭像列 -->
         <template #avatar="{ item }">
-          <img :src="item.avatar || defaultAvatar" 
+          <img :src="getAvatarUrl(item)" 
                class="w-10 h-10 rounded-full">
         </template>
         <!-- 自定義狀態列 -->
@@ -151,7 +151,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import DataTable from '../common/DataTable.vue'
 import Swal from 'sweetalert2'
 import { useRouter } from 'vue-router'
@@ -189,7 +189,7 @@ export default {
         password: '',
         status: 'Enabled'
       },
-      defaultAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=default',
+      defaultAvatar: 'https://api.dicebear.com/9.x/bottts/svg?seed=Sara',
       previewAvatar: null,
       avatarFile: null,
       showPassword: false,
@@ -228,13 +228,10 @@ export default {
         console.log('API Response:', response)
         
         this.accounts = response.data.users.map(user => ({
-          
           id: user.id,
           username: user.username,
           email: user.email,
-          avatar: user.avatar 
-            ? `${import.meta.env.VITE_BACKEND_URL}/api/users/avatar/${user.avatar.split('/').pop()}`
-            : 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.username,  // 使用用戶名作為種子生成預設頭像
+          avatar: user.avatar || '',  // 保存原始頭像路徑
           created_at: user.register_time,
           updated_at: user.update_time,
           status: user.status
@@ -671,6 +668,26 @@ export default {
     closeModal() {
       this.showAddModal = false
       this.resetForm()
+    },
+    // 頭像 URL 處理函數
+    getAvatarUrl(user) {
+      if (!user) return this.defaultAvatar
+      
+      if (!user.avatar) return this.defaultAvatar
+      
+      // 判斷是否為完整的 URL（Google 頭像）
+      if (user.avatar.startsWith('http')) {
+        return user.avatar
+      }
+      
+      // 本地上傳的頭像
+      if (user.avatar.includes('/')) {
+        // 已經是完整路徑
+        return `${import.meta.env.VITE_BACKEND_URL}/api/users/avatar/${user.avatar.split('/').pop()}`
+      } else {
+        // 只有檔名
+        return `${import.meta.env.VITE_BACKEND_URL}/uploads/avatars/${user.avatar}`
+      }
     }
   }
 }

@@ -281,6 +281,7 @@ import {
   signInWithPopup,
   fetchSignInMethodsForEmail
 } from 'firebase/auth'
+import bannerApi from '@/api/modules/banner'
 
 export default {
   name: 'Login',
@@ -288,7 +289,7 @@ export default {
     const router = useRouter()
     const authStore = useAuthStore()
     const isLogin = ref(true)
-    const defaultAvatar = 'https://api.dicebear.com/9.x/shapes/svg?seed=Liliana&flip=true&backgroundType=gradientLinear'
+    const defaultAvatar = 'https://api.dicebear.com/9.x/bottts/svg?seed=Sara'
     const avatarPreview = ref('')
     const avatarFile = ref(null)
     
@@ -311,6 +312,9 @@ export default {
 
     const showForgotPasswordModal = ref(false)
     const forgotPasswordEmail = ref('')
+
+    const bannerData = ref({})
+  
 
     const validatePassword = (password) => {
       // 密碼驗證規則
@@ -600,24 +604,66 @@ export default {
       try {
         const provider = new FacebookAuthProvider()
         const result = await signInWithPopup(auth, provider)
+        console.log('Facebook 登入結果:', result)  // 調試用
         
         const token = await result.user.getIdToken()
+        console.log('Firebase token:', token)  // 調試用
+        
         const response = await accountApi.firebaseLogin({
           token,
           provider: 'facebook'
         })
         
-        localStorage.setItem('token', response.data.token)
-        localStorage.setItem('user', JSON.stringify(response.data.user))
-        await authStore.setAuth(response.data)
-        router.push('/')
+        console.log('Facebook 登入結果:', response.data)
+        
+        if (response.data && response.data.token) {
+          // 先設置 localStorage
+          localStorage.setItem('token', response.data.token)
+          localStorage.setItem('user', JSON.stringify(response.data.user))
+          
+          const userData = response.data.user
+          
+          // 更新 auth store
+          await authStore.setAuth({
+            token: response.data.token,
+            user: response.data.user
+          })
+          
+          // 判斷是否為管理員帳號
+          if (userData.username === '徐小彥') {
+            localStorage.setItem('isAdmin', 'true')
+            router.push('/admin')
+          } else {
+            localStorage.setItem('isAdmin', 'false')
+            router.push('/')
+          }
+        } else {
+          throw new Error('登入回應格式錯誤')
+        }
         
       } catch (error) {
         console.error('Facebook 登入失敗:', error)
+        
+        // 根據錯誤類型顯示不同的錯誤訊息
+        let errorMessage = '使用 Facebook 登入時發生錯誤，請稍後再試'
+        
+        if (error.code === 'auth/popup-closed-by-user') {
+          errorMessage = '登入視窗被關閉'
+        } else if (error.code === 'auth/cancelled-popup-request') {
+          errorMessage = '登入請求已取消'
+        } else if (error.code === 'auth/account-exists-with-different-credential') {
+          errorMessage = '此 Email 已使用其他方式登入，請使用原有的登入方式'
+        } else if (error.code === 'auth/user-disabled') {
+          errorMessage = '此 Facebook 帳號已被系統停用，請聯繫管理員或使用其他方式登入'
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message
+        }
+        
         Swal.fire({
           icon: 'error',
           title: '登入失敗',
-          text: '使用 Facebook 登入時發生錯誤，請稍後再試'
+          text: errorMessage,
+          confirmButtonText: '確定'
         })
       }
     }
@@ -770,6 +816,17 @@ export default {
       }
     }
 
+    const fetchBannerData = async () => {
+      try {
+        const response = await bannerApi.getBannersByType('login')
+        if (response.data?.data?.length > 0) {
+          bannerData.value = response.data.data[0]
+        }
+      } catch (error) {
+        console.error('獲取登入頁面數據失敗:', error)
+      }
+    }
+
     // 初始化暗色模式
     onMounted(() => {
       // 檢查本地存儲的主題設置
@@ -780,6 +837,8 @@ export default {
       } else {
         document.documentElement.classList.remove('dark')
       }
+
+      fetchBannerData()
     })
 
     return {
@@ -796,7 +855,8 @@ export default {
       handleForgotPassword,
       handleGoogleSignIn,
       handleFacebookSignIn,
-      handleGithubSignIn
+      handleGithubSignIn,
+      bannerData
     }
   }
 }

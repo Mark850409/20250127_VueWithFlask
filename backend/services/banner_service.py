@@ -83,9 +83,25 @@ class BannerService:
         """
         獲取指定類型的輪播圖
         只返回已啟用的輪播圖
+        
+        Args:
+            banner_type: 輪播圖類型，可以是以下之一：
+                - home: 首頁
+                - feature: 特色功能
+                - learning: 學習中心
+                - pricing: 定價方案
+                - food: 尋找美食
+                - footer: 頁腳
+                - login: 登入
+                - admin: 後台
         """
-        # 強制設置 active_only 為 True，只抓取已啟用的輪播圖
-        banners = self.banner_dao.get_banners_by_type(banner_type, active_only=True)
+        if banner_type == 'admin':
+            # 如果是 admin，獲取所有包含 admin 的輪播圖
+            banners = self.banner_dao.get_banners_by_pattern('admin%', active_only=True)
+        else:
+            # 其他類型維持原有邏輯
+            banners = self.banner_dao.get_banners_by_type(banner_type, active_only=True)
+        
         banner_list = [
             BannerSchema.model_validate(self._convert_to_schema(banner))
             for banner in banners

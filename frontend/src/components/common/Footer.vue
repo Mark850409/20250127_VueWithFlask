@@ -2,8 +2,9 @@
   <footer class="front-footer relative py-16 overflow-hidden">
     <!-- 背景圖片 -->
     <div class="absolute inset-0 bg-fixed">
-      <div class="w-full h-full bg-center bg-no-repeat bg-cover"
-           style="background-image: url('https://plus.unsplash.com/premium_photo-1661580970887-702a4c221027?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');">
+      <div 
+        class="w-full h-full bg-center bg-no-repeat bg-cover"
+        :style="{ backgroundImage: `url(${bannerData.image_url || defaultImage})` }">
       </div>
       <div class="absolute inset-0 bg-gradient-to-b from-gray-900/80 to-gray-900/75"></div>
     </div>
@@ -16,17 +17,10 @@
         <div>
           <div class="flex items-center mb-4">
             <i class="ri-drinks-2-line text-blue-500 text-2xl mr-2"></i>
-            <h2 class="text-xl font-bold text-white">今天想喝什麼呢？</h2>
+            <h2 class="text-xl font-bold text-white" v-text="bannerData.title || '今天想喝什麼呢？'"></h2>
           </div>
-          <p class="text-gray-400 leading-loose">
-            我們致力於打造最智能的飲品推薦平台，
-            <br class="hidden sm:block">
-            運用先進的 AI 技術，為您提供個人化的飲品建議。
-            <br>
-            無論是在地特色飲品還是最新潮流，
-            <br class="hidden sm:block">
-            都能在這裡找到最適合您的選擇。
-          </p>
+          <p class="text-gray-400 leading-loose mb-2" v-text="bannerData.subtitle"></p>
+          <p class="text-gray-400 leading-loose" v-text="bannerData.description"></p>
         </div>
 
         <!-- 網站導覽 -->
@@ -124,14 +118,36 @@
 </template>
 
 <script>
+import { ref, onMounted } from 'vue'
+import bannerApi from '@/api/modules/banner'
+
 export default {
-  data() {
+  setup() {
+    const bannerData = ref({})
+    const currentYear = new Date().getFullYear()
+    const defaultImage = 'https://plus.unsplash.com/premium_photo-1661580970887-702a4c221027?q=80&w=1932&auto=format&fit=crop'
+
+    const fetchBannerData = async () => {
+      try {
+        const response = await bannerApi.getBannersByType('footer')
+        if (response.data?.data?.length > 0) {
+          bannerData.value = response.data.data[0]
+        }
+      } catch (error) {
+        console.error('獲取頁腳輪播圖數據失敗:', error)
+      }
+    }
+
+    onMounted(() => {
+      fetchBannerData()
+    })
+
     return {
-      currentYear: new Date().getFullYear()
+      bannerData,
+      currentYear,
+      defaultImage
     }
   },
-  mounted() {},
-  beforeUnmount() {},
   methods: {
     scrollToSection(sectionId) {
       const element = document.getElementById(sectionId)

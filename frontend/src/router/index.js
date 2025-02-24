@@ -68,47 +68,47 @@ const routes = [
       },
       {
         path: 'accounts',
-        name: 'AccountManagement',
+        name: 'accounts',
         component: AccountManagement
       },
       {
         path: 'logs',
-        name: 'LogManagement',
+        name: 'logs',
         component: LogManagement
       },
       {
         path: 'menus',
-        name: 'MenuManagement',
+        name: 'menus',
         component: MenuManagement
       },
       {
         path: 'shops',
-        name: 'ShopManagement',
+        name: 'shops',
         component: ShopManagement
       },
       {
         path: 'ratings',
-        name: 'RatingManagement',
+        name: 'ratings',
         component: RatingManagement
       },
       {
         path: 'comments',
-        name: 'CommentManagement',
+        name: 'comments',
         component: CommentManagement
       },
       {
         path: 'users',
-        name: 'UserManagement',
+        name: 'users',
         component: UserManagement
       },
       {
         path: 'favorites',
-        name: 'FavoriteManagement',
+        name: 'favorites',
         component: FavoriteManagement
       },
       {
         path: 'git',
-        name: 'GitManagement',
+        name: 'git',
         component: GitManagement,
         meta: {
           requiresAuth: true,
@@ -117,7 +117,7 @@ const routes = [
       },
       {
         path: 'bots',
-        name: 'BotManagement',
+        name: 'bots',
         component: BotManagement,
         meta: {
           requiresAuth: true,
@@ -126,7 +126,7 @@ const routes = [
       },
       {
         path: 'knowledge',
-        name: 'KnowledgeManagement',
+        name: 'knowledge',
         component: KnowledgeManagement,
         meta: {
           title: '知識庫管理',
@@ -135,7 +135,7 @@ const routes = [
       },
       {
         path: 'monitor',
-        name: 'MonitorManagement',
+        name: 'monitor',
         component: MonitorManagement,
         meta: {
           title: '監控管理',
@@ -144,7 +144,7 @@ const routes = [
       },
       {
         path: 'projects',
-        name: 'ProjectManagement',
+        name: 'projects',
         component: ProjectManagement,
         meta: {
           requiresAuth: true,
@@ -153,7 +153,7 @@ const routes = [
       },
       {
         path: 'learning',
-        name: 'LearningManagement',
+        name: 'learning',
         component: LearningManagement,
         meta: {
           requiresAuth: true,
@@ -162,7 +162,7 @@ const routes = [
       },
       {
         path: 'banner',
-        name: 'BannerManagement',
+        name: 'banner',
         component: BannerManagement,
         meta: {
           title: '輪播圖管理',

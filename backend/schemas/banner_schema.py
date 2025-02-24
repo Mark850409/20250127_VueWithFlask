@@ -10,7 +10,7 @@ class BannerQuery(BaseModel):
     is_active: Optional[bool] = Field(None, description="是否啟用")
 
 class BannerCreateBody(BaseModel):
-    banner_type: str = Field(..., description="輪播圖類型(home/features/learning/pricing)")
+    banner_type: str = Field(..., description="輪播圖類型(home/feature/learning/pricing/food/footer/login/admin)")
     title: str = Field(..., max_length=100, description="標題")
     subtitle: str = Field(..., max_length=200, description="副標題")
     description: str = Field(..., description="描述")
@@ -20,7 +20,7 @@ class BannerCreateBody(BaseModel):
     is_active: Optional[bool] = Field(True, description="是否啟用")
 
 class BannerUpdateBody(BaseModel):
-    banner_type: Optional[str] = Field(None, description="輪播圖類型(home/features/learning/pricing)")
+    banner_type: Optional[str] = Field(None, description="輪播圖類型(home/feature/learning/pricing/food/footer/login/admin)")
     title: Optional[str] = Field(None, max_length=100, description="標題")
     subtitle: Optional[str] = Field(None, max_length=200, description="副標題")
     description: Optional[str] = Field(None, description="描述")
@@ -52,7 +52,10 @@ class BannerListResponse(BaseModel):
 class MessageResponse(BaseModel):
     message: str = Field(..., description="回應訊息") 
 
-# 添加新的 schema 來驗證 banner_type
+# 修改 banner_type 驗證模式
 class BannerTypeParam(BaseModel):
-    banner_type: str = Field(..., description="輪播圖類型", 
-                           pattern="^(home|features|learning|pricing)$")
+    banner_type: str = Field(
+        ..., 
+        description="輪播圖類型", 
+        pattern="^(home|feature|learning|pricing|food|footer|login|admin.*?)$"
+    )

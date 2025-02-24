@@ -240,7 +240,7 @@
            <div class="relative bg-white rounded-lg shadow-lg w-full max-w-xl">
               <!-- Modal 標題 -->
               <div class="flex justify-between items-center px-6 py-4 border-b">
-                <h3 class="text-lg font-semibold">{{ editingBanner ? '編輯輪播圖' : '新增輪播圖' }}</h3>
+                <h3 class="text-lg font-semibold">{{ modalTitle }}</h3>
                 <button @click="closeModal" class="text-gray-500 hover:text-gray-700">
                   <i class="fas fa-times"></i>
                 </button>
@@ -249,22 +249,50 @@
               <!-- Modal 內容 -->
               <div class="px-6 py-4 space-y-4 max-h-[calc(85vh-8rem)] overflow-y-auto">
                 <!-- 輪播圖類型 -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1 required-field">
-                    輪播圖類型
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Banner 類型
+                    <span class="text-red-500">*</span>
                   </label>
                   <select v-model="form.banner_type"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <option value="" disabled>請選擇類型</option>
-                    <option v-for="option in bannerTypeOptions"
-                            :key="option.value"
+                          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500
+                                 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <option value="">請選擇類型</option>
+                    <option v-for="option in bannerTypeOptions" 
+                            :key="option.value" 
                             :value="option.value">
                       {{ option.label }}
                     </option>
                   </select>
-                  <div v-if="errors.banner_type" class="mt-1 text-sm text-red-500">
-                    {{ errors.banner_type }}
-                  </div>
+                </div>
+
+                <!-- 後台路由選擇 -->
+                <div v-if="form.banner_type === 'admin'" class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    後台頁面
+                    <span class="text-red-500">*</span>
+                  </label>
+                  <select v-model="form.menu_route"
+                          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500
+                                 dark:bg-gray-700 dark:border-gray-600 dark:text-white
+                                 [&>optgroup]:font-bold [&>optgroup]:bg-gray-50 dark:[&>optgroup]:bg-gray-800
+                                 [&>optgroup]:px-2 [&>optgroup]:py-2
+                                 [&>optgroup>option]:font-normal [&>optgroup>option]:bg-white dark:[&>optgroup>option]:bg-gray-700
+                                 [&>optgroup>option]:pl-3 [&>optgroup>option]:py-1
+                                 [&>optgroup]:border-b [&>optgroup]:border-gray-200 dark:[&>optgroup]:border-gray-600">
+                    <option value="">請選擇頁面</option>
+                    <optgroup v-for="[category, menus] in groupedMenus"
+                              :key="category"
+                              :class="'!text-gray-700 dark:!text-gray-200'"
+                              :label="category">
+                      <option class="border-t border-gray-100 dark:border-gray-600 first:border-t-0"
+                              v-for="menu in menus"
+                              :key="menu.path"
+                              :value="menu.path">
+                        {{ menu.name || '未命名頁面' }}
+                      </option>
+                    </optgroup>
+                  </select>
                 </div>
 
                 <div>
@@ -430,7 +458,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { bannerAPI } from '@/api'
+import { bannerAPI, menuAPI } from '@/api'
 import Swal from 'sweetalert2'
 import { useLogger } from '@/composables/useLogger'
 
@@ -449,10 +477,15 @@ const currentBannerId = ref(null)
 
 // 輪播圖類型選項
 const bannerTypeOptions = [
-  { value: 'home', label: '首頁' },
-  { value: 'features', label: '特色功能' },
-  { value: 'learning', label: '學習中心' },
-  { value: 'pricing', label: '定價方案' }
+  { label: '全部', value: 'all' },
+  { label: '首頁', value: 'home' },
+  { label: '特色功能', value: 'feature' },
+  { label: '學習中心', value: 'learning' },
+  { label: '定價方案', value: 'pricing' },
+  { label: '尋找美食', value: 'food' },
+  { label: '頁腳', value: 'footer' },
+  { label: '登入', value: 'login' },
+  { label: '後台', value: 'admin' }
 ]
 
 // 表單數據
@@ -464,7 +497,8 @@ const form = ref({
   alt: '',
   banner_type: '',
   sort_order: 1,
-  is_active: true
+  is_active: true,
+  menu_route: ''
 })
 
 // 添加 errors ref
@@ -473,46 +507,140 @@ const errors = ref({})
 // 記錄已經處理過錯誤的圖片
 const handledErrors = ref(new Set())
 
-// 添加預設圖片常量
-const DEFAULT_BANNER_IMAGE = 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&q=80&w=1920&h=600'
-
 // 當前選中的頁籤
 const currentTab = ref('home')
 
+// 後台選單列表
+const menuList = ref([])
+
+// 獲取後台選單
+const fetchMenus = async () => {
+  try {
+    const response = await menuAPI.getMenus()
+    if (response.data?.menus?.length > 0) {
+      // 添加儀表板選項
+      const dashboardMenu = {
+        name: '儀表板管理',
+        path: 'dashboard',
+        category: '', // 空類別
+        status: 'active',
+        sort_order: -1  // 確保排在最前面
+      }
+      
+      menuList.value = response.data.menus
+        .filter(menu => menu.status === 'active') // 只顯示啟用的選單
+        .concat([dashboardMenu])  // 加入儀表板選項
+        .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)) // 依照排序順序
+      
+      console.log('處理後的選單列表:', menuList.value)
+    }
+  } catch (error) {
+    console.error('獲取選單失敗:', error)
+  }
+}
+
+// 將選單依類別分組
+const groupedMenus = computed(() => {
+  const groups = {}
+  // 先處理沒有類別的選項（儀表板）
+  const uncategorized = menuList.value.filter(menu => !menu.category)
+  if (uncategorized.length > 0) {
+    groups[''] = uncategorized
+  }
+  
+  // 再處理其他有類別的選項
+  menuList.value
+    .filter(menu => menu.category)
+    .forEach(menu => {
+      if (!groups[menu.category]) {
+        groups[menu.category] = []
+      }
+      groups[menu.category].push(menu)
+    })
+
+  // 依照 section_order 排序類別
+  return Object.entries(groups)
+    .sort(([categoryA, menuA], [categoryB, menuB]) => {
+      // 確保空類別（儀表板）永遠在最前面
+      if (categoryA === '') return -1
+      if (categoryB === '') return 1
+      return (menuA[0]?.section_order || 0) - (menuB[0]?.section_order || 0)
+    })
+})
+
 // 獲取類型標籤
 const getBannerTypeLabel = (type) => {
-  const option = bannerTypeOptions.find(opt => opt.value === type)
-  return option ? option.label : '未知類型'
+  // 如果包含 admin，一律顯示後台
+  if (type?.includes('admin')) {
+    return '後台'
+  }
+  
+  switch (type) {
+    case 'home':
+      return '首頁'
+    case 'feature':
+      return '特色功能'
+    case 'learning':
+      return '學習中心'
+    case 'pricing':
+      return '定價方案'
+    case 'food':
+      return '尋找美食'
+    case 'footer':
+      return '頁腳'
+    case 'login':
+      return '登入'
+    default:
+      return '未知類型'
+  }
 }
 
 // 處理頁籤切換
 const handleTabChange = async (tab) => {
   currentTab.value = tab
   await logOperation(`【Banner管理】切換到${getBannerTypeLabel(tab)}頁籤`, '查看')
-  await fetchBannersByType(tab)
+  if (tab === 'all') {
+    await fetchAllActiveBanners()
+  } else {
+    await fetchBannersByType(tab)
+  }
 }
 
-// 根據類型獲取輪播圖
-const fetchBannersByType = async (type) => {
+// 獲取所有啟用的輪播圖
+const fetchAllActiveBanners = async () => {
   try {
-    const response = await bannerAPI.getBannersByType(type)
-    banners.value = response.data.data
-    // 清除錯誤記錄
-    handledErrors.value.clear()
-    await logOperation(`【Banner管理】查看${getBannerTypeLabel(type)}輪播圖列表`, '查看')
+    const response = await bannerAPI.getActiveBanners()
+    if (response.data?.data) {
+      banners.value = response.data.data
+    }
   } catch (error) {
-    console.error('Failed to fetch banners:', error)
+    console.error('獲取所有輪播圖失敗:', error)
     Swal.fire({
       icon: 'error',
-      title: '錯誤',
-      text: '獲取輪播圖失敗',
+      title: '獲取數據失敗',
+      text: '請稍後再試',
       confirmButtonText: '確定'
     })
   }
 }
 
-// 修改原有的 fetchBanners
-const fetchBanners = () => fetchBannersByType(currentTab.value)
+// 獲取指定類型的輪播圖
+const fetchBannersByType = async (type) => {
+  try {
+    const response = await bannerAPI.getBannersByType(type)
+    if (response.data?.data) {
+      banners.value = response.data.data
+    }
+  } catch (error) {
+    console.error('獲取輪播圖失敗:', error)
+    Swal.fire({
+      icon: 'error',
+      title: '獲取數據失敗',
+      text: '請稍後再試',
+      confirmButtonText: '確定'
+    })
+  }
+}
 
 const { logOperation } = useLogger()
 
@@ -521,6 +649,9 @@ const openCreateModal = () => {
   isEditing.value = false
   resetForm()
   showModal.value = true
+  if (!menuList.value.length) {
+    fetchMenus()
+  }
 }
 
 // 重置表單
@@ -533,7 +664,8 @@ const resetForm = () => {
     alt: '',
     banner_type: '',
     sort_order: 1,
-    is_active: true
+    is_active: true,
+    menu_route: ''
   }
   errors.value = {}
 }
@@ -542,9 +674,19 @@ const resetForm = () => {
 const openEditModal = (banner) => {
   isEditing.value = true
   currentBannerId.value = banner.id
-  form.value = {
-    ...banner,
-    banner_type: banner.banner_type
+  // 如果 banner_type 包含 admin，設置相應的值
+  if (banner.banner_type?.includes('admin_')) {
+    form.value = {
+      ...banner,
+      banner_type: 'admin',
+      menu_route: banner.banner_type.replace('admin_', '')  // 例如: 'logs' 從 'admin_logs'
+    }
+    // 確保有選單數據
+    if (!menuList.value.length) {
+      fetchMenus()
+    }
+  } else {
+    form.value = { ...banner }
   }
   showModal.value = true
   logOperation(`【Banner管理】開始編輯輪播圖: ${banner.title}`, '編輯')
@@ -592,7 +734,7 @@ const previewImage = (url) => {
 // 修改圖片錯誤處理函數
 const handleImageError = (event, bannerId) => {
   // 不管是否處理過，都設置預設圖片
-  event.target.src = DEFAULT_BANNER_IMAGE
+  event.target.src = ''
 }
 
 // 修改圖片預覽相關功能
@@ -612,7 +754,11 @@ const handleKeyDown = (e) => {
 
 onMounted(() => {
   const init = async () => {
-    await fetchBannersByType(currentTab.value)
+    if (currentTab.value === 'all') {
+      await fetchAllActiveBanners()
+    } else {
+      await fetchBannersByType(currentTab.value)
+    }
     await logOperation('【Banner管理】訪問Banner管理頁面', '查看')
   }
   init()
@@ -629,64 +775,44 @@ const handleSubmit = async () => {
   if (!validateForm()) return
   
   try {
-    if (isEditing.value) {
-      const response = await bannerAPI.updateBanner(currentBannerId.value, form.value)
-      await logOperation(`【Banner管理】更新輪播圖: ${form.value.title}`, '修改')
-      if (response.data.data) {
-        const updatedBanner = response.data.data
-        const index = banners.value.findIndex(b => b.id === updatedBanner.id)
-        if (index !== -1) {
-          banners.value[index] = updatedBanner
-        }
+    const formData = { ...form.value }
+    // 如果是後台類型，將路由加入 banner_type
+    if (formData.banner_type === 'admin' && formData.menu_route) {
+      // 如果選擇的是儀表板，固定使用 admin_dashboard
+      if (formData.menu_route === 'dashboard') {
+        formData.banner_type = 'admin_dashboard'
+      } else {
+        // 確保路徑格式正確
+        const routePath = formData.menu_route.startsWith('/') ? formData.menu_route.slice(1) : formData.menu_route
+        formData.banner_type = `admin_${routePath.replace('admin/', '')}`
       }
-      Swal.fire({
-        icon: 'success',
-        title: '成功',
-        text: '更新成功',
-        timer: 1500,
-        showConfirmButton: false,
-        customClass: {
-          container: 'swal2-container',
-          popup: 'swal2-popup',
-          backdrop: 'swal2-backdrop-show'
-        }
-      })
-    } else {
-      const response = await bannerAPI.createBanner(form.value)
-      await logOperation(`【Banner管理】新增輪播圖: ${form.value.title}`, '新增')
-      if (response.data.data) {
-        banners.value.push(response.data.data)
-      }
-      Swal.fire({
-        icon: 'success',
-        title: '成功',
-        text: '新增成功',
-        timer: 1500,
-        showConfirmButton: false,
-        customClass: {
-          container: 'swal2-container',
-          popup: 'swal2-popup',
-          backdrop: 'swal2-backdrop-show'
-        }
-      })
     }
-    closeModal()
-  } catch (error) {
-    // 先關閉 modal
-    closeModal()
+    delete formData.menu_route // 刪除額外的欄位
     
-    // 然後顯示錯誤訊息
+    if (isEditing.value) {
+      await bannerAPI.updateBanner(currentBannerId.value, formData)
+      await logOperation(`【Banner管理】更新輪播圖: ${formData.title}`, '更新')
+    } else {
+      await bannerAPI.createBanner(formData)
+      await logOperation(`【Banner管理】新增輪播圖: ${formData.title}`, '新增')
+    }
+    
+    closeModal()
+    await fetchBannersByType(currentTab.value)
+    
+    Swal.fire({
+      icon: 'success',
+      title: `${isEditing.value ? '更新' : '新增'}成功`,
+      showConfirmButton: false,
+      timer: 1500
+    })
+  } catch (error) {
+    console.error('表單提交失敗:', error)
     Swal.fire({
       icon: 'error',
-      title: '錯誤',
-      text: error.message || '操作失敗',
-      confirmButtonText: '確定',
-      confirmButtonColor: '#3085d6',
-      customClass: {
-        container: 'swal2-container',
-        popup: 'swal2-popup',
-        backdrop: 'swal2-backdrop-show'
-      }
+      title: '操作失敗',
+      text: error.response?.data?.message || '請稍後再試',
+      confirmButtonText: '確定'
     })
   }
 }
@@ -749,7 +875,7 @@ const closeModal = () => {
 
 // 修改為使用 computed 來處理圖片 URL
 const getBannerImage = (banner) => {
-  return banner.image_url || DEFAULT_BANNER_IMAGE
+  return banner.image_url
 }
 
 // 修改表單驗證邏輯
@@ -817,6 +943,11 @@ const filteredBanners = computed(() => {
     banner.subtitle.toLowerCase().includes(query) ||
     banner.description.toLowerCase().includes(query)
   )
+})
+
+// Modal 標題計算屬性
+const modalTitle = computed(() => {
+  return isEditing.value ? '編輯輪播圖' : '新增輪播圖'
 })
 </script>
 

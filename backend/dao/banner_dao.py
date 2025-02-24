@@ -44,4 +44,20 @@ class BannerDAO:
         query = Banner.query.filter_by(banner_type=banner_type)
         if active_only:
             query = query.filter_by(is_active=True)
+        return query.order_by(Banner.sort_order).all()
+    
+    @staticmethod
+    def get_banners_by_pattern(pattern: str, active_only: bool = False):
+        """
+        使用 LIKE 查詢獲取匹配模式的輪播圖
+        
+        Args:
+            pattern: SQL LIKE 模式
+            active_only: 是否只返回啟用的輪播圖
+        """
+        query = Banner.query.filter(Banner.banner_type.like(pattern))
+        
+        if active_only:
+            query = query.filter(Banner.is_active == True)
+            
         return query.order_by(Banner.sort_order).all() 

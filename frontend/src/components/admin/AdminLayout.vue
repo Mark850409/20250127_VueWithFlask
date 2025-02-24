@@ -164,17 +164,26 @@
       <div class="admin-page dashboard-card flex-1 p-3 xs:p-4 md:p-6">
         <!-- Banner -->
         <div class="bg-white shadow-sm rounded-lg overflow-hidden mb-6">
-          <div class="relative banner-bg">
+          <div class="relative banner-bg h-[200px]">
+            <!-- 背景圖片 -->
+            <div class="absolute inset-0 w-full h-full">
+              <div class="w-full h-full bg-cover bg-center bg-no-repeat"
+                   :style="{ backgroundImage: `url(${bannerData.image_url})` }">
+              </div>
+            </div>
             <!-- 半透明遮罩 -->
             <div class="absolute inset-0 bg-black/30"></div>
             
             <!-- Banner 內容 -->
             <div class="relative px-4 md:px-8 py-8 md:py-16">
               <h1 class="text-xl md:text-3xl font-bold text-white mb-2 md:mb-3 drop-shadow-lg">
-                {{ getBannerTitle }}
+                {{ bannerData.title }}
               </h1>
               <p class="text-white text-sm md:text-lg drop-shadow-md">
-                {{ getBannerDescription }}
+                {{ bannerData.subtitle }}
+              </p>
+              <p class="mt-2 text-sm text-gray-300">
+                {{ bannerData.description }}
               </p>
             </div>
           </div>
@@ -207,7 +216,9 @@ import AIChatAssistant from '@/components/chat/AIChatAssistant.vue'
 import { onBeforeMount, onMounted, ref, onUnmounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { menuAPI } from '@/api'
+import accountApi from '@/api/modules/account'
 import { useAuthStore } from '@/stores/auth'
+import bannerApi from '@/api/modules/banner'
 
 export default {
   name: 'AdminLayout',
@@ -237,6 +248,7 @@ export default {
     const windowWidth = ref(window.innerWidth)
     const theme = ref('light')
     const authStore = useAuthStore()
+    const bannerData = ref({})
     
     // 動態載入 CSS
     const loadThemeCSS = async (themeName) => {
@@ -301,6 +313,7 @@ export default {
     onMounted(async () => {
       window.addEventListener('storage', handleThemeChange)
       await syncTheme()
+      await fetchBannerData()
     })
 
     onUnmounted(() => {
@@ -404,12 +417,68 @@ export default {
         
         // 使用 auth store 的 clearAuth 方法
         await authStore.clearAuth()
+
+        // 清除所有本地存儲
+        localStorage.clear()
         
         // 重置計時相關的狀態
         remainingTime.value = 0
         tokenExpireTime.value = null
         
         router.push('/login')
+      } catch (error) {
+        console.error('登出失敗:', error)
+        Swal.fire({
+          icon: 'error',
+          title: '登出失敗',
+          text: '請稍後再試',
+          confirmButtonText: '確定'
+        })
+      }
+    }
+
+    // 主動登出
+    const logout = async () => {
+      try {
+        // 先詢問用戶是否確定要登出
+        const result = await Swal.fire({
+          title: '確定要登出嗎？',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: '確定',
+          cancelButtonText: '取消',
+          confirmButtonColor: '#dc2626',
+          cancelButtonColor: '#6b7280',
+        })
+        
+        if (result.isConfirmed) {
+          // 清除計時器
+          clearInterval(timerInterval.value)
+          clearInterval(tokenCheckInterval.value)
+          timerInterval.value = null
+          tokenCheckInterval.value = null
+          
+          await accountApi.logout()
+          
+          // 使用 auth store 的 clearAuth 方法
+          await authStore.clearAuth()
+
+          // 清除所有本地存儲
+          localStorage.clear()
+          
+          // 重置計時相關的狀態
+          remainingTime.value = 0
+          tokenExpireTime.value = null
+          
+          router.push('/login')
+          
+          await Swal.fire({
+            icon: 'success',
+            title: '已成功登出',
+            timer: 1500,
+            showConfirmButton: false
+          })
+        }
       } catch (error) {
         console.error('登出失敗:', error)
         Swal.fire({
@@ -452,6 +521,7 @@ export default {
       }
     }
 
+
     onBeforeMount(async () => {
       await checkAuth()
     })
@@ -491,6 +561,37 @@ export default {
       }
     })
 
+    // 獲取後台 banner 數據
+    const fetchBannerData = async () => {
+      try {
+        // 獲取當前路由名稱並轉換為小寫
+        const currentRouteName = route.name?.toLowerCase() || ''
+        console.log('currentRouteName', currentRouteName)
+        // 構建特定路由的 banner_type
+        const specificBannerType = `admin_${currentRouteName}`
+        console.log('specificBannerType', specificBannerType)
+        // 先嘗試獲取特定路由的 banner
+        let response = await bannerApi.getBannersByType(specificBannerType)
+        console.log('response_current', response.data)
+        // 如果沒有找到特定路由的 banner，則獲取通用後台 banner
+        if (!response.data?.data?.length) {
+          response = await bannerApi.getBannersByType('admin')
+          console.log('response_admin', response.data)
+        }
+        
+        if (response.data?.data?.length > 0) {
+          bannerData.value = response.data.data[0]
+        }
+      } catch (error) {
+        console.error('獲取後台 banner 數據失敗:', error)
+      }
+    }
+
+    // 監聽路由變化時重新獲取 banner
+    watch(() => route.name, () => {
+      fetchBannerData()
+    }, { immediate: true })
+
     return {
       remainingTime,
       formatTime,
@@ -507,54 +608,12 @@ export default {
       syncTheme,
       toggleTheme,
       getAvatarUrl,
-      handleLogout
+      handleLogout,
+      logout,
+      bannerData
     }
   },
   computed: {
-    getBannerTitle() {
-      const route = this.$route.name
-      const titles = {
-        Dashboard: '儀表板管理',
-        AccountManagement: '帳號管理',
-        LogManagement: '日誌管理',
-        MenuManagement: '選單管理',
-        ShopManagement: '飲料店管理',
-        RatingManagement: '評分管理',
-        CommentManagement: '留言板管理',
-        UserManagement: '管理員管理',
-        FavoriteManagement: '最愛管理',
-        GitManagement: '版控管理',
-        BotManagement: '快速提問管理',
-        KnowledgeManagement: '知識庫管理',
-        MonitorManagement: '機器人監控管理',
-        ProjectManagement: '專案管理',
-        BannerManagement: '輪播圖管理',
-        LearningManagement: '學習中心管理'
-      }
-      return titles[route] || '後台管理系統'
-    },
-    getBannerDescription() {
-      const route = this.$route.name
-      const descriptions = {
-        Dashboard: '查看系統整體運營狀況和關鍵指標',
-        AccountManagement: '管理系統用戶帳號和權限設定',
-        LogManagement: '查看系統操作日誌和異常記錄',
-        MenuManagement: '管理系統選單結構和權限',
-        ShopManagement: '管理合作飲料店資訊和狀態',
-        RatingManagement: '管理用戶評分與評論內容',
-        CommentManagement: '管理用戶留言與討論內容',
-        UserManagement: '管理使用者個人資料設定',
-        FavoriteManagement: '管理用戶收藏的飲品項目',
-        GitManagement: '管理系統版本控制和代碼更新',
-        BotManagement: '管理快速提問設定',
-        KnowledgeManagement: '管理知識庫設定',
-        MonitorManagement: '機器人監控管理',
-        ProjectManagement: '管理專案設定',
-        BannerManagement: '管理輪播圖設定',
-        LearningManagement: '管理學習中心'
-      }
-      return descriptions[route] || '歡迎使用後台管理系統'
-    },
     menuCategories() {
       // 根據 section_order 排序類別
       const categories = [...new Set(this.menus.map(menu => menu.category))]
@@ -716,7 +775,6 @@ export default {
 <style scoped>
 /* 基礎樣式 */
 .banner-bg {
-  background-image: url('https://images.unsplash.com/photo-1512512784918-05fb649635ef?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
   background-attachment: fixed;
   background-position: center center;
   background-repeat: no-repeat;

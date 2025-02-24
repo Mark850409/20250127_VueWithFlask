@@ -125,7 +125,7 @@ export default {
   },
   async created() {
     try {
-      const response = await bannerAPI.getBannersByType('features')
+      const response = await bannerAPI.getBannersByType('feature')
       if (response.data && response.data.data) {
         const banners = response.data.data
         this.bannerData.bannerImages = banners.map(banner => ({

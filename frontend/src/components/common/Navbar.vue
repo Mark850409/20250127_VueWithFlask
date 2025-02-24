@@ -301,6 +301,9 @@ export default {
           
           // 使用 auth store 的 clearAuth 方法處理 Firebase 登出和清除狀態
           await authStore.clearAuth()
+
+          // 清除所有本地存儲
+          localStorage.clear()
           
           isLoggedIn.value = false
           isAdmin.value = false

@@ -5,7 +5,7 @@
       'toggleChat w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-lg flex items-center justify-center text-white hover:shadow-xl transition-all duration-200',
       isOpen ? 'opacity-50' : 'transform hover:-translate-y-1'
     ]">
-      <i class="fas fa-robot text-2xl"></i>
+      <i :class="['text-2xl', isOpen ? 'fas fa-times' : 'fas fa-robot']"></i>
     </button>
 
     <!-- 沉浸式聊天頁面 -->
@@ -25,12 +25,6 @@
                     class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
                     title="清除歷史對話">
               <i class="fas fa-trash-alt text-gray-600 dark:text-gray-400"></i>
-            </button>
-            <!-- 關閉按鈕 -->
-            <button @click="toggleFullscreen"
-                    class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
-                    title="關閉視窗">
-              <i class="fas fa-times text-gray-600 dark:text-gray-400 text-xl"></i>
             </button>
           </div>
         </div>
@@ -146,6 +140,16 @@
           </div>
         </div>
       </div>
+
+      <!-- 沉浸式模式的關閉按鈕 - 右下角氣泡 -->
+      <button @click="toggleFullscreen" 
+              class="fixed bottom-4 right-4 w-14 h-14 rounded-full shadow-lg flex items-center justify-center
+                     transition-all duration-200 transform hover:-translate-y-1
+                     bg-[#6366f1] hover:bg-[#4f46e5]
+                     text-white
+                     hover:shadow-xl">
+        <i class="fas fa-times text-2xl"></i>
+      </button>
     </div>
 
     <!-- 聊天視窗 -->
@@ -379,14 +383,20 @@ export default {
 
       userInput.value = ''
       isLoading.value = true
-      console.log(message)
+      console.log('發送訊息:', message)
 
       // 提取請求體為單獨的變數
       const requestBody = {
+        question: message,
+        chat_history: [],
         input_value: message,
         output_type: 'chat',
         input_type: 'chat'
       }
+
+      // 獲取當前消息索引，用於更新回應
+      const currentMessageIndex = chatHistory.value.length - 1
+      let streamResponse = ''
 
       try {
         const response = await fetch(
@@ -402,27 +412,68 @@ export default {
           }
         )
 
-        const data = await response.json()
-        console.log('Langflow response:', data)
+        // 檢查是否為流式響應
+        if (response.headers.get('content-type')?.includes('text/event-stream')) {
+          // 處理流式響應
+          const reader = response.body.getReader()
+          const decoder = new TextDecoder()
+          
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+            
+            // 解碼並處理數據
+            const chunk = decoder.decode(value)
+            const lines = chunk.split('\n').filter(line => line.trim() !== '')
+            
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(5)
+                if (data === '[DONE]') continue
+                
+                try {
+                  const jsonData = JSON.parse(data)
+                  if (jsonData.answer) {
+                    streamResponse += jsonData.answer
+                    // 即時更新聊天記錄
+                    chatHistory.value[currentMessageIndex].content = streamResponse
+                  }
+                } catch (e) {
+                  console.error('解析流式數據失敗:', e)
+                }
+              }
+            }
+          }
+        } else {
+          // 處理非流式響應
+          const data = await response.json()
+          console.log('Langflow response:', data)
 
-        // 檢查是否有錯誤
-        if (data.error) {
-          throw new Error(data.error)
+          // 檢查是否有錯誤
+          if (data.error) {
+            throw new Error(data.error)
+          }
+
+          // 嘗試從不同可能的路徑獲取回應
+          const botResponse = data.result?.output ||
+            data.result?.response ||
+            data.outputs?.[0]?.output ||
+            data.outputs?.[0]?.outputs?.[0]?.artifacts?.message ||
+            '抱歉，我無法理解您的問題。'
+
+          // 更新最後一條 AI 訊息
+          chatHistory.value[currentMessageIndex].content = botResponse
         }
-
-        // 嘗試從不同可能的路徑獲取回應
-        const botResponse = data.result?.output ||
-          data.result?.response ||
-          data.outputs?.[0]?.output ||
-          data.outputs?.[0]?.outputs?.[0]?.artifacts?.message ||
-          '抱歉，我無法理解您的問題。'
-
-        // 更新最後一條 AI 訊息
-        chatHistory.value[chatHistory.value.length - 1].content = botResponse
 
       } catch (error) {
         console.error('API 請求失敗:', error)
-        chatHistory.value[chatHistory.value.length - 1].content = '抱歉，我現在無法回應。請稍後再試。'
+        // 添加更詳細的錯誤日誌
+        if (error.response) {
+          console.error('錯誤響應:', error.response)
+          console.error('錯誤狀態:', error.response.status)
+          console.error('錯誤數據:', error.response.data)
+        }
+        chatHistory.value[currentMessageIndex].content = '抱歉，我現在無法回應。請稍後再試。'
       } finally {
         isLoading.value = false
       }
