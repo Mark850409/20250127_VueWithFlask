@@ -191,14 +191,18 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                # 檢查環境是否存在，不存在則創建
+                # 建立 Container Apps 環境
                 if ! az containerapp env show --name $(NODE_ENV) --resource-group $(RESOURCE_GROUP) &>/dev/null; then
                   echo "Creating container app environment..."
                   az containerapp env create \
                     --name $(NODE_ENV) \
                     --resource-group $(RESOURCE_GROUP) \
-                    --logs-destination none \
-                    --location $(LOCATION)
+                    --location $(LOCATION) \
+                    --infrastructure-resource-group $(RESOURCE_GROUP)-infra
+
+                  # 等待環境準備就緒
+                  echo "Waiting for environment to be ready..."
+                  sleep 60
                 fi
 
                 # 部署前端應用
@@ -208,7 +212,7 @@ stages:
                   --image $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
                   --target-port 3000 \
                   --ingress external \
-                  --environment $(NODE_ENV)
+                  --environment $(NODE_ENV) 
 
           # 部署後端
           - task: AzureCLI@2
@@ -224,7 +228,7 @@ stages:
                   --image $(REGISTRY_NAME)/backend:$(Build.BuildId) \
                   --target-port 5000 \
                   --ingress external \
-                  --environment $(FLASK_ENV) 
+                  --environment $(NODE_ENV) 
 
           # 部署 MySQL
           - task: AzureCLI@2
@@ -240,6 +244,6 @@ stages:
                   --image mysql:5.7 \
                   --target-port 3306 \
                   --ingress internal \
-                  --environment production \
+                  --environment $(NODE_ENV) \
                   --min-replicas 1 \
                   --max-replicas 1
