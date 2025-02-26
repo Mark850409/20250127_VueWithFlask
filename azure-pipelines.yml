@@ -25,7 +25,7 @@ variables:
   - name: COMPOSE_DOCKER_CLI_BUILD  
     value: '1'
   - name: ACR_NAME
-    value: 'recommend-acr'  # 請替換成你想要的 ACR 名稱
+    value: 'recommendacr'  # 請替換成你想要的 ACR 名稱
   - name: RESOURCE_GROUP
     value: 'recommend-group'  # 請替換成你的資源組名稱
   - name: AZURE_SUBSCRIPTION
