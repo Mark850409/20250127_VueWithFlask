@@ -222,8 +222,8 @@ stages:
             --name frontend-20250226 \
             --docker-custom-image-name recommendacr20250226.azurecr.io/frontend:latest \
             --docker-registry-server-url https://recommendacr20250226.azurecr.io\
-            --docker-registry-server-user $(ACR_USERNAME) \
-            --docker-registry-server-password $(ACR_PASSWORD)
+            --docker-registry-server-user recommendacr20250226 \
+            --docker-registry-server-password L7oS6rpF/F0fwiNXLfmSaquTdqHs58ALy165dQRCiJ+ACRDBYL+m
 
     # 部署後端 Web App
     - task: AzureCLI@2
@@ -269,8 +269,8 @@ stages:
             --name backend-20250226 \
             --docker-custom-image-name recommendacr20250226.azurecr.io/backend:latest \
             --docker-registry-server-url https://recommendacr20250226.azurecr.io \
-            --docker-registry-server-user $(ACR_USERNAME) \
-            --docker-registry-server-password $(ACR_PASSWORD)
+            --docker-registry-server-user recommendacr20250226 \
+            --docker-registry-server-password L7oS6rpF/F0fwiNXLfmSaquTdqHs58ALy165dQRCiJ+ACRDBYL+m
 
     # 部署 MySQL 資料庫
     - task: AzureCLI@2
