@@ -25,7 +25,7 @@ variables:
   - name: COMPOSE_DOCKER_CLI_BUILD  
     value: '1'
   - name: ACR_NAME
-    value: 'recommendacr'  # 請替換成你想要的 ACR 名稱
+    value: 'recommendacr20250226'  # 請替換成你想要的 ACR 名稱
   - name: RESOURCE_GROUP
     value: 'recommend-group'  # 請替換成你的資源組名稱
   - name: AZURE_SUBSCRIPTION
@@ -52,8 +52,11 @@ stages:
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          az group create --name $(RESOURCE_GROUP) --location $(LOCATION)
-
+          # 檢查資源群組是否存在
+          if ! az group exists --name $(RESOURCE_GROUP); then
+            echo "Creating resource group..."
+            az group create --name $(RESOURCE_GROUP) --location $(LOCATION)
+          fi
     # 建立 ACR（如果不存在）
     - task: AzureCLI@2
       displayName: 'Create ACR'
