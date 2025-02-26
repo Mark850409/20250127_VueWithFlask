@@ -30,6 +30,8 @@ variables:
     value: 'recommend-group'  # 請替換成你的資源組名稱
   - name: AZURE_SUBSCRIPTION
     value: 'recommend-connection'  # 請替換成你的 Azure 訂用帳戶名稱
+  - name: dockerRegistryServiceConnection
+    value: 'recommend-docker-connection'  # 請替換成你的 Azure 訂用帳戶名稱
   - name: LOCATION
     value: 'eastasia'  # 請替換成你想要的區域
 
@@ -97,13 +99,12 @@ stages:
     # 檢出程式碼
     - checkout: self
               
-    # Docker 登入
-    - task: Bash@3
-      displayName: 'Docker Login'
+    # 登入 ACR
+    - task: Docker@2
       inputs:
-        targetType: 'inline'
-        script: |
-          echo "$(ACR_PASSWORD)" | docker login $(REGISTRY_NAME) -u $(ACR_USERNAME) --password-stdin
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        command: 'login'
+      displayName: 'Login to ACR'
 
     # 建立並推送前端映像
     - task: Bash@3
