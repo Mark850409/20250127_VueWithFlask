@@ -154,34 +154,34 @@ stages:
       vmImage: 'ubuntu-latest'
     steps:
     # 登入並驗證 ACR 連接
-    - task: AzureCLI@2
-      displayName: 'Login and Verify ACR Connection'
-      inputs:
-        azureSubscription: '$(AZURE_SUBSCRIPTION)'
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          # 獲取 ACR 登入資訊
-          ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query loginServer -o tsv)
-          ACR_USERNAME=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query username -o tsv)
-          ACR_PASSWORD=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query "passwords[0].value" -o tsv)
+    # - task: AzureCLI@2
+    #   displayName: 'Login and Verify ACR Connection'
+    #   inputs:
+    #     azureSubscription: '$(AZURE_SUBSCRIPTION)'
+    #     scriptType: 'bash'
+    #     scriptLocation: 'inlineScript'
+    #     inlineScript: |
+    #       # 獲取 ACR 登入資訊
+    #       ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query loginServer -o tsv)
+    #       ACR_USERNAME=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query username -o tsv)
+    #       ACR_PASSWORD=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query "passwords[0].value" -o tsv)
 
-          # 使用 Docker 登入 ACR
-          echo "Logging in to ACR..."
-          echo $ACR_PASSWORD | docker login $ACR_LOGIN_SERVER -u $ACR_USERNAME --password-stdin
-          if [ $? -ne 0 ]; then
-            echo "ACR 登入失敗"
-            exit 1
-          fi
+    #       # 使用 Docker 登入 ACR
+    #       echo "Logging in to ACR..."
+    #       echo $ACR_PASSWORD | docker login $ACR_LOGIN_SERVER -u $ACR_USERNAME --password-stdin
+    #       if [ $? -ne 0 ]; then
+    #         echo "ACR 登入失敗"
+    #         exit 1
+    #       fi
 
-          # 測試 ACR 連接
-          echo "Testing ACR connection..."
-          az acr repository list --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP)
-          if [ $? -ne 0 ]; then
-            echo "無法存取 ACR，請檢查權限設定"
-            exit 1
-          fi
-          echo "ACR 登入和連接測試成功"
+    #       # 測試 ACR 連接
+    #       echo "Testing ACR connection..."
+    #       az acr repository list --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP)
+    #       if [ $? -ne 0 ]; then
+    #         echo "無法存取 ACR，請檢查權限設定"
+    #         exit 1
+    #       fi
+    #       echo "ACR 登入和連接測試成功"
 
     # 部署前端 Web App
     - task: AzureCLI@2
@@ -205,6 +205,15 @@ stages:
             --name frontend-20250226 \
             --deployment-container-image-name $(ACR_LOGIN_SERVER)/frontend:latest
 
+          # 配置容器設定
+          az webapp config container set \
+            --resource-group $(RESOURCE_GROUP) \
+            --name frontend-20250226 \
+            --docker-custom-image-name $(ACR_LOGIN_SERVER)/frontend:latest \
+            --docker-registry-server-url https://$(ACR_LOGIN_SERVER) \
+            --docker-registry-server-user $(ACR_USERNAME) \
+            --docker-registry-server-password $(ACR_PASSWORD)
+
           # 配置前端環境變數
           az webapp config appsettings set \
             --resource-group $(RESOURCE_GROUP) \
@@ -212,14 +221,6 @@ stages:
             --settings \
               NODE_ENV=$(NODE_ENV) \
               VITE_BACKEND_URL=$(VITE_BACKEND_URL)
-
-          # 配置容器設定
-          az webapp config container set \
-            --resource-group $(RESOURCE_GROUP) \
-            --name frontend-20250226 \
-            --docker-registry-server-url https://$(ACR_LOGIN_SERVER) \
-            --docker-registry-server-user $(ACR_USERNAME) \
-            --docker-registry-server-password $(ACR_PASSWORD)
 
     # 部署後端 Web App
     - task: AzureCLI@2
@@ -243,6 +244,15 @@ stages:
             --name backend-20250226 \
             --deployment-container-image-name $(ACR_LOGIN_SERVER)/backend:latest
 
+          # 配置容器設定
+          az webapp config container set \
+            --resource-group $(RESOURCE_GROUP) \
+            --name backend-20250226 \
+            --docker-custom-image-name $(ACR_LOGIN_SERVER)/backend:latest \
+            --docker-registry-server-url https://$(ACR_LOGIN_SERVER) \
+            --docker-registry-server-user $(ACR_USERNAME) \
+            --docker-registry-server-password $(ACR_PASSWORD)
+
           # 配置後端環境變數
           az webapp config appsettings set \
             --resource-group $(RESOURCE_GROUP) \
@@ -254,14 +264,6 @@ stages:
               DB_USER=$(DB_USER) \
               DB_PASSWORD=$(DB_PASSWORD) \
               DB_NAME=$(DB_NAME)
-
-          # 配置容器設定
-          az webapp config container set \
-            --resource-group $(RESOURCE_GROUP) \
-            --name backend-20250226 \
-            --docker-registry-server-url https://$(ACR_LOGIN_SERVER) \
-            --docker-registry-server-user $(ACR_USERNAME) \
-            --docker-registry-server-password $(ACR_PASSWORD)
 
     # 部署 MySQL 資料庫
     - task: AzureCLI@2
