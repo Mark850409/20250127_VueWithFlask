@@ -33,6 +33,8 @@ variables:
     value: 'recommend-docker-connection'  # 請替換成你的 Azure 訂用帳戶名稱
   - name: LOCATION
     value: 'eastasia'  # 請替換成你想要的區域
+  - name: DEVOPS_SP_ID
+    value: '499b84ac-1321-427f-aa17-267ca6975798'  # 請替換成你想要的環境名稱
 
 stages:
 - stage: Infrastructure
@@ -88,14 +90,7 @@ stages:
           echo "##vso[task.setvariable variable=ACR_USERNAME;isOutput=true]$ACR_USERNAME"
           echo "##vso[task.setvariable variable=ACR_PASSWORD;isOutput=true;issecret=true]$ACR_PASSWORD"
 
-          echo "Fetching DevOps Service Principal ID..."
-          DEVOPS_SP_ID=$(az ad sp show --id $(az ad sp list --display-name "Azure DevOps" --query "[].appId" -o tsv) --query id -o tsv)
-
-          if [ -z "$DEVOPS_SP_ID" ]; then
-            echo "ERROR: Failed to retrieve DEVOPS_SP_ID"
-            exit 1
-          fi
-          
+          # 為 DevOps Service Principal 添加 AcrPush 權限
           echo "Assigning AcrPush role to DevOps Service Principal..."
           az role assignment create \
             --assignee $DEVOPS_SP_ID \
