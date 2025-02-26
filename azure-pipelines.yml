@@ -149,6 +149,40 @@ stages:
       runOnce:
         deploy:
           steps:
+          # 安裝 Azure CLI 擴充功能
+          - task: AzureCLI@2
+            displayName: 'Install Azure CLI extensions'
+            inputs:
+              azureSubscription: '$(AZURE_SUBSCRIPTION)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az extension add --name containerapp --upgrade
+                az provider register --namespace Microsoft.App
+                az provider register --namespace Microsoft.OperationalInsights
+
+          # 登入 ACR
+          - task: Docker@2
+            displayName: 'Login to ACR'
+            inputs:
+              containerRegistry: '$(dockerRegistryServiceConnection)'
+              command: 'login'
+
+          # 確認 ACR 權限
+          - task: AzureCLI@2
+            displayName: 'Verify ACR Access'
+            inputs:
+              azureSubscription: '$(AZURE_SUBSCRIPTION)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                # 確認可以存取 ACR
+                az acr repository list --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP)
+                if [ $? -ne 0 ]; then
+                  echo "無法存取 ACR，請檢查權限設定"
+                  exit 1
+                fi
+
           # 部署前端
           - task: AzureCLI@2
             displayName: 'Deploy Frontend'
@@ -158,10 +192,13 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
                 # 檢查環境是否存在，不存在則創建
-                az containerapp env create \
-                  --name production \
-                  --resource-group $(RESOURCE_GROUP) \
-                  --location $(LOCATION)
+                if ! az containerapp env show --name production --resource-group $(RESOURCE_GROUP) &>/dev/null; then
+                  echo "Creating container app environment..."
+                  az containerapp env create \
+                    --name production \
+                    --resource-group $(RESOURCE_GROUP) \
+                    --location $(LOCATION)
+                fi
 
                 # 部署前端應用
                 az containerapp create \
@@ -170,8 +207,11 @@ stages:
                   --image $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
                   --target-port 80 \
                   --ingress external \
-                  --environment-variables NODE_ENV=$(NODE_ENV) VITE_BACKEND_URL=$(VITE_BACKEND_URL) \
-                  --environment production
+                  --env-vars NODE_ENV=$(NODE_ENV) VITE_BACKEND_URL=$(VITE_BACKEND_URL) \
+                  --environment production \
+                  --registry-server $(REGISTRY_NAME) \
+                  --registry-username $(ACR_USERNAME) \
+                  --registry-password $(ACR_PASSWORD)
 
           # 部署後端
           - task: AzureCLI@2
@@ -187,8 +227,11 @@ stages:
                   --image $(REGISTRY_NAME)/backend:$(Build.BuildId) \
                   --target-port 5000 \
                   --ingress external \
-                  --environment-variables FLASK_ENV=$(FLASK_ENV) DB_HOST=$(DB_HOST) DB_PORT=$(DB_PORT) DB_USER=$(DB_USER) DB_PASSWORD=$(DB_PASSWORD) DB_NAME=$(DB_NAME) \
-                  --environment production
+                  --env-vars FLASK_ENV=$(FLASK_ENV) DB_HOST=$(DB_HOST) DB_PORT=$(DB_PORT) DB_USER=$(DB_USER) DB_PASSWORD=$(DB_PASSWORD) DB_NAME=$(DB_NAME) \
+                  --environment production \
+                  --registry-server $(REGISTRY_NAME) \
+                  --registry-username $(ACR_USERNAME) \
+                  --registry-password $(ACR_PASSWORD)
 
           # 部署 MySQL
           - task: AzureCLI@2
@@ -204,5 +247,7 @@ stages:
                   --image mysql:5.7 \
                   --target-port 3306 \
                   --ingress internal \
-                  --environment-variables MYSQL_ROOT_PASSWORD=$(MYSQL_ROOT_PASSWORD) MYSQL_DATABASE=$(DB_NAME) MYSQL_USER=$(DB_USER) MYSQL_PASSWORD=$(DB_PASSWORD) MYSQL_ROOT_HOST=% TZ=$(TZ) \
-                  --environment production
+                  --env-vars MYSQL_ROOT_PASSWORD=$(MYSQL_ROOT_PASSWORD) MYSQL_DATABASE=$(DB_NAME) MYSQL_USER=$(DB_USER) MYSQL_PASSWORD=$(DB_PASSWORD) MYSQL_ROOT_HOST=% TZ=$(TZ) \
+                  --environment production \
+                  --min-replicas 1 \
+                  --max-replicas 1
