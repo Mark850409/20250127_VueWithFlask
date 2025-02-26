@@ -217,7 +217,6 @@ stages:
           az webapp config container set \
             --resource-group $(RESOURCE_GROUP) \
             --name frontend-20250226 \
-            --docker-custom-image-name $(ACR_LOGIN_SERVER)/frontend:latest \
             --docker-registry-server-url https://$(ACR_LOGIN_SERVER) \
             --docker-registry-server-user $(ACR_USERNAME) \
             --docker-registry-server-password $(ACR_PASSWORD)
@@ -260,7 +259,6 @@ stages:
           az webapp config container set \
             --resource-group $(RESOURCE_GROUP) \
             --name backend-20250226 \
-            --docker-custom-image-name $(ACR_LOGIN_SERVER)/backend:latest \
             --docker-registry-server-url https://$(ACR_LOGIN_SERVER) \
             --docker-registry-server-user $(ACR_USERNAME) \
             --docker-registry-server-password $(ACR_PASSWORD)
