@@ -192,11 +192,12 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
                 # 檢查環境是否存在，不存在則創建
-                if ! az containerapp env show --name production --resource-group $(RESOURCE_GROUP) &>/dev/null; then
+                if ! az containerapp env show --name $(NODE_ENV) --resource-group $(RESOURCE_GROUP) &>/dev/null; then
                   echo "Creating container app environment..."
                   az containerapp env create \
-                    --name production \
+                    --name $(NODE_ENV) \
                     --resource-group $(RESOURCE_GROUP) \
+                    --logs-destination none \
                     --location $(LOCATION)
                 fi
 
@@ -205,13 +206,9 @@ stages:
                   --name frontend \
                   --resource-group $(RESOURCE_GROUP) \
                   --image $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
-                  --target-port 80 \
+                  --target-port 3000 \
                   --ingress external \
-                  --env-vars NODE_ENV=$(NODE_ENV) VITE_BACKEND_URL=$(VITE_BACKEND_URL) \
-                  --environment production \
-                  --registry-server $(REGISTRY_NAME) \
-                  --registry-username $(ACR_USERNAME) \
-                  --registry-password $(ACR_PASSWORD)
+                  --environment $(NODE_ENV)
 
           # 部署後端
           - task: AzureCLI@2
@@ -227,11 +224,7 @@ stages:
                   --image $(REGISTRY_NAME)/backend:$(Build.BuildId) \
                   --target-port 5000 \
                   --ingress external \
-                  --env-vars FLASK_ENV=$(FLASK_ENV) DB_HOST=$(DB_HOST) DB_PORT=$(DB_PORT) DB_USER=$(DB_USER) DB_PASSWORD=$(DB_PASSWORD) DB_NAME=$(DB_NAME) \
-                  --environment production \
-                  --registry-server $(REGISTRY_NAME) \
-                  --registry-username $(ACR_USERNAME) \
-                  --registry-password $(ACR_PASSWORD)
+                  --environment $(FLASK_ENV) 
 
           # 部署 MySQL
           - task: AzureCLI@2
@@ -247,7 +240,6 @@ stages:
                   --image mysql:5.7 \
                   --target-port 3306 \
                   --ingress internal \
-                  --env-vars MYSQL_ROOT_PASSWORD=$(MYSQL_ROOT_PASSWORD) MYSQL_DATABASE=$(DB_NAME) MYSQL_USER=$(DB_USER) MYSQL_PASSWORD=$(DB_PASSWORD) MYSQL_ROOT_HOST=% TZ=$(TZ) \
                   --environment production \
                   --min-replicas 1 \
                   --max-replicas 1
