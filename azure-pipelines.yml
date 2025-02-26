@@ -1,0 +1,214 @@
+trigger:
+  branches:
+    include:
+      - main
+      - master
+  paths:
+    include:
+      - '*'    # 監控所有檔案變更
+    exclude:
+      - '*.md' # 排除 markdown 檔案變更
+
+resources:
+  repositories:
+    - repository: self
+      type: github
+      name: Mark850409/20250127_VueWithFlask  # 請替換成你的 GitHub 倉庫
+      endpoint: github-connection  # Azure DevOps 中設定的 GitHub 服務連接名稱
+
+variables:
+  - group: azure-variables
+  - group: flask-variables
+  - group: vue-variables
+  - name: DOCKER_BUILDKIT
+    value: '1'
+  - name: COMPOSE_DOCKER_CLI_BUILD  
+    value: '1'
+  - name: ACR_NAME
+    value: 'recommend-acr'  # 請替換成你想要的 ACR 名稱
+  - name: RESOURCE_GROUP
+    value: 'recommend-group'  # 請替換成你的資源組名稱
+  - name: AZURE_SUBSCRIPTION
+    value: 'recommend-connection'  # 請替換成你的 Azure 訂用帳戶名稱
+  - name: LOCATION
+    value: 'eastasia'  # 請替換成你想要的區域
+
+stages:
+- stage: Infrastructure
+  displayName: 'Setup Infrastructure'
+  jobs:
+  - job: SetupACR
+    displayName: 'Setup Azure Container Registry'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    # 建立資源組（如果不存在）
+    - task: AzureCLI@2
+      displayName: 'Create Resource Group'
+      inputs:
+        azureSubscription: '$(AZURE_SUBSCRIPTION)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az group create --name $(RESOURCE_GROUP) --location $(LOCATION)
+
+    # 建立 ACR（如果不存在）
+    - task: AzureCLI@2
+      displayName: 'Create ACR'
+      inputs:
+        azureSubscription: '$(AZURE_SUBSCRIPTION)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # 檢查 ACR 是否存在
+          if ! az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) &>/dev/null; then
+            echo "Creating ACR..."
+            az acr create \
+              --resource-group $(RESOURCE_GROUP) \
+              --name $(ACR_NAME) \
+              --sku Basic \
+              --admin-enabled true
+          fi
+          
+          # 獲取 ACR 登入資訊
+          ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query loginServer -o tsv)
+          ACR_USERNAME=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query "passwords[0].value" -o tsv)
+          
+          # 設定 pipeline 變數
+          echo "##vso[task.setvariable variable=REGISTRY_NAME;isOutput=true]$ACR_LOGIN_SERVER"
+          echo "##vso[task.setvariable variable=ACR_USERNAME;isOutput=true]$ACR_USERNAME"
+          echo "##vso[task.setvariable variable=ACR_PASSWORD;isOutput=true;issecret=true]$ACR_PASSWORD"
+      name: acrDetails
+
+- stage: Build
+  displayName: 'Build and Push'
+  dependsOn: Infrastructure
+  variables:
+    REGISTRY_NAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.REGISTRY_NAME'] ]
+    ACR_USERNAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_USERNAME'] ]
+    ACR_PASSWORD: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_PASSWORD'] ]
+  jobs:
+  - job: BuildAndPush
+    displayName: 'Build and Push Docker Images'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    # 檢出程式碼
+    - checkout: self
+      
+    # 安裝 Docker
+    - task: DockerInstaller@0
+      displayName: 'Install Docker'
+      inputs:
+        dockerVersion: '20.10.x'
+        
+    # Docker 登入
+    - task: Bash@3
+      displayName: 'Docker Login'
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo "$(ACR_PASSWORD)" | docker login $(REGISTRY_NAME) -u $(ACR_USERNAME) --password-stdin
+
+    # 建立並推送前端映像
+    - task: Bash@3
+      displayName: 'Build and Push Frontend Image'
+      inputs:
+        targetType: 'inline'
+        script: |
+          docker build -t $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
+                      -t $(REGISTRY_NAME)/frontend:latest \
+                      -f dockerfiles/frontend/Dockerfile_vue .
+          docker push $(REGISTRY_NAME)/frontend:$(Build.BuildId)
+          docker push $(REGISTRY_NAME)/frontend:latest
+
+    # 建立並推送後端映像
+    - task: Bash@3
+      displayName: 'Build and Push Backend Image'
+      inputs:
+        targetType: 'inline'
+        script: |
+          docker build -t $(REGISTRY_NAME)/backend:$(Build.BuildId) \
+                      -t $(REGISTRY_NAME)/backend:latest \
+                      -f dockerfiles/backend/Dockerfile_python .
+          docker push $(REGISTRY_NAME)/backend:$(Build.BuildId)
+          docker push $(REGISTRY_NAME)/backend:latest
+
+- stage: Deploy
+  displayName: 'Deploy to Environment'
+  dependsOn: Build
+  variables:
+    REGISTRY_NAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.REGISTRY_NAME'] ]
+  condition: succeeded()
+  jobs:
+  - deployment: Deploy
+    displayName: 'Deploy to Azure Container Apps'
+    environment: 'production'
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          # 部署前端
+          - task: AzureCLI@2
+            displayName: 'Deploy Frontend'
+            inputs:
+              azureSubscription: '$(AZURE_SUBSCRIPTION)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az containerapp create \
+                  --name frontend \
+                  --resource-group $(RESOURCE_GROUP) \
+                  --image $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
+                  --target-port 80 \
+                  --ingress external \
+                  --env-vars \
+                    NODE_ENV=$(NODE_ENV) \
+                    VITE_BACKEND_URL=$(VITE_BACKEND_URL)
+
+          # 部署後端
+          - task: AzureCLI@2
+            displayName: 'Deploy Backend'
+            inputs:
+              azureSubscription: '$(AZURE_SUBSCRIPTION)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az containerapp create \
+                  --name backend \
+                  --resource-group $(RESOURCE_GROUP) \
+                  --image $(REGISTRY_NAME)/backend:$(Build.BuildId) \
+                  --target-port 5000 \
+                  --ingress external \
+                  --env-vars \
+                    FLASK_ENV=$(FLASK_ENV) \
+                    DB_HOST=$(DB_HOST) \
+                    DB_PORT=$(DB_PORT) \
+                    DB_USER=$(DB_USER) \
+                    DB_PASSWORD=$(DB_PASSWORD) \
+                    DB_NAME=$(DB_NAME)
+
+          # 部署 MySQL
+          - task: AzureCLI@2
+            displayName: 'Deploy MySQL'
+            inputs:
+              azureSubscription: '$(AZURE_SUBSCRIPTION)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az containerapp create \
+                  --name mysql \
+                  --resource-group $(RESOURCE_GROUP) \
+                  --image mysql:5.7 \
+                  --target-port 3306 \
+                  --ingress internal \
+                  --env-vars \
+                    MYSQL_ROOT_PASSWORD=$(MYSQL_ROOT_PASSWORD) \
+                    MYSQL_DATABASE=$(DB_NAME) \
+                    MYSQL_USER=$(DB_USER) \
+                    MYSQL_PASSWORD=$(DB_PASSWORD) \
+                    MYSQL_ROOT_HOST=% \
+                    TZ=$(TZ)

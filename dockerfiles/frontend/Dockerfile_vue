@@ -13,8 +13,8 @@ RUN npm install -g vite  # 全局安裝 vite
 COPY ./frontend .
 
 # 設置環境變量
-ENV NODE_ENV=development
+ENV NODE_ENV=production
 ENV PATH /app/node_modules/.bin:$PATH
 
 # 啟動開發服務器
-CMD ["npm", "run", "dev", "--", "--host"] 
+CMD ["npm", "run", "build", "--", "--host"] 
