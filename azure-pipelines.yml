@@ -183,6 +183,20 @@ stages:
                   exit 1
                 fi
 
+          - task: AzureCLI@2
+            displayName: 'Create Container Apps Environment'
+            inputs:
+              azureSubscription: '$(AZURE_SUBSCRIPTION)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                # 確保環境存在，並提供 `--infrastructure-subnet-resource-id`
+                az containerapp env create \
+                  --name $ \
+                  --resource-group $(RESOURCE_GROUP) \
+                  --sku "Standard" \
+                  --location $(LOCATION) 
+
           # 部署前端
           - task: AzureCLI@2
             displayName: 'Deploy Frontend'
@@ -191,21 +205,7 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                # 建立 Container Apps 環境
-                if ! az containerapp env show --name $(NODE_ENV) --resource-group $(RESOURCE_GROUP) &>/dev/null; then
-                  echo "Creating container app environment..."
-                  az containerapp env create \
-                    --name $(NODE_ENV) \
-                    --resource-group $(RESOURCE_GROUP) \
-                    --location $(LOCATION) \
-                    --infrastructure-resource-group $(RESOURCE_GROUP)-infra
-
-                  # 等待環境準備就緒
-                  echo "Waiting for environment to be ready..."
-                  sleep 60
-                fi
-
-                # 部署前端應用
+               # 部署前端應用
                 az containerapp create \
                   --name frontend \
                   --resource-group $(RESOURCE_GROUP) \
