@@ -164,9 +164,7 @@ stages:
                   --target-port 80 \
                   --ingress external \
                   --environment production \  
-                  --env-vars \
-                    NODE_ENV=$(NODE_ENV) \
-                    VITE_BACKEND_URL=$(VITE_BACKEND_URL)
+                  --env-vars NODE_ENV=$(NODE_ENV) VITE_BACKEND_URL=$(VITE_BACKEND_URL)
 
           # 部署後端
           - task: AzureCLI@2
@@ -183,13 +181,7 @@ stages:
                   --target-port 5000 \
                   --ingress external \
                   --environment production \ 
-                  --env-vars \
-                    FLASK_ENV=$(FLASK_ENV) \
-                    DB_HOST=$(DB_HOST) \
-                    DB_PORT=$(DB_PORT) \
-                    DB_USER=$(DB_USER) \
-                    DB_PASSWORD=$(DB_PASSWORD) \
-                    DB_NAME=$(DB_NAME)
+                  --env-vars FLASK_ENV=$(FLASK_ENV) DB_HOST=$(DB_HOST) DB_PORT=$(DB_PORT) DB_USER=$(DB_USER) DB_PASSWORD=$(DB_PASSWORD) DB_NAME=$(DB_NAME)
 
           # 部署 MySQL
           - task: AzureCLI@2
@@ -206,10 +198,4 @@ stages:
                   --target-port 3306 \
                   --ingress internal \
                   --environment production \  
-                  --env-vars \
-                    MYSQL_ROOT_PASSWORD=$(MYSQL_ROOT_PASSWORD) \
-                    MYSQL_DATABASE=$(DB_NAME) \
-                    MYSQL_USER=$(DB_USER) \
-                    MYSQL_PASSWORD=$(DB_PASSWORD) \
-                    MYSQL_ROOT_HOST=% \
-                    TZ=$(TZ)
+                  --env-vars MYSQL_ROOT_PASSWORD=$(MYSQL_ROOT_PASSWORD) MYSQL_DATABASE=$(DB_NAME) MYSQL_USER=$(DB_USER) MYSQL_PASSWORD=$(DB_PASSWORD) MYSQL_ROOT_HOST=% TZ=$(TZ)
