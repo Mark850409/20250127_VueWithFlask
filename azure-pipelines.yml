@@ -96,13 +96,7 @@ stages:
     steps:
     # 檢出程式碼
     - checkout: self
-      
-    # 安裝 Docker
-    - task: DockerInstaller@0
-      displayName: 'Install Docker'
-      inputs:
-        dockerVersion: '20.10.x'
-        
+              
     # Docker 登入
     - task: Bash@3
       displayName: 'Docker Login'
