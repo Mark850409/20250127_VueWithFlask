@@ -145,6 +145,7 @@ stages:
     REGISTRY_NAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.REGISTRY_NAME'] ]
     ACR_USERNAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_USERNAME'] ]
     ACR_PASSWORD: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_PASSWORD'] ]
+    ACR_LOGIN_SERVER: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_LOGIN_SERVER'] ]
   condition: succeeded()
   jobs:
   - job: Deploy
@@ -189,6 +190,7 @@ stages:
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
+          
           # 建立前端 App Service Plan
           az appservice plan create \
             --name frontend-plan \
@@ -200,13 +202,13 @@ stages:
           az webapp create \
             --resource-group $(RESOURCE_GROUP) \
             --plan frontend-plan \
-            --name frontend \
-            --deployment-container-image-name $(REGISTRY_NAME)/frontend:latest
+            --name frontend-$(NODE_ENV) \
+            --deployment-container-image-name $(ACR_LOGIN_SERVER)/frontend:latest
 
           # 配置前端環境變數
           az webapp config appsettings set \
             --resource-group $(RESOURCE_GROUP) \
-            --name frontend \
+            --name frontend-$(NODE_ENV) \
             --settings \
               NODE_ENV=$(NODE_ENV) \
               VITE_BACKEND_URL=$(VITE_BACKEND_URL)
@@ -214,9 +216,9 @@ stages:
           # 配置容器設定
           az webapp config container set \
             --resource-group $(RESOURCE_GROUP) \
-            --name frontend \
-            --docker-custom-image-name $(REGISTRY_NAME)/frontend:latest \
-            --docker-registry-server-url $(REGISTRY_NAME) \
+            --name frontend-$(NODE_ENV) \
+            --docker-custom-image-name $(ACR_LOGIN_SERVER)/frontend:latest \
+            --docker-registry-server-url https://$(ACR_LOGIN_SERVER)\
             --docker-registry-server-user $(ACR_USERNAME) \
             --docker-registry-server-password $(ACR_PASSWORD)
 
@@ -239,13 +241,13 @@ stages:
           az webapp create \
             --resource-group $(RESOURCE_GROUP) \
             --plan backend-plan \
-            --name backend \
-            --deployment-container-image-name $(REGISTRY_NAME)/backend:latest
+            --name backend-$(FLASK_ENV) \
+            --deployment-container-image-name $(ACR_LOGIN_SERVER)/backend:latest
 
           # 配置後端環境變數
           az webapp config appsettings set \
             --resource-group $(RESOURCE_GROUP) \
-            --name backend \
+            --name backend-$(FLASK_ENV) \
             --settings \
               FLASK_ENV=$(FLASK_ENV) \
               DB_HOST=$(DB_HOST) \
@@ -257,9 +259,9 @@ stages:
           # 配置容器設定
           az webapp config container set \
             --resource-group $(RESOURCE_GROUP) \
-            --name backend \
-            --docker-custom-image-name $(REGISTRY_NAME)/backend:latest \
-            --docker-registry-server-url $(REGISTRY_NAME) \
+            --name backend-$(FLASK_ENV) \
+            --docker-custom-image-name $(ACR_LOGIN_SERVER)/backend:latest \
+            --docker-registry-server-url https://$(ACR_LOGIN_SERVER) \
             --docker-registry-server-user $(ACR_USERNAME) \
             --docker-registry-server-password $(ACR_PASSWORD)
 
