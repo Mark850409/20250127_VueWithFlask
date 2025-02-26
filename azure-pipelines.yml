@@ -157,14 +157,23 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
+                # 檢查環境是否存在，不存在則創建
+                az containerapp env create \
+                  --name production \
+                  --resource-group $(RESOURCE_GROUP) \
+                  --location $(LOCATION)
+
+                # 部署前端應用
                 az containerapp create \
                   --name frontend \
                   --resource-group $(RESOURCE_GROUP) \
                   --image $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
                   --target-port 80 \
                   --ingress external \
-                  --environment production \  
-                  --env-vars NODE_ENV=$(NODE_ENV) VITE_BACKEND_URL=$(VITE_BACKEND_URL)
+                  --environment-variables \
+                    NODE_ENV=$(NODE_ENV) \
+                    VITE_BACKEND_URL=$(VITE_BACKEND_URL) \
+                  --env production
 
           # 部署後端
           - task: AzureCLI@2
@@ -180,8 +189,14 @@ stages:
                   --image $(REGISTRY_NAME)/backend:$(Build.BuildId) \
                   --target-port 5000 \
                   --ingress external \
-                  --environment production \ 
-                  --env-vars FLASK_ENV=$(FLASK_ENV) DB_HOST=$(DB_HOST) DB_PORT=$(DB_PORT) DB_USER=$(DB_USER) DB_PASSWORD=$(DB_PASSWORD) DB_NAME=$(DB_NAME)
+                  --environment-variables \
+                    FLASK_ENV=$(FLASK_ENV) \
+                    DB_HOST=$(DB_HOST) \
+                    DB_PORT=$(DB_PORT) \
+                    DB_USER=$(DB_USER) \
+                    DB_PASSWORD=$(DB_PASSWORD) \
+                    DB_NAME=$(DB_NAME) \
+                  --env production
 
           # 部署 MySQL
           - task: AzureCLI@2
@@ -197,5 +212,11 @@ stages:
                   --image mysql:5.7 \
                   --target-port 3306 \
                   --ingress internal \
-                  --environment production \  
-                  --env-vars MYSQL_ROOT_PASSWORD=$(MYSQL_ROOT_PASSWORD) MYSQL_DATABASE=$(DB_NAME) MYSQL_USER=$(DB_USER) MYSQL_PASSWORD=$(DB_PASSWORD) MYSQL_ROOT_HOST=% TZ=$(TZ)
+                  --environment-variables \
+                    MYSQL_ROOT_PASSWORD=$(MYSQL_ROOT_PASSWORD) \
+                    MYSQL_DATABASE=$(DB_NAME) \
+                    MYSQL_USER=$(DB_USER) \
+                    MYSQL_PASSWORD=$(DB_PASSWORD) \
+                    MYSQL_ROOT_HOST=% \
+                    TZ=$(TZ) \
+                  --env production
