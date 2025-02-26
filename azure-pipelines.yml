@@ -165,28 +165,35 @@ stages:
                 az provider register --namespace Microsoft.App
                 az provider register --namespace Microsoft.OperationalInsights
 
-          # 登入 ACR
-          - task: Docker@2
-            displayName: 'Login to ACR'
-            inputs:
-              containerRegistry: '$(dockerRegistryServiceConnection)'
-              command: 'login'
-
-          # 確認 ACR 權限
+          # 登入並驗證 ACR 連接
           - task: AzureCLI@2
-            displayName: 'Verify ACR Access'
+            displayName: 'Login and Verify ACR Connection'
             inputs:
               azureSubscription: '$(AZURE_SUBSCRIPTION)'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                # 確認可以存取 ACR
+                # 獲取 ACR 登入資訊
+                ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query loginServer -o tsv)
+                ACR_USERNAME=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query username -o tsv)
+                ACR_PASSWORD=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query "passwords[0].value" -o tsv)
+
+                # 使用 Docker 登入 ACR
+                echo "Logging in to ACR..."
+                echo $ACR_PASSWORD | docker login $ACR_LOGIN_SERVER -u $ACR_USERNAME --password-stdin
+                if [ $? -ne 0 ]; then
+                  echo "ACR 登入失敗"
+                  exit 1
+                fi
+
+                # 測試 ACR 連接
+                echo "Testing ACR connection..."
                 az acr repository list --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP)
                 if [ $? -ne 0 ]; then
                   echo "無法存取 ACR，請檢查權限設定"
                   exit 1
                 fi
-
+                echo "ACR 登入和連接測試成功"
 
           # 建立 Container Apps 環境和 Log Analytics
           - task: AzureCLI@2
@@ -235,10 +242,16 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
+                # 確認 ACR 登入狀態
+                if ! docker info | grep -q "Username: $ACR_USERNAME"; then
+                  echo "ACR 未登入，部署終止"
+                  exit 1
+                fi
+
                 az containerapp create \
                   --name frontend \
                   --resource-group $(RESOURCE_GROUP) \
-                  --image recommendacr20250226.azurecr.io/frontend:$(Build.BuildId) \
+                  --image $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
                   --target-port 3000 \
                   --ingress external \
                   --environment $(NODE_ENV) \
