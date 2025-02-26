@@ -205,13 +205,13 @@ stages:
           az webapp create \
             --resource-group $(RESOURCE_GROUP) \
             --plan frontend-plan \
-            --name frontend-$(NODE_ENV) \
+            --name frontend-20250226 \
             --deployment-container-image-name recommendacr20250226.azurecr.io/frontend:latest
 
           # 配置前端環境變數
           az webapp config appsettings set \
             --resource-group $(RESOURCE_GROUP) \
-            --name frontend-$(NODE_ENV) \
+            --name frontend-20250226 \
             --settings \
               NODE_ENV=$(NODE_ENV) \
               VITE_BACKEND_URL=$(VITE_BACKEND_URL)
@@ -219,7 +219,7 @@ stages:
           # 配置容器設定
           az webapp config container set \
             --resource-group $(RESOURCE_GROUP) \
-            --name frontend-$(NODE_ENV) \
+            --name frontend-20250226 \
             --docker-custom-image-name recommendacr20250226.azurecr.io/frontend:latest \
             --docker-registry-server-url https://recommendacr20250226.azurecr.io\
             --docker-registry-server-user $(ACR_USERNAME) \
@@ -248,13 +248,13 @@ stages:
           az webapp create \
             --resource-group $(RESOURCE_GROUP) \
             --plan backend-plan \
-            --name backend-$(FLASK_ENV) \
+            --name backend-20250226 \
             --deployment-container-image-name recommendacr20250226.azurecr.io/backend:latest
 
           # 配置後端環境變數
           az webapp config appsettings set \
             --resource-group $(RESOURCE_GROUP) \
-            --name backend-$(FLASK_ENV) \
+            --name backend-20250226 \
             --settings \
               FLASK_ENV=$(FLASK_ENV) \
               DB_HOST=$(DB_HOST) \
@@ -266,7 +266,7 @@ stages:
           # 配置容器設定
           az webapp config container set \
             --resource-group $(RESOURCE_GROUP) \
-            --name backend-$(FLASK_ENV) \
+            --name backend-20250226 \
             --docker-custom-image-name recommendacr20250226.azurecr.io/backend:latest \
             --docker-registry-server-url https://recommendacr20250226.azurecr.io \
             --docker-registry-server-user $(ACR_USERNAME) \
@@ -305,6 +305,6 @@ stages:
             --resource-group $(RESOURCE_GROUP) \
             --name backend-mysql \
             --settings \
-              DB_HOST=mysql-$(NODE_ENV).mysql.database.azure.com \
+              DB_HOST=mysql-20250226.mysql.database.azure.com \
               DB_PORT=3306
   
