@@ -19,6 +19,7 @@ resources:
 variables:
   - group: flask-variables
   - group: vue-variables
+  - group: registry
   - name: DOCKER_BUILDKIT
     value: '1'
   - name: COMPOSE_DOCKER_CLI_BUILD  
@@ -190,10 +191,6 @@ stages:
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          # 獲取 ACR 登入資訊
-          ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query loginServer -o tsv)
-          ACR_USERNAME=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query username -o tsv)
-          ACR_PASSWORD=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query "passwords[0].value" -o tsv)
           # 建立前端 App Service Plan
           az appservice plan create \
             --name frontend-plan \
@@ -206,7 +203,7 @@ stages:
             --resource-group $(RESOURCE_GROUP) \
             --plan frontend-plan \
             --name frontend-20250226 \
-            --deployment-container-image-name recommendacr20250226.azurecr.io/frontend:latest
+            --deployment-container-image-name $(ACR_LOGIN_SERVER)/frontend:latest
 
           # 配置前端環境變數
           az webapp config appsettings set \
@@ -220,10 +217,10 @@ stages:
           az webapp config container set \
             --resource-group $(RESOURCE_GROUP) \
             --name frontend-20250226 \
-            --docker-custom-image-name recommendacr20250226.azurecr.io/frontend:latest \
-            --docker-registry-server-url https://recommendacr20250226.azurecr.io\
-            --docker-registry-server-user recommendacr20250226 \
-            --docker-registry-server-password L7oS6rpF/F0fwiNXLfmSaquTdqHs58ALy165dQRCiJ+ACRDBYL+m
+            --docker-custom-image-name $(ACR_LOGIN_SERVER)/frontend:latest \
+            --docker-registry-server-url https://$(ACR_LOGIN_SERVER) \
+            --docker-registry-server-user $(ACR_USERNAME) \
+            --docker-registry-server-password $(ACR_PASSWORD)
 
     # 部署後端 Web App
     - task: AzureCLI@2
@@ -233,10 +230,6 @@ stages:
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          # 獲取 ACR 登入資訊
-          ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query loginServer -o tsv)
-          ACR_USERNAME=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query username -o tsv)
-          ACR_PASSWORD=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query "passwords[0].value" -o tsv)
           # 建立後端 App Service Plan
           az appservice plan create \
             --name backend-plan \
@@ -249,7 +242,7 @@ stages:
             --resource-group $(RESOURCE_GROUP) \
             --plan backend-plan \
             --name backend-20250226 \
-            --deployment-container-image-name recommendacr20250226.azurecr.io/backend:latest
+            --deployment-container-image-name $(ACR_LOGIN_SERVER)/backend:latest
 
           # 配置後端環境變數
           az webapp config appsettings set \
@@ -267,10 +260,10 @@ stages:
           az webapp config container set \
             --resource-group $(RESOURCE_GROUP) \
             --name backend-20250226 \
-            --docker-custom-image-name recommendacr20250226.azurecr.io/backend:latest \
-            --docker-registry-server-url https://recommendacr20250226.azurecr.io \
-            --docker-registry-server-user recommendacr20250226 \
-            --docker-registry-server-password L7oS6rpF/F0fwiNXLfmSaquTdqHs58ALy165dQRCiJ+ACRDBYL+m
+            --docker-custom-image-name $(ACR_LOGIN_SERVER)/backend:latest \
+            --docker-registry-server-url https://$(ACR_LOGIN_SERVER) \
+            --docker-registry-server-user $(ACR_USERNAME) \
+            --docker-registry-server-password $(ACR_PASSWORD)
 
     # 部署 MySQL 資料庫
     - task: AzureCLI@2
