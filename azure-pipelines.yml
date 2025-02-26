@@ -197,6 +197,50 @@ stages:
                   --location $(LOCATION) 
                   # 建立 Container Apps 環境和 Log Analytics
           
+          - task: AzureCLI@2
+            displayName: 'Check & Assign ACR Pull Permission for Frontend & Backend'
+            inputs:
+              azureSubscription: '$(AZURE_SUBSCRIPTION)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                check_and_assign_identity() {
+                  APP_NAME=$1
+                  echo "Checking if $APP_NAME has Managed Identity..."
+
+                  # 取得 Container App 的 principalId
+                  APP_ID=$(az containerapp show --name $APP_NAME --resource-group $(RESOURCE_GROUP) --query "identity.principalId" -o tsv)
+
+                  # 如果 APP_ID 為空，則啟用 System Assigned Managed Identity
+                  if [ -z "$APP_ID" ]; then
+                    echo "$APP_NAME does not have a managed identity. Assigning one..."
+                    az containerapp identity assign --name $APP_NAME --resource-group $(RESOURCE_GROUP) --system-assigned
+                    # 再次獲取 principalId
+                    APP_ID=$(az containerapp show --name $APP_NAME --resource-group $(RESOURCE_GROUP) --query "identity.principalId" -o tsv)
+                  fi
+
+                  echo "$APP_NAME Managed Identity ID: $APP_ID"
+
+                  # 確保 principalId 不為空
+                  if [ -z "$APP_ID" ]; then
+                    echo "Error: Unable to retrieve principalId for $APP_NAME"
+                    exit 1
+                  fi
+
+                  echo "Assigning ACR Pull role to $APP_NAME..."
+                  az role assignment create \
+                    --assignee $APP_ID \
+                    --role AcrPull \
+                    --scope $(az acr show --name $(ACR_NAME) --query id -o tsv)
+                }
+
+                # 執行檢查與權限設定
+                check_and_assign_identity "frontend"
+                check_and_assign_identity "backend"
+
+                echo "Enabling ACR admin access..."
+                az acr update --name $(ACR_NAME) --admin-enabled true
+
           # 部署前端
           - task: AzureCLI@2
             displayName: 'Deploy Frontend'
