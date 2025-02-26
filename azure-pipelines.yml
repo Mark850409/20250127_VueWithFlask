@@ -33,8 +33,6 @@ variables:
     value: 'recommend-docker-connection'  # 請替換成你的 Azure 訂用帳戶名稱
   - name: LOCATION
     value: 'eastasia'  # 請替換成你想要的區域
-  - name: DEVOPS_SP_ID
-    value: '499b84ac-1321-427f-aa17-267ca6975798'  # 請替換成你想要的環境名稱
 
 stages:
 - stage: Infrastructure
@@ -189,6 +187,7 @@ stages:
                   exit 1
                 fi
 
+
           # 建立 Container Apps 環境和 Log Analytics
           - task: AzureCLI@2
             displayName: 'Create Container Apps Environment'
@@ -197,59 +196,36 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                # 建立 Container Apps 環境
-                az containerapp env create \
-                  --name $(NODE_ENV) \
-                  --resource-group $(RESOURCE_GROUP) \
-                  --location $(LOCATION) 
-                  # 建立 Container Apps 環境和 Log Analytics
-          
-          - task: AzureCLI@2
-            displayName: 'Check & Assign ACR Pull Permission for Frontend & Backend'
-            inputs:
-              azureSubscription: '$(AZURE_SUBSCRIPTION)'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                check_and_assign_identity() {
-                  APP_NAME=$1
-                  echo "Checking if $APP_NAME exists..."
-
-                  # 確保 Container App 存在
-                  if ! az containerapp show --name $APP_NAME --resource-group $(RESOURCE_GROUP) &>/dev/null; then
-                    echo "Error: Container App '$APP_NAME' does not exist. Skipping identity assignment."
-                    exit 1
+                # 檢查環境是否已存在
+                if ! az containerapp env show --name $(NODE_ENV) --resource-group $(RESOURCE_GROUP) &>/dev/null; then
+                  echo "Creating Container Apps Environment..."
+                  
+                  # 建立 Log Analytics 工作區
+                  if ! az monitor log-analytics workspace show --resource-group $(RESOURCE_GROUP) --workspace-name $(RESOURCE_GROUP)-logs &>/dev/null; then
+                    echo "Creating Log Analytics workspace..."
+                    az monitor log-analytics workspace create \
+                      --resource-group $(RESOURCE_GROUP) \
+                      --workspace-name $(RESOURCE_GROUP)-logs \
+                      --location $(LOCATION)
                   fi
 
-                  echo "Checking if $APP_NAME has Managed Identity..."
-                  APP_ID=$(az containerapp show --name $APP_NAME --resource-group $(RESOURCE_GROUP) --query "identity.principalId" -o tsv)
+                  # 獲取 Log Analytics 工作區 ID
+                  LOG_ANALYTICS_WORKSPACE_ID=$(az monitor log-analytics workspace show \
+                    --resource-group $(RESOURCE_GROUP) \
+                    --workspace-name $(RESOURCE_GROUP)-logs \
+                    --query id -o tsv)
 
-                  if [ -z "$APP_ID" ]; then
-                    echo "$APP_NAME does not have a managed identity. Assigning one..."
-                    az containerapp identity assign --name $APP_NAME --resource-group $(RESOURCE_GROUP) --system-assigned
-                    APP_ID=$(az containerapp show --name $APP_NAME --resource-group $(RESOURCE_GROUP) --query "identity.principalId" -o tsv)
-                  fi
+                  # 建立 Container Apps 環境
+                  az containerapp env create \
+                    --name $(NODE_ENV) \
+                    --resource-group $(RESOURCE_GROUP) \
+                    --location $(LOCATION) \
+                    --logs-workspace-id $LOG_ANALYTICS_WORKSPACE_ID
 
-                  echo "$APP_NAME Managed Identity ID: $APP_ID"
-
-                  if [ -z "$APP_ID" ]; then
-                    echo "Error: Unable to retrieve principalId for $APP_NAME"
-                    exit 1
-                  fi
-
-                  echo "Assigning ACR Pull role to $APP_NAME..."
-                  az role assignment create \
-                    --assignee $APP_ID \
-                    --role AcrPull \
-                    --scope $(az acr show --name $(ACR_NAME) --query id -o tsv)
-                }
-
-                # 執行檢查與權限設定
-                check_and_assign_identity "frontend"
-                check_and_assign_identity "backend"
-
-                echo "Enabling ACR admin access..."
-                az acr update --name $(ACR_NAME) --admin-enabled true
+                  echo "Container Apps Environment created successfully"
+                else
+                  echo "Container Apps Environment already exists, skipping creation"
+                fi
 
           # 部署前端
           - task: AzureCLI@2
