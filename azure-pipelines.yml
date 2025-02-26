@@ -203,7 +203,7 @@ stages:
             --resource-group $(RESOURCE_GROUP) \
             --plan frontend-plan \
             --name frontend-$(NODE_ENV) \
-            --deployment-container-image-name $(ACR_LOGIN_SERVER)/frontend:latest
+            --deployment-container-image-name recommendacr20250226.azurecr.io/frontend:latest
 
           # 配置前端環境變數
           az webapp config appsettings set \
@@ -217,8 +217,8 @@ stages:
           az webapp config container set \
             --resource-group $(RESOURCE_GROUP) \
             --name frontend-$(NODE_ENV) \
-            --docker-custom-image-name $(ACR_LOGIN_SERVER)/frontend:latest \
-            --docker-registry-server-url https://$(ACR_LOGIN_SERVER)\
+            --docker-custom-image-name recommendacr20250226.azurecr.io/frontend:latest \
+            --docker-registry-server-url https://recommendacr20250226.azurecr.io\
             --docker-registry-server-user $(ACR_USERNAME) \
             --docker-registry-server-password $(ACR_PASSWORD)
 
@@ -242,7 +242,7 @@ stages:
             --resource-group $(RESOURCE_GROUP) \
             --plan backend-plan \
             --name backend-$(FLASK_ENV) \
-            --deployment-container-image-name $(ACR_LOGIN_SERVER)/backend:latest
+            --deployment-container-image-name recommendacr20250226.azurecr.io/backend:latest
 
           # 配置後端環境變數
           az webapp config appsettings set \
@@ -260,8 +260,8 @@ stages:
           az webapp config container set \
             --resource-group $(RESOURCE_GROUP) \
             --name backend-$(FLASK_ENV) \
-            --docker-custom-image-name $(ACR_LOGIN_SERVER)/backend:latest \
-            --docker-registry-server-url https://$(ACR_LOGIN_SERVER) \
+            --docker-custom-image-name recommendacr20250226.azurecr.io/backend:latest \
+            --docker-registry-server-url https://recommendacr20250226.azurecr.io \
             --docker-registry-server-user $(ACR_USERNAME) \
             --docker-registry-server-password $(ACR_PASSWORD)
 
