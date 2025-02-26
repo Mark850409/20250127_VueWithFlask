@@ -138,7 +138,7 @@ stages:
           docker push $(REGISTRY_NAME)/backend:latest
 
 - stage: Deploy
-  displayName: 'Deploy to Environment'
+  displayName: 'Deploy to Azure Web App'
   dependsOn: Build
   variables:
     REGISTRY_NAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.REGISTRY_NAME'] ]
@@ -146,210 +146,155 @@ stages:
     ACR_PASSWORD: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_PASSWORD'] ]
   condition: succeeded()
   jobs:
-  - deployment: Deploy
-    displayName: 'Deploy to Azure Container Apps'
-    environment: 'production'
+  - job: Deploy
     pool:
       vmImage: 'ubuntu-latest'
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          # 安裝 Azure CLI 擴充功能
-          - task: AzureCLI@2
-            displayName: 'Install Azure CLI extensions'
-            inputs:
-              azureSubscription: '$(AZURE_SUBSCRIPTION)'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                az extension add --name containerapp --upgrade
-                az provider register --namespace Microsoft.App
-                az provider register --namespace Microsoft.OperationalInsights
+    steps:
+    # 登入並驗證 ACR 連接
+    - task: AzureCLI@2
+      displayName: 'Login and Verify ACR Connection'
+      inputs:
+        azureSubscription: '$(AZURE_SUBSCRIPTION)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # 獲取 ACR 登入資訊
+          ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query loginServer -o tsv)
+          ACR_USERNAME=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query "passwords[0].value" -o tsv)
 
-          # 登入並驗證 ACR 連接
-          - task: AzureCLI@2
-            displayName: 'Login and Verify ACR Connection'
-            inputs:
-              azureSubscription: '$(AZURE_SUBSCRIPTION)'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                # 獲取 ACR 登入資訊
-                ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query loginServer -o tsv)
-                ACR_USERNAME=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query username -o tsv)
-                ACR_PASSWORD=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query "passwords[0].value" -o tsv)
+          # 使用 Docker 登入 ACR
+          echo "Logging in to ACR..."
+          echo $ACR_PASSWORD | docker login $ACR_LOGIN_SERVER -u $ACR_USERNAME --password-stdin
+          if [ $? -ne 0 ]; then
+            echo "ACR 登入失敗"
+            exit 1
+          fi
 
-                # 使用 Docker 登入 ACR
-                echo "Logging in to ACR..."
-                echo $ACR_PASSWORD | docker login $ACR_LOGIN_SERVER -u $ACR_USERNAME --password-stdin
-                if [ $? -ne 0 ]; then
-                  echo "ACR 登入失敗"
-                  exit 1
-                fi
+          # 測試 ACR 連接
+          echo "Testing ACR connection..."
+          az acr repository list --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP)
+          if [ $? -ne 0 ]; then
+            echo "無法存取 ACR，請檢查權限設定"
+            exit 1
+          fi
+          echo "ACR 登入和連接測試成功"
 
-                # 測試 ACR 連接
-                echo "Testing ACR connection..."
-                az acr repository list --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP)
-                if [ $? -ne 0 ]; then
-                  echo "無法存取 ACR，請檢查權限設定"
-                  exit 1
-                fi
-                echo "ACR 登入和連接測試成功"
+    # 部署前端 Web App
+    - task: AzureCLI@2
+      displayName: 'Deploy Frontend Web App'
+      inputs:
+        azureSubscription: '$(AZURE_SUBSCRIPTION)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # 建立前端 App Service Plan
+          az appservice plan create \
+            --name frontend-plan \
+            --resource-group $(RESOURCE_GROUP) \
+            --sku F1 \
+            --is-linux
 
-          # 建立 Container Apps 環境和 Log Analytics
-          - task: AzureCLI@2
-            displayName: 'Create Container Apps Environment'
-            inputs:
-              azureSubscription: '$(AZURE_SUBSCRIPTION)'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                # 檢查環境是否已存在
-                if ! az containerapp env show --name $(NODE_ENV) --resource-group $(RESOURCE_GROUP) &>/dev/null; then
-                  echo "Creating Container Apps Environment..."
-                  
-                  # 建立 Log Analytics 工作區
-                  if ! az monitor log-analytics workspace show --resource-group $(RESOURCE_GROUP) --workspace-name $(RESOURCE_GROUP)-logs &>/dev/null; then
-                    echo "Creating Log Analytics workspace..."
-                    az monitor log-analytics workspace create \
-                      --resource-group $(RESOURCE_GROUP) \
-                      --workspace-name $(RESOURCE_GROUP)-logs \
-                      --location $(LOCATION)
-                  fi
+          # 建立並配置前端 Web App
+          az webapp create \
+            --resource-group $(RESOURCE_GROUP) \
+            --plan frontend-plan \
+            --name frontend-$(NODE_ENV) \
+            --deployment-container-image-name $(REGISTRY_NAME)/frontend:latest
 
-                  # 獲取 Log Analytics 工作區 ID
-                  LOG_ANALYTICS_WORKSPACE_ID=$(az monitor log-analytics workspace show \
-                    --resource-group $(RESOURCE_GROUP) \
-                    --workspace-name $(RESOURCE_GROUP)-logs \
-                    --query id -o tsv)
+          # 配置前端環境變數
+          az webapp config appsettings set \
+            --resource-group $(RESOURCE_GROUP) \
+            --name frontend-$(NODE_ENV) \
+            --settings \
+              NODE_ENV=$(NODE_ENV) \
+              VITE_BACKEND_URL=$(VITE_BACKEND_URL)
 
-                  # 建立 Container Apps 環境
-                  az containerapp env create \
-                    --name $(NODE_ENV) \
-                    --resource-group $(RESOURCE_GROUP) \
-                    --location $(LOCATION) \
-                    --logs-workspace-id $LOG_ANALYTICS_WORKSPACE_ID
+          # 配置容器設定
+          az webapp config container set \
+            --resource-group $(RESOURCE_GROUP) \
+            --name frontend-$(NODE_ENV) \
+            --docker-custom-image-name $(REGISTRY_NAME)/frontend:latest \
+            --docker-registry-server-url $(REGISTRY_NAME) \
+            --docker-registry-server-user $(ACR_USERNAME) \
+            --docker-registry-server-password $(ACR_PASSWORD)
 
-                  echo "Container Apps Environment created successfully"
-                else
-                  echo "Container Apps Environment already exists, skipping creation"
-                fi
+    # 部署後端 Web App
+    - task: AzureCLI@2
+      displayName: 'Deploy Backend Web App'
+      inputs:
+        azureSubscription: '$(AZURE_SUBSCRIPTION)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # 建立後端 App Service Plan
+          az appservice plan create \
+            --name backend-plan \
+            --resource-group $(RESOURCE_GROUP) \
+            --sku F1 \
+            --is-linux
 
-          # 部署前端 Web App
-          - task: AzureCLI@2
-            displayName: 'Deploy Frontend Web App'
-            inputs:
-              azureSubscription: '$(AZURE_SUBSCRIPTION)'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                # 建立前端 App Service Plan
-                az appservice plan create \
-                  --name frontend-plan \
-                  --resource-group $(RESOURCE_GROUP) \
-                  --sku F1 \
-                  --is-linux
+          # 建立並配置後端 Web App
+          az webapp create \
+            --resource-group $(RESOURCE_GROUP) \
+            --plan backend-plan \
+            --name backend-$(NODE_ENV) \
+            --deployment-container-image-name $(REGISTRY_NAME)/backend:latest
 
-                # 建立並配置前端 Web App
-                az webapp create \
-                  --resource-group $(RESOURCE_GROUP) \
-                  --plan frontend-plan \
-                  --name frontend-$(NODE_ENV) \
-                  --deployment-container-image-name $(REGISTRY_NAME)/frontend:latest
+          # 配置後端環境變數
+          az webapp config appsettings set \
+            --resource-group $(RESOURCE_GROUP) \
+            --name backend-$(NODE_ENV) \
+            --settings \
+              FLASK_ENV=$(FLASK_ENV) \
+              DB_HOST=$(DB_HOST) \
+              DB_PORT=$(DB_PORT) \
+              DB_USER=$(DB_USER) \
+              DB_PASSWORD=$(DB_PASSWORD) \
+              DB_NAME=$(DB_NAME)
 
-                # 配置前端環境變數
-                az webapp config appsettings set \
-                  --resource-group $(RESOURCE_GROUP) \
-                  --name frontend-$(NODE_ENV) \
-                  --settings \
-                    NODE_ENV=$(NODE_ENV) \
-                    VITE_BACKEND_URL=$(VITE_BACKEND_URL)
+          # 配置容器設定
+          az webapp config container set \
+            --resource-group $(RESOURCE_GROUP) \
+            --name backend-$(NODE_ENV) \
+            --docker-custom-image-name $(REGISTRY_NAME)/backend:latest \
+            --docker-registry-server-url $(REGISTRY_NAME) \
+            --docker-registry-server-user $(ACR_USERNAME) \
+            --docker-registry-server-password $(ACR_PASSWORD)
 
-                # 配置容器設定
-                az webapp config container set \
-                  --resource-group $(RESOURCE_GROUP) \
-                  --name frontend-$(NODE_ENV) \
-                  --docker-custom-image-name $(REGISTRY_NAME)/frontend:latest \
-                  --docker-registry-server-url $(REGISTRY_NAME) \
-                  --docker-registry-server-user $(ACR_USERNAME) \
-                  --docker-registry-server-password $(ACR_PASSWORD)
+    # 部署 MySQL 資料庫
+    - task: AzureCLI@2
+      displayName: 'Deploy MySQL Database'
+      inputs:
+        azureSubscription: '$(AZURE_SUBSCRIPTION)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # 建立 MySQL 伺服器
+          az mysql flexible-server create \
+            --resource-group $(RESOURCE_GROUP) \
+            --name mysql-$(NODE_ENV) \
+            --admin-user $(DB_USER) \
+            --admin-password $(DB_PASSWORD) \
+            --sku-name Standard_B1ms \
+            --version 5.7 \
+            --storage-size 10 \
+            --database-name $(DB_NAME) \
+            --yes
 
-          # 部署後端 Web App
-          - task: AzureCLI@2
-            displayName: 'Deploy Backend Web App'
-            inputs:
-              azureSubscription: '$(AZURE_SUBSCRIPTION)'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                # 建立後端 App Service Plan
-                az appservice plan create \
-                  --name backend-plan \
-                  --resource-group $(RESOURCE_GROUP) \
-                  --sku F1 \
-                  --is-linux
+          # 配置防火牆規則
+          az mysql flexible-server firewall-rule create \
+            --resource-group $(RESOURCE_GROUP) \
+            --name mysql-$(NODE_ENV) \
+            --rule-name allowall \
+            --start-ip-address 0.0.0.0 \
+            --end-ip-address 255.255.255.255
 
-                # 建立並配置後端 Web App
-                az webapp create \
-                  --resource-group $(RESOURCE_GROUP) \
-                  --plan backend-plan \
-                  --name backend-$(NODE_ENV) \
-                  --deployment-container-image-name $(REGISTRY_NAME)/backend:latest
-
-                # 配置後端環境變數
-                az webapp config appsettings set \
-                  --resource-group $(RESOURCE_GROUP) \
-                  --name backend-$(NODE_ENV) \
-                  --settings \
-                    FLASK_ENV=$(FLASK_ENV) \
-                    DB_HOST=$(DB_HOST) \
-                    DB_PORT=$(DB_PORT) \
-                    DB_USER=$(DB_USER) \
-                    DB_PASSWORD=$(DB_PASSWORD) \
-                    DB_NAME=$(DB_NAME)
-
-                # 配置容器設定
-                az webapp config container set \
-                  --resource-group $(RESOURCE_GROUP) \
-                  --name backend-$(NODE_ENV) \
-                  --docker-custom-image-name $(REGISTRY_NAME)/backend:latest \
-                  --docker-registry-server-url $(REGISTRY_NAME) \
-                  --docker-registry-server-user $(ACR_USERNAME) \
-                  --docker-registry-server-password $(ACR_PASSWORD)
-
-          # 部署 MySQL 資料庫
-          - task: AzureCLI@2
-            displayName: 'Deploy MySQL Database'
-            inputs:
-              azureSubscription: '$(AZURE_SUBSCRIPTION)'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                # 建立 MySQL 伺服器
-                az mysql flexible-server create \
-                  --resource-group $(RESOURCE_GROUP) \
-                  --name mysql-$(NODE_ENV) \
-                  --admin-user $(DB_USER) \
-                  --admin-password $(DB_PASSWORD) \
-                  --sku-name Standard_B1ms \
-                  --version 5.7 \
-                  --storage-size 10 \
-                  --database-name $(DB_NAME) \
-                  --yes
-
-                # 配置防火牆規則
-                az mysql flexible-server firewall-rule create \
-                  --resource-group $(RESOURCE_GROUP) \
-                  --name mysql-$(NODE_ENV) \
-                  --rule-name allowall \
-                  --start-ip-address 0.0.0.0 \
-                  --end-ip-address 255.255.255.255
-
-                # 更新後端 Web App 的資料庫連接字串
-                az webapp config appsettings set \
-                  --resource-group $(RESOURCE_GROUP) \
-                  --name backend-$(NODE_ENV) \
-                  --settings \
-                    DB_HOST=mysql-$(NODE_ENV).mysql.database.azure.com \
-                    DB_PORT=3306
+          # 更新後端 Web App 的資料庫連接字串
+          az webapp config appsettings set \
+            --resource-group $(RESOURCE_GROUP) \
+            --name backend-$(NODE_ENV) \
+            --settings \
+              DB_HOST=mysql-$(NODE_ENV).mysql.database.azure.com \
+              DB_PORT=3306
+  
