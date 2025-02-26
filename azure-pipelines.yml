@@ -90,52 +90,52 @@ stages:
 
       name: acrDetails
 
-# - stage: Build
-#   displayName: 'Build and Push'
-#   dependsOn: Infrastructure
-#   variables:
-#     REGISTRY_NAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.REGISTRY_NAME'] ]
-#     ACR_USERNAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_USERNAME'] ]
-#     ACR_PASSWORD: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_PASSWORD'] ]
-#   jobs:
-#   - job: BuildAndPush
-#     displayName: 'Build and Push Docker Images'
-#     pool:
-#       vmImage: 'ubuntu-latest'
-#     steps:
-#     # 檢出程式碼
-#     - checkout: self
+- stage: Build
+  displayName: 'Build and Push'
+  dependsOn: Infrastructure
+  variables:
+    REGISTRY_NAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.REGISTRY_NAME'] ]
+    ACR_USERNAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_USERNAME'] ]
+    ACR_PASSWORD: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_PASSWORD'] ]
+  jobs:
+  - job: BuildAndPush
+    displayName: 'Build and Push Docker Images'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    # 檢出程式碼
+    - checkout: self
               
-#     # 登入 ACR
-#     - task: Docker@2
-#       inputs:
-#         containerRegistry: '$(dockerRegistryServiceConnection)'
-#         command: 'login'
-#       displayName: 'Login to ACR'
+    # 登入 ACR
+    - task: Docker@2
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        command: 'login'
+      displayName: 'Login to ACR'
 
-#     # 建立並推送前端映像
-#     - task: Bash@3
-#       displayName: 'Build and Push Frontend Image'
-#       inputs:
-#         targetType: 'inline'
-#         script: |
-#           docker build -t $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
-#                       -t $(REGISTRY_NAME)/frontend:latest \
-#                       -f dockerfiles/frontend/Dockerfile_vue .
-#           docker push $(REGISTRY_NAME)/frontend:$(Build.BuildId)
-#           docker push $(REGISTRY_NAME)/frontend:latest
+    # 建立並推送前端映像
+    - task: Bash@3
+      displayName: 'Build and Push Frontend Image'
+      inputs:
+        targetType: 'inline'
+        script: |
+          docker build -t $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
+                      -t $(REGISTRY_NAME)/frontend:latest \
+                      -f dockerfiles/frontend/Dockerfile_vue .
+          docker push $(REGISTRY_NAME)/frontend:$(Build.BuildId)
+          docker push $(REGISTRY_NAME)/frontend:latest
 
-#     # 建立並推送後端映像
-#     - task: Bash@3
-#       displayName: 'Build and Push Backend Image'
-#       inputs:
-#         targetType: 'inline'
-#         script: |
-#           docker build -t $(REGISTRY_NAME)/backend:$(Build.BuildId) \
-#                       -t $(REGISTRY_NAME)/backend:latest \
-#                       -f dockerfiles/backend/Dockerfile_python .
-#           docker push $(REGISTRY_NAME)/backend:$(Build.BuildId)
-#           docker push $(REGISTRY_NAME)/backend:latest
+    # 建立並推送後端映像
+    - task: Bash@3
+      displayName: 'Build and Push Backend Image'
+      inputs:
+        targetType: 'inline'
+        script: |
+          docker build -t $(REGISTRY_NAME)/backend:$(Build.BuildId) \
+                      -t $(REGISTRY_NAME)/backend:latest \
+                      -f dockerfiles/backend/Dockerfile_python .
+          docker push $(REGISTRY_NAME)/backend:$(Build.BuildId)
+          docker push $(REGISTRY_NAME)/backend:latest
 
 - stage: Deploy
   displayName: 'Deploy to Environment'
