@@ -52,9 +52,11 @@ stages:
         scriptLocation: 'inlineScript'
         inlineScript: |
           # 檢查資源群組是否存在
-          if ! az group exists --name $(RESOURCE_GROUP); then
-            echo "Creating resource group..."
+          if [ "$(az group exists --name $(RESOURCE_GROUP))" = "false" ]; then
+            echo "Creating resource group: $(RESOURCE_GROUP)..."
             az group create --name $(RESOURCE_GROUP) --location $(LOCATION)
+          else
+            echo "Resource group $(RESOURCE_GROUP) already exists. Skipping creation."
           fi
     # 建立 ACR（如果不存在）
     - task: AzureCLI@2
