@@ -276,7 +276,7 @@ stages:
           # 建立 MySQL 伺服器
           az mysql flexible-server create \
             --resource-group $(RESOURCE_GROUP) \
-            --name mysql \
+            --name mysql-20250226 \
             --admin-user $(DB_USER) \
             --admin-password $(DB_PASSWORD) \
             --sku-name Standard_B1ms \
@@ -288,7 +288,7 @@ stages:
           # 配置防火牆規則
           az mysql flexible-server firewall-rule create \
             --resource-group $(RESOURCE_GROUP) \
-            --name mysql \
+            --name mysql-20250226 \
             --rule-name allowall \
             --start-ip-address 0.0.0.0 \
             --end-ip-address 255.255.255.255
@@ -296,7 +296,7 @@ stages:
           # 更新後端 Web App 的資料庫連接字串
           az webapp config appsettings set \
             --resource-group $(RESOURCE_GROUP) \
-            --name backend-mysql \
+            --name mysql-20250226 \
             --settings \
               DB_HOST=mysql-20250226.mysql.database.azure.com \
               DB_PORT=3306
