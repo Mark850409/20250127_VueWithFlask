@@ -206,22 +206,25 @@ stages:
               inlineScript: |
                 check_and_assign_identity() {
                   APP_NAME=$1
-                  echo "Checking if $APP_NAME has Managed Identity..."
+                  echo "Checking if $APP_NAME exists..."
 
-                  # 取得 Container App 的 principalId
+                  # 確保 Container App 存在
+                  if ! az containerapp show --name $APP_NAME --resource-group $(RESOURCE_GROUP) &>/dev/null; then
+                    echo "Error: Container App '$APP_NAME' does not exist. Skipping identity assignment."
+                    exit 1
+                  fi
+
+                  echo "Checking if $APP_NAME has Managed Identity..."
                   APP_ID=$(az containerapp show --name $APP_NAME --resource-group $(RESOURCE_GROUP) --query "identity.principalId" -o tsv)
 
-                  # 如果 APP_ID 為空，則啟用 System Assigned Managed Identity
                   if [ -z "$APP_ID" ]; then
                     echo "$APP_NAME does not have a managed identity. Assigning one..."
                     az containerapp identity assign --name $APP_NAME --resource-group $(RESOURCE_GROUP) --system-assigned
-                    # 再次獲取 principalId
                     APP_ID=$(az containerapp show --name $APP_NAME --resource-group $(RESOURCE_GROUP) --query "identity.principalId" -o tsv)
                   fi
 
                   echo "$APP_NAME Managed Identity ID: $APP_ID"
 
-                  # 確保 principalId 不為空
                   if [ -z "$APP_ID" ]; then
                     echo "Error: Unable to retrieve principalId for $APP_NAME"
                     exit 1
