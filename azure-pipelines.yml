@@ -17,7 +17,6 @@ resources:
       endpoint: github-connection  # Azure DevOps 中設定的 GitHub 服務連接名稱
 
 variables:
-  - group: azure-variables
   - group: flask-variables
   - group: vue-variables
   - name: DOCKER_BUILDKIT
@@ -183,6 +182,7 @@ stages:
                   exit 1
                 fi
 
+          # 建立 Container Apps 環境和 Log Analytics
           - task: AzureCLI@2
             displayName: 'Create Container Apps Environment'
             inputs:
@@ -190,11 +190,10 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                # 確保環境存在，並提供 `--infrastructure-subnet-resource-id`
+                # 建立 Container Apps 環境
                 az containerapp env create \
-                  --name $ \
+                  --name $(NODE_ENV) \
                   --resource-group $(RESOURCE_GROUP) \
-                  --sku "Standard" \
                   --location $(LOCATION) 
 
           # 部署前端
@@ -205,14 +204,16 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-               # 部署前端應用
                 az containerapp create \
                   --name frontend \
                   --resource-group $(RESOURCE_GROUP) \
                   --image $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
                   --target-port 3000 \
                   --ingress external \
-                  --environment $(NODE_ENV) 
+                  --environment $(NODE_ENV) \
+                  --env-vars \
+                    NODE_ENV=$(NODE_ENV) \
+                    VITE_BACKEND_URL=$(VITE_BACKEND_URL)
 
           # 部署後端
           - task: AzureCLI@2
@@ -228,7 +229,14 @@ stages:
                   --image $(REGISTRY_NAME)/backend:$(Build.BuildId) \
                   --target-port 5000 \
                   --ingress external \
-                  --environment $(NODE_ENV) 
+                  --environment $(NODE_ENV) \
+                  --env-vars \
+                    FLASK_ENV=$(FLASK_ENV) \
+                    DB_HOST=$(DB_HOST) \
+                    DB_PORT=$(DB_PORT) \
+                    DB_USER=$(DB_USER) \
+                    DB_PASSWORD=$(DB_PASSWORD) \
+                    DB_NAME=$(DB_NAME)
 
           # 部署 MySQL
           - task: AzureCLI@2
@@ -245,5 +253,10 @@ stages:
                   --target-port 3306 \
                   --ingress internal \
                   --environment $(NODE_ENV) \
-                  --min-replicas 1 \
-                  --max-replicas 1
+                  --env-vars \
+                    MYSQL_ROOT_PASSWORD=$(MYSQL_ROOT_PASSWORD) \
+                    MYSQL_DATABASE=$(DB_NAME) \
+                    MYSQL_USER=$(DB_USER) \
+                    MYSQL_PASSWORD=$(DB_PASSWORD) \
+                    MYSQL_ROOT_HOST=% \
+                    TZ=$(TZ)
