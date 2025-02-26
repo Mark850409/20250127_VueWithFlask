@@ -88,8 +88,13 @@ stages:
           echo "##vso[task.setvariable variable=ACR_USERNAME;isOutput=true]$ACR_USERNAME"
           echo "##vso[task.setvariable variable=ACR_PASSWORD;isOutput=true;issecret=true]$ACR_PASSWORD"
 
-          # 為 DevOps Service Principal 添加 AcrPush 權限
-          DEVOPS_SP_ID=$(az ad signed-in-user show --query id -o tsv)
+          echo "Fetching DevOps Service Principal ID..."
+          DEVOPS_SP_ID=$(az ad sp show --id $(az ad sp list --display-name "Azure DevOps" --query "[].appId" -o tsv) --query id -o tsv)
+
+          if [ -z "$DEVOPS_SP_ID" ]; then
+            echo "ERROR: Failed to retrieve DEVOPS_SP_ID"
+            exit 1
+          fi
           
           echo "Assigning AcrPush role to DevOps Service Principal..."
           az role assignment create \
