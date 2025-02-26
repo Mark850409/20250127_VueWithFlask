@@ -190,7 +190,10 @@ stages:
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          
+          # 獲取 ACR 登入資訊
+          ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query loginServer -o tsv)
+          ACR_USERNAME=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query "passwords[0].value" -o tsv)
           # 建立前端 App Service Plan
           az appservice plan create \
             --name frontend-plan \
@@ -230,6 +233,10 @@ stages:
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
+          # 獲取 ACR 登入資訊
+          ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query loginServer -o tsv)
+          ACR_USERNAME=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query "passwords[0].value" -o tsv)
           # 建立後端 App Service Plan
           az appservice plan create \
             --name backend-plan \
