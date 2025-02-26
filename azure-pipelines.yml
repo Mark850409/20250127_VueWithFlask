@@ -195,6 +195,22 @@ stages:
                   --name $(NODE_ENV) \
                   --resource-group $(RESOURCE_GROUP) \
                   --location $(LOCATION) 
+                  # 建立 Container Apps 環境和 Log Analytics
+          
+          # 檢查 REGISTRY_NAME
+          - task: AzureCLI@2
+            displayName: 'Check REGISTRY_NAME'
+            inputs:
+              azureSubscription: '$(AZURE_SUBSCRIPTION)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "REGISTRY_NAME is: $(REGISTRY_NAME)"
+      
+                if [ -z "$(REGISTRY_NAME)" ]; then
+                  echo "Error: REGISTRY_NAME is empty"
+                  exit 1
+                fi
 
           # 部署前端
           - task: AzureCLI@2
@@ -207,7 +223,7 @@ stages:
                 az containerapp create \
                   --name frontend \
                   --resource-group $(RESOURCE_GROUP) \
-                  --image $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
+                  --image recommendacr20250226.azurecr.io/frontend:$(Build.BuildId) \
                   --target-port 3000 \
                   --ingress external \
                   --environment $(NODE_ENV) \
@@ -226,7 +242,7 @@ stages:
                 az containerapp create \
                   --name backend \
                   --resource-group $(RESOURCE_GROUP) \
-                  --image $(REGISTRY_NAME)/backend:$(Build.BuildId) \
+                  --image recommendacr20250226.azurecr.io/backend:$(Build.BuildId) \
                   --target-port 5000 \
                   --ingress external \
                   --environment $(NODE_ENV) \
