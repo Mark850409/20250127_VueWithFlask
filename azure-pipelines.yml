@@ -208,13 +208,14 @@ stages:
           az webapp create \
             --resource-group $(RESOURCE_GROUP) \
             --plan frontend-plan \
-            --name frontend-$(APP_NAME)
+            --name frontend-$(APP_NAME) \
+            --deployment-container-image-name $(ACR_LOGIN_SERVER)/frontend:latest
 
           # 配置容器設定
           az webapp config container set \
             --resource-group $(RESOURCE_GROUP) \
             --name frontend-$(APP_NAME) \
-            --docker-registry-server-url https://$(ACR_LOGIN_SERVER) \
+            --docker-registry-server-url $(ACR_LOGIN_SERVER) \
             --docker-registry-server-user $(ACR_USERNAME) \
             --docker-registry-server-password $(ACR_PASSWORD) \
             --docker-custom-image-name $(ACR_LOGIN_SERVER)/frontend:latest
@@ -250,13 +251,14 @@ stages:
           az webapp create \
             --resource-group $(RESOURCE_GROUP) \
             --plan backend-plan \
-            --name backend-$(APP_NAME)
+            --name backend-$(APP_NAME) \
+            --deployment-container-image-name $(ACR_LOGIN_SERVER)/backend:latest
 
           # 配置容器設定
           az webapp config container set \
             --resource-group $(RESOURCE_GROUP) \
             --name backend-$(APP_NAME) \
-            --docker-registry-server-url https://$(ACR_LOGIN_SERVER) \
+            --docker-registry-server-url $(ACR_LOGIN_SERVER) \
             --docker-registry-server-user $(ACR_USERNAME) \
             --docker-registry-server-password $(ACR_PASSWORD) \
             --docker-custom-image-name $(ACR_LOGIN_SERVER)/backend:latest
