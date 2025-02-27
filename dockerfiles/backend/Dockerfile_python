@@ -7,10 +7,6 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# 創建並設置 Git 倉庫目錄
-RUN mkdir -p /git-repo && \
-    chmod 777 /git-repo
-
 # 複製 requirements.txt
 COPY ./backend/requirements.txt .
 
@@ -24,6 +20,9 @@ COPY ./backend .
 ENV FLASK_APP=app.py
 ENV PYTHONPATH=/usr/src/app
 ENV FLASK_ENV=production
+
+# 暴露端口
+EXPOSE 5000
 
 # 啟動服務
 CMD ["python", "app.py"] 
