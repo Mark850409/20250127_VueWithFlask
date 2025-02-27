@@ -4,9 +4,6 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/frontend/Dockerfile_vue
-    volumes:
-      - './frontend:/app'
-      - '/app/node_modules'
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     environment:
@@ -20,10 +17,6 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/backend/Dockerfile_python
-    volumes:
-      - './backend:/usr/src/app'
-      - '/usr/bin/git:/usr/bin/git'
-      - './git-repo:/git-repo'
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     env_file:

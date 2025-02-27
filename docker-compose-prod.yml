@@ -1,0 +1,29 @@
+version: "3.3"
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: dockerfiles/frontend/Dockerfile_vue
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - NODE_ENV=${NODE_ENV}
+      - VITE_BACKEND_URL=${VITE_BACKEND_URL}
+    networks:
+      - api_bridge
+  
+  backend:
+    build:
+      context: .
+      dockerfile: dockerfiles/backend/Dockerfile_python
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    networks:
+      - api_bridge
+    restart: always
+    
+      
+networks:
+  api_bridge:
+    driver: bridge

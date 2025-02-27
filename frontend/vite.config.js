@@ -7,14 +7,14 @@ export default defineConfig(({ command, mode }) => {
   console.log('Current mode:', mode)
   console.log('Current command:', command)
 
-  // 載入環境變數，第三個參數改為空字串以載入所有環境變數
-  const env = loadEnv(mode, path.resolve(__dirname), '')
+  // 載入環境變數
+  const env = loadEnv(mode, process.cwd(), '')
   
   console.log('Environment Variables:', {
     mode,
     command,
-    VITE_API_URL: env.VITE_API_URL,
-    VITE_BACKEND_URL: env.VITE_BACKEND_URL,
+    VITE_API_URL: env.VITE_API_URL || process.env.VITE_API_URL,
+    VITE_BACKEND_URL: env.VITE_BACKEND_URL || process.env.VITE_BACKEND_URL,
     currentDir: __dirname
   })
 
@@ -46,7 +46,13 @@ export default defineConfig(({ command, mode }) => {
     // 明確指定生產環境配置
     build: {
       sourcemap: false,
-      mode: 'production'
+      mode: 'production',
+      // 添加環境變數注入
+      rollupOptions: {
+        output: {
+          manualChunks: undefined
+        }
+      }
     },
     css: {
       postcss: {
@@ -65,8 +71,11 @@ export default defineConfig(({ command, mode }) => {
     define: {
       __VUE_OPTIONS_API__: true,
       __VUE_PROD_DEVTOOLS__: false,
-      'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL),
-      'import.meta.env.VITE_BACKEND_URL': JSON.stringify(env.VITE_BACKEND_URL)
+      'process.env': {
+        VITE_API_URL: JSON.stringify(env.VITE_API_URL || process.env.VITE_API_URL),
+        VITE_BACKEND_URL: JSON.stringify(env.VITE_BACKEND_URL || process.env.VITE_BACKEND_URL),
+        NODE_ENV: JSON.stringify(env.NODE_ENV || process.env.NODE_ENV)
+      }
     }
   }
 }) 

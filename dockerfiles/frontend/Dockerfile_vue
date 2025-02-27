@@ -7,20 +7,31 @@ COPY ./frontend/package*.json ./
 
 # 安裝依賴
 RUN npm install
-RUN npm install -g vite serve  # 安裝 serve 以供 production 使用
+RUN npm install -g vite  # 全局安裝 vite
 
-# 複製源代碼
-COPY ./frontend .
+# 建立 .dockerignore 檔案來忽略 node_modules
+RUN echo "node_modules" > .dockerignore
+
+# 複製源代碼（排除 node_modules）
+COPY ./frontend/ .
 
 # 設置環境變量
-ENV NODE_ENV=production
+ARG VITE_API_URL
+ARG VITE_BACKEND_URL
+ARG NODE_ENV
+ENV VITE_API_URL=${VITE_API_URL}
+ENV VITE_BACKEND_URL=${VITE_BACKEND_URL}
+ENV NODE_ENV=${NODE_ENV}
 ENV PATH /app/node_modules/.bin:$PATH
 
-# 編譯 Vue 應用
+# 構建生產版本
 RUN npm run build
+
+# 安裝 serve 用於生產環境
+RUN npm install -g serve
 
 # 暴露端口
 EXPOSE 3000
 
-# 啟動服務
-CMD ["serve", "-s", "dist", "-l", "3000"]
+# 啟動生產服務器
+CMD ["serve", "-s", "dist", "-l", "3000"] 
