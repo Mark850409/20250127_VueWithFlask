@@ -42,109 +42,109 @@ variables:
     value: '5000'  # 請替換成你想要的應用程式名稱
 
 stages:
-- stage: Infrastructure
-  displayName: 'Setup Infrastructure'
-  jobs:
-  - job: SetupACR
-    displayName: 'Setup Azure Container Registry'
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    # 建立資源組（如果不存在）
-    - task: AzureCLI@2
-      displayName: 'Create Resource Group'
-      inputs:
-        azureSubscription: '$(AZURE_SUBSCRIPTION)'
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          # 檢查資源群組是否存在
-          if [ "$(az group exists --name $(RESOURCE_GROUP))" = "false" ]; then
-            echo "Creating resource group: $(RESOURCE_GROUP)..."
-            az group create --name $(RESOURCE_GROUP) --location $(LOCATION)
-          else
-            echo "Resource group $(RESOURCE_GROUP) already exists. Skipping creation."
-          fi
-    # 建立 ACR（如果不存在）
-    - task: AzureCLI@2
-      displayName: 'Create ACR'
-      inputs:
-        azureSubscription: '$(AZURE_SUBSCRIPTION)'
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          # 檢查 ACR 是否存在
-          if ! az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) &>/dev/null; then
-            echo "Creating ACR..."
-            az acr create \
-              --resource-group $(RESOURCE_GROUP) \
-              --name $(ACR_NAME) \
-              --sku Basic \
-              --admin-enabled true
-          else
-            # 確保現有的 ACR 啟用了 admin
-            echo "Enabling admin access for existing ACR..."
-            az acr update --name $(ACR_NAME) --admin-enabled true
-          fi
+# - stage: Infrastructure
+#   displayName: 'Setup Infrastructure'
+#   jobs:
+#   - job: SetupACR
+#     displayName: 'Setup Azure Container Registry'
+#     pool:
+#       vmImage: 'ubuntu-latest'
+#     steps:
+#     # 建立資源組（如果不存在）
+#     - task: AzureCLI@2
+#       displayName: 'Create Resource Group'
+#       inputs:
+#         azureSubscription: '$(AZURE_SUBSCRIPTION)'
+#         scriptType: 'bash'
+#         scriptLocation: 'inlineScript'
+#         inlineScript: |
+#           # 檢查資源群組是否存在
+#           if [ "$(az group exists --name $(RESOURCE_GROUP))" = "false" ]; then
+#             echo "Creating resource group: $(RESOURCE_GROUP)..."
+#             az group create --name $(RESOURCE_GROUP) --location $(LOCATION)
+#           else
+#             echo "Resource group $(RESOURCE_GROUP) already exists. Skipping creation."
+#           fi
+#     # 建立 ACR（如果不存在）
+#     - task: AzureCLI@2
+#       displayName: 'Create ACR'
+#       inputs:
+#         azureSubscription: '$(AZURE_SUBSCRIPTION)'
+#         scriptType: 'bash'
+#         scriptLocation: 'inlineScript'
+#         inlineScript: |
+#           # 檢查 ACR 是否存在
+#           if ! az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) &>/dev/null; then
+#             echo "Creating ACR..."
+#             az acr create \
+#               --resource-group $(RESOURCE_GROUP) \
+#               --name $(ACR_NAME) \
+#               --sku Basic \
+#               --admin-enabled true
+#           else
+#             # 確保現有的 ACR 啟用了 admin
+#             echo "Enabling admin access for existing ACR..."
+#             az acr update --name $(ACR_NAME) --admin-enabled true
+#           fi
           
-          # 獲取 ACR 登入資訊
-          ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query loginServer -o tsv)
-          ACR_USERNAME=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query username -o tsv)
-          ACR_PASSWORD=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query "passwords[0].value" -o tsv)
+#           # 獲取 ACR 登入資訊
+#           ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query loginServer -o tsv)
+#           ACR_USERNAME=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query username -o tsv)
+#           ACR_PASSWORD=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query "passwords[0].value" -o tsv)
           
-          # 設定 pipeline 變數
-          echo "##vso[task.setvariable variable=REGISTRY_NAME;isOutput=true]$ACR_LOGIN_SERVER"
-          echo "##vso[task.setvariable variable=ACR_USERNAME;isOutput=true]$ACR_USERNAME"
-          echo "##vso[task.setvariable variable=ACR_PASSWORD;isOutput=true;issecret=true]$ACR_PASSWORD"
+#           # 設定 pipeline 變數
+#           echo "##vso[task.setvariable variable=REGISTRY_NAME;isOutput=true]$ACR_LOGIN_SERVER"
+#           echo "##vso[task.setvariable variable=ACR_USERNAME;isOutput=true]$ACR_USERNAME"
+#           echo "##vso[task.setvariable variable=ACR_PASSWORD;isOutput=true;issecret=true]$ACR_PASSWORD"
 
-      name: acrDetails
+#       name: acrDetails
 
-- stage: Build
-  displayName: 'Build and Push'
-  dependsOn: Infrastructure
-  variables:
-    REGISTRY_NAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.REGISTRY_NAME'] ]
-    ACR_USERNAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_USERNAME'] ]
-    ACR_PASSWORD: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_PASSWORD'] ]
-  jobs:
-  - job: BuildAndPush
-    displayName: 'Build and Push Docker Images'
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    # 檢出程式碼
-    - checkout: self
+# - stage: Build
+#   displayName: 'Build and Push'
+#   dependsOn: Infrastructure
+#   variables:
+#     REGISTRY_NAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.REGISTRY_NAME'] ]
+#     ACR_USERNAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_USERNAME'] ]
+#     ACR_PASSWORD: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_PASSWORD'] ]
+#   jobs:
+#   - job: BuildAndPush
+#     displayName: 'Build and Push Docker Images'
+#     pool:
+#       vmImage: 'ubuntu-latest'
+#     steps:
+#     # 檢出程式碼
+#     - checkout: self
               
-    # 登入 ACR
-    - task: Docker@2
-      inputs:
-        containerRegistry: '$(dockerRegistryServiceConnection)'
-        command: 'login'
-      displayName: 'Login to ACR'
+#     # 登入 ACR
+#     - task: Docker@2
+#       inputs:
+#         containerRegistry: '$(dockerRegistryServiceConnection)'
+#         command: 'login'
+#       displayName: 'Login to ACR'
 
-    # 建立並推送前端映像
-    - task: Bash@3
-      displayName: 'Build and Push Frontend Image'
-      inputs:
-        targetType: 'inline'
-        script: |
-          docker build -t $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
-                      -t $(REGISTRY_NAME)/frontend:latest \
-                      -f dockerfiles/frontend/Dockerfile_vue .
-          docker push $(REGISTRY_NAME)/frontend:$(Build.BuildId)
-          docker push $(REGISTRY_NAME)/frontend:latest
+#     # 建立並推送前端映像
+#     - task: Bash@3
+#       displayName: 'Build and Push Frontend Image'
+#       inputs:
+#         targetType: 'inline'
+#         script: |
+#           docker build -t $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
+#                       -t $(REGISTRY_NAME)/frontend:latest \
+#                       -f dockerfiles/frontend/Dockerfile_vue .
+#           docker push $(REGISTRY_NAME)/frontend:$(Build.BuildId)
+#           docker push $(REGISTRY_NAME)/frontend:latest
 
-    # 建立並推送後端映像
-    - task: Bash@3
-      displayName: 'Build and Push Backend Image'
-      inputs:
-        targetType: 'inline'
-        script: |
-          docker build -t $(REGISTRY_NAME)/backend:$(Build.BuildId) \
-                      -t $(REGISTRY_NAME)/backend:latest \
-                      -f dockerfiles/backend/Dockerfile_python .
-          docker push $(REGISTRY_NAME)/backend:$(Build.BuildId)
-          docker push $(REGISTRY_NAME)/backend:latest
+#     # 建立並推送後端映像
+#     - task: Bash@3
+#       displayName: 'Build and Push Backend Image'
+#       inputs:
+#         targetType: 'inline'
+#         script: |
+#           docker build -t $(REGISTRY_NAME)/backend:$(Build.BuildId) \
+#                       -t $(REGISTRY_NAME)/backend:latest \
+#                       -f dockerfiles/backend/Dockerfile_python .
+#           docker push $(REGISTRY_NAME)/backend:$(Build.BuildId)
+#           docker push $(REGISTRY_NAME)/backend:latest
 
 - stage: Deploy
   displayName: 'Deploy to Azure Web App'
@@ -214,7 +214,7 @@ stages:
           az webapp config container set \
             --resource-group $(RESOURCE_GROUP) \
             --name frontend-$(APP_NAME) \
-            --docker-registry-server-url $(ACR_LOGIN_SERVER) \
+            --docker-registry-server-url https://$(ACR_LOGIN_SERVER) \
             --docker-registry-server-user $(ACR_USERNAME) \
             --docker-registry-server-password $(ACR_PASSWORD) \
             --docker-custom-image-name $(ACR_LOGIN_SERVER)/frontend:latest
@@ -256,7 +256,7 @@ stages:
           az webapp config container set \
             --resource-group $(RESOURCE_GROUP) \
             --name backend-$(APP_NAME) \
-            --docker-registry-server-url $(ACR_LOGIN_SERVER) \
+            --docker-registry-server-url https://$(ACR_LOGIN_SERVER) \
             --docker-registry-server-user $(ACR_USERNAME) \
             --docker-registry-server-password $(ACR_PASSWORD) \
             --docker-custom-image-name $(ACR_LOGIN_SERVER)/backend:latest
