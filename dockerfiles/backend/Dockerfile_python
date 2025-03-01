@@ -13,16 +13,21 @@ COPY ./backend/requirements.txt .
 # 安裝依賴
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 複製源代碼
+# 複製源代碼和 Firebase 配置文件
 COPY ./backend .
+COPY ./backend/config/firebase-adminsdk.json /usr/src/app/config/firebase-adminsdk.json
+
+# 確保配置目錄存在
+RUN mkdir -p /usr/src/app/config
 
 # 設置環境變量
 ENV FLASK_APP=app.py
 ENV PYTHONPATH=/usr/src/app
 ENV FLASK_ENV=production
+ENV GOOGLE_APPLICATION_CREDENTIALS=/usr/src/app/config/firebase-adminsdk.json
 
 # 暴露端口
 EXPOSE 5000
 
 # 啟動服務
-CMD ["python", "app.py"] 
+CMD ["python", "app.py"]

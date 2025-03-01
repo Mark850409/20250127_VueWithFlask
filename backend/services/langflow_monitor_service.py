@@ -2,6 +2,7 @@ import logging
 import requests
 from typing import List
 from config.config import config
+from services.langflow_base_service import LangflowBaseService
 
 # 設定 logger
 logging.basicConfig(
@@ -10,14 +11,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-class LangflowMonitorService:
+class LangflowMonitorService(LangflowBaseService):
     def __init__(self):
-        self.config = config['development']()
-        self.base_url = self.config.LANGFLOW_API_BASE_URL
-        self.headers = {
-            'Authorization': self.config.LANGFLOW_API_KEY,
-            'Content-Type': 'application/json'
-        }
+        super().__init__()
+        logger.info(f"LangflowMonitorService initialized with base_url: {self.base_url}")
+        logger.info(f"Headers: {self.headers}")
         
     def get_monitor_messages(self, flow_id: str, session_id: str = None,
                            sender: str = None, sender_name: str = None,
@@ -46,13 +44,18 @@ class LangflowMonitorService:
             # 移除 None 值的參數
             params = {k: v for k, v in params.items() if v is not None}
             
-            # 呼叫外部 API
+            # 構建完整的 URL
             url = f"{self.base_url}/api/v1/monitor/messages"
+            logger.info(f"Making request to: {url}")
+            logger.info(f"Using headers: {self.headers}")
+            logger.info(f"Using params: {params}")
+            
             response = requests.get(url, headers=self.headers, params=params)
             response.raise_for_status()
             
             data = response.json()
             logger.info(f"Response content: {data}")
+            
             # 確保返回的是列表
             if isinstance(data, list):
                 return data

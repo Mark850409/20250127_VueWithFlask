@@ -49,7 +49,7 @@ def setup_cors(app):
     CORS(app, 
         resources={
             r"/api/*": {
-                "origins": CORS_ORIGINS,
+                "origins": "",
                 "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
                 "allow_headers": "*",
                 "expose_headers": ["Content-Type", "Authorization", "x-api-key"],

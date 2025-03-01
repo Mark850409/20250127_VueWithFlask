@@ -11,6 +11,7 @@ import requests
 from config.config import config
 import zipfile
 import io
+from services.langflow_base_service import LangflowBaseService
 
 # 設定 logger
 logging.basicConfig(
@@ -19,15 +20,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-class LangflowService:
+class LangflowService(LangflowBaseService):
     def __init__(self):
+        super().__init__()
         self.dao = LangflowDAO()
-        self.config = config['development']()
-        self.base_url = self.config.LANGFLOW_API_BASE_URL
-        self.headers = {
-            'Authorization': self.config.LANGFLOW_API_KEY,
-            'Content-Type': 'application/json'
-        }
     
     def normalize_filename(self, filename: str) -> str:
         """正規化檔名，保留中文字元"""

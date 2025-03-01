@@ -249,6 +249,7 @@ export default {
     const theme = ref('light')
     const authStore = useAuthStore()
     const bannerData = ref({})
+    const isTokenVerified = ref(false)
     
     // 動態載入 CSS
     const loadThemeCSS = async (themeName) => {
@@ -407,6 +408,9 @@ export default {
         timerInterval.value = null
         tokenCheckInterval.value = null
         
+        // 重置驗證狀態
+        isTokenVerified.value = false
+
         await Swal.fire({
           icon: 'warning',
           title: '登入已過期',
@@ -492,6 +496,11 @@ export default {
 
     // 檢查用戶是否已登入
     const checkAuth = async () => {
+      // 如果已經驗證過，直接返回 true
+      if (isTokenVerified.value) {
+        return true
+      }
+
       const token = localStorage.getItem('token')
       const user = localStorage.getItem('user')
 
@@ -512,6 +521,8 @@ export default {
         if (response.status === 200) {
           startExpirationTimer() // 驗證成功後開始計時
           await syncTheme() // 同步主題設置
+          isTokenVerified.value = true  // 標記已驗證
+          return true
         }
         return true
       } catch (error) {

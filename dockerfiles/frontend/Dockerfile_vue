@@ -25,7 +25,7 @@ ENV NODE_ENV=${NODE_ENV}
 ENV PATH /app/node_modules/.bin:$PATH
 
 # 構建生產版本
-RUN npm run build
+RUN VITE_API_URL=${VITE_API_URL} VITE_BACKEND_URL=${VITE_BACKEND_URL} npm run build
 
 # 安裝 serve 用於生產環境
 RUN npm install -g serve

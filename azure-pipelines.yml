@@ -129,9 +129,12 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          docker build -t $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
-                      -t $(REGISTRY_NAME)/frontend:latest \
-                      -f dockerfiles/frontend/Dockerfile_vue .
+          docker build 
+          --build-arg VITE_API_URL=$(VITE_API_URL) \
+          --build-arg VITE_BACKEND_URL=$(VITE_BACKEND_URL) \
+          -t $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
+          -t $(REGISTRY_NAME)/frontend:latest \
+          -f dockerfiles/frontend/Dockerfile_vue .
           docker push $(REGISTRY_NAME)/frontend:$(Build.BuildId)
           docker push $(REGISTRY_NAME)/frontend:latest
 
@@ -236,7 +239,8 @@ stages:
               VITE_JWT_EXPIRES_IN=$(VITE_JWT_EXPIRES_IN) \
               VITE_LANGFLOW_API_URL=$(VITE_LANGFLOW_API_URL) \
               VITE_LANGFLOW_API_KEY=$(VITE_LANGFLOW_API_KEY) \
-              VITE_LANGFLOW_AUTH_TOKEN=$(VITE_LANGFLOW_AUTH_TOKEN)
+              VITE_LANGFLOW_AUTH_TOKEN=$(VITE_LANGFLOW_AUTH_TOKEN) \
+              VITE_CHECK_TOKEN_INTERVAL=$(VITE_CHECK_TOKEN_INTERVAL)
 
     # 部署後端 Web App
     - task: AzureCLI@2
@@ -293,4 +297,6 @@ stages:
               MAIL_PASSWORD=$(MAIL_PASSWORD) \
               MAIL_DEFAULT_SENDER=$(MAIL_DEFAULT_SENDER) \
               RESET_TOKEN_EXPIRE_TYPE=$(RESET_TOKEN_EXPIRE_TYPE) \
-              RESET_TOKEN_EXPIRE_VALUE=$(RESET_TOKEN_EXPIRE_VALUE)
+              RESET_TOKEN_EXPIRE_VALUE=$(RESET_TOKEN_EXPIRE_VALUE) \
+              GOOGLE_APPLICATION_CREDENTIALS=$(GOOGLE_APPLICATION_CREDENTIALS) \
+              CORS_ORIGINS=$(CORS_ORIGINS)

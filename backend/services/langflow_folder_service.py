@@ -8,6 +8,7 @@ from datetime import datetime
 import requests
 from config.config import config
 import io
+from services.langflow_base_service import LangflowBaseService
 
 # 設定 logger
 logging.basicConfig(
@@ -16,13 +17,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-class FolderService:
+class FolderService(LangflowBaseService):
     def __init__(self):
-        self.config = config['development']()
-        self.base_url = self.config.LANGFLOW_API_BASE_URL
-        self.headers = {
-            'Content-Type': 'application/json'
-        }
+        super().__init__()
     
     def get_all_folders(self) -> List[dict]:
         """獲取所有專案"""

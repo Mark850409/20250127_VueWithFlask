@@ -760,4 +760,3 @@ for exp_type, results in all_results.items():
         rmse, mae, _, accuracy, precision, recall, f1, _ = results
         print(f"{exp_type:^15} {rmse:8.2f} {mae:8.2f} {accuracy:8.2f} {precision:8.2f} {recall:8.2f} {f1:8.2f}")
 
-

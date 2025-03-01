@@ -4,12 +4,17 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/frontend/Dockerfile_vue
+      args:
+        - VITE_API_URL=https://backend-recommend-app.azurewebsites.net/api
+        - VITE_BACKEND_URL=https://backend-recommend-app.azurewebsites.net
+        - NODE_ENV=production
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     environment:
       - CHOKIDAR_USEPOLLING=true
-      - NODE_ENV=${NODE_ENV}
-      - VITE_BACKEND_URL=${VITE_BACKEND_URL}
+      - NODE_ENV=production
+      - VITE_BACKEND_URL=https://backend-recommend-app.azurewebsites.net
+      - VITE_API_URL=https://backend-recommend-app.azurewebsites.net/api
     networks:
       - api_bridge
   
@@ -17,13 +22,16 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/backend/Dockerfile_python
+      args:
+        - FLASK_ENV=production
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
+    environment:
+      - FLASK_ENV=production
     networks:
       - api_bridge
     restart: always
     
-      
 networks:
   api_bridge:
     driver: bridge
