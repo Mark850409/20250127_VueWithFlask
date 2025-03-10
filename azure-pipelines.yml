@@ -150,13 +150,7 @@ stages:
       displayName: 'Build and Push Backend Image'
       inputs:
         targetType: 'inline'
-        script: |
-          # 檢查 firebase-adminsdk.json 是否存在
-          if [ ! -f "./backend/config/firebase-adminsdk.json" ]; then
-            echo "錯誤：firebase-adminsdk.json 文件不存在於 ./backend/config/ 目錄中"
-            exit 1
-          fi
-          
+        script: |         
           # 構建映像
           docker build -t $(REGISTRY_NAME)/backend:$(Build.BuildId) \
                       -t $(REGISTRY_NAME)/backend:latest \
