@@ -17,10 +17,13 @@ COPY ./backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 首先複製 Firebase 配置文件
-COPY ./backend/config/firebase-adminsdk.json ./config/
+COPY ./backend/config/firebase-adminsdk.json /usr/src/app/config/
 
 # 然後複製其餘的源代碼
 COPY ./backend .
+
+# 驗證文件是否存在
+RUN ls -la /usr/src/app/config/firebase-adminsdk.json || exit 1
 
 # 設置環境變量
 ENV FLASK_APP=app.py

@@ -41,6 +41,8 @@ variables:
     value: '3000'  # 請替換成你想要的應用程式名稱
   - name: BACKEND_WEBSITES_PORT
     value: '5000'  # 請替換成你想要的應用程式名稱
+  - name: FIREBASE_ADMIN_SDK_JSON
+    value: '$(FIREBASE_ADMIN_SDK_JSON)'
 
 stages:
 - stage: Infrastructure
@@ -150,15 +152,42 @@ stages:
       displayName: 'Build and Push Backend Image'
       inputs:
         targetType: 'inline'
-        script: |         
+        script: |
+          # 創建臨時目錄結構
+          mkdir -p ./backend/config
+          
+          # 顯示目錄結構（用於調試）
+          echo "目錄結構："
+          ls -la ./backend/config
+          
+          # 從 Pipeline 變數創建 firebase-adminsdk.json
+          echo "正在創建 firebase-adminsdk.json..."
+          echo '$(FIREBASE_ADMIN_SDK_JSON)' > ./backend/config/firebase-adminsdk.json
+          
+          # 確認文件內容（不顯示敏感信息）
+          echo "檢查文件是否創建成功..."
+          if [ -f "./backend/config/firebase-adminsdk.json" ]; then
+            echo "文件創建成功"
+            ls -l ./backend/config/firebase-adminsdk.json
+          else
+            echo "錯誤：firebase-adminsdk.json 文件未創建成功"
+            exit 1
+          fi
+          
           # 構建映像
+          echo "開始構建 Docker 映像..."
           docker build -t $(REGISTRY_NAME)/backend:$(Build.BuildId) \
                       -t $(REGISTRY_NAME)/backend:latest \
                       -f dockerfiles/backend/Dockerfile_python .
           
           # 推送映像
+          echo "推送映像到 ACR..."
           docker push $(REGISTRY_NAME)/backend:$(Build.BuildId)
           docker push $(REGISTRY_NAME)/backend:latest
+          
+          # 清理敏感文件
+          echo "清理敏感文件..."
+          rm -f ./backend/config/firebase-adminsdk.json
 
 - stage: Deploy
   displayName: 'Deploy to Azure Web App'
