@@ -338,3 +338,170 @@
     font-size: 0.75rem !important;   /* 12px */
   }
 }
+
+/* RWD 樣式 */
+@media (max-width: 1023px) {
+  /* 側邊欄樣式保持不變 */
+  .sidebar-collapsed {
+    transform: translateX(-100%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 40;
+    width: 256px;
+  }
+
+  /* 頁籤區域整體容器 */
+  .space-y-6 > div:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* 頁籤容器樣式 */
+  .flex.space-x-4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0;
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 0.5rem;
+  }
+
+  .flex.space-x-4::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 主要頁籤按鈕容器 */
+  .flex.space-x-1 {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  /* 頁籤按鈕樣式 */
+  .flex.space-x-1 button {
+    height: 40px;
+    white-space: nowrap;
+    padding: 0 1rem;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  /* 頁籤按鈕圖標樣式 */
+  .flex.space-x-1 button i {
+    flex-shrink: 0;
+  }
+
+  /* 更多按鈕樣式 */
+  .relative button {
+    height: 40px;
+    white-space: nowrap;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  /* 搜尋和視圖切換容器 */
+  .flex.justify-between.items-center {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  /* 搜尋框容器 */
+  .flex.items-center.space-x-4 {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+  }
+
+  /* 搜尋框樣式 */
+  .relative .w-64 {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  /* 視圖切換按鈕組 */
+  .flex.border.rounded-lg {
+    display: flex;
+    flex-shrink: 0;
+    min-width: 160px;
+    margin-left: 1rem;
+  }
+
+  .flex.border.rounded-lg button {
+    flex: 1;
+    height: 40px;
+    padding: 0 1rem;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  /* 視圖切換按鈕圖標 */
+  .flex.border.rounded-lg button i {
+    flex-shrink: 0;
+    margin-right: 0.25rem;
+  }
+}
+
+/* 手機版特定樣式 */
+@media (max-width: 639px) {
+  /* 搜尋和視圖切換區域在手機版的排列 */
+  .flex.justify-between.items-center {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  /* 搜尋框在手機版的寬度 */
+  .relative .w-64 {
+    width: 100%;
+    max-width: none;
+  }
+
+  /* 視圖切換按鈕組在手機版的樣式 */
+  .flex.border.rounded-lg {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .flex.border.rounded-lg button {
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* 平板版特定樣式 */
+@media (min-width: 640px) and (max-width: 1023px) {
+  /* 搜尋和視圖切換在平板版保持水平排列 */
+  .flex.justify-between.items-center {
+    flex-direction: row;
+  }
+
+  /* 搜尋框在平板版的寬度 */
+  .relative .w-64 {
+    width: 240px;
+  }
+
+  /* 視圖切換按鈕組在平板版的樣式 */
+  .flex.border.rounded-lg {
+    min-width: 180px;
+  }
+}

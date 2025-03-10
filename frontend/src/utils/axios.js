@@ -4,18 +4,33 @@ import router from '@/router'
 
 // 根據環境設置基礎 URL
 const getBaseURL = () => {
-  // 調試信息
+  const mode = import.meta.env.MODE
+  
   console.group('API Configuration')
-  console.log('Complete Environment:', import.meta.env)
-  console.log('VITE_API_URL:', import.meta.env.VITE_API_URL)
-  console.log('VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL)
-  console.log('MODE:', import.meta.env.MODE)
-  console.groupEnd()
+  console.log('Current Mode:', mode)
 
-  if (!import.meta.env.VITE_API_URL) {
-    console.warn('VITE_API_URL is undefined!')
+  let baseURL
+  if (mode === 'development') {
+    // 開發環境：強制使用本地 URL
+    baseURL = 'http://localhost:5000/api'
+    console.log('Development Mode: Using local URL')
+  } else {
+    // 生產環境：使用 .env.production 中的設定
+    baseURL = import.meta.env.VITE_API_URL
+    console.log('Production Mode: Using environment URL')
   }
-  return import.meta.env.VITE_API_URL
+
+  console.log('Environment Info:', {
+    MODE: mode,
+    ENV_VARS: {
+      VITE_API_URL: import.meta.env.VITE_API_URL,
+      VITE_BACKEND_URL: import.meta.env.VITE_BACKEND_URL
+    },
+    FINAL_URL: baseURL
+  })
+  console.groupEnd()
+  
+  return baseURL
 }
 
 // 創建 axios 實例

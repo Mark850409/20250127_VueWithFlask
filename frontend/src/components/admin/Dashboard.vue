@@ -69,9 +69,17 @@
             <div class="flex-1">
               <h4 class="font-medium">{{ shop.name }}</h4>
               <p class="text-sm text-gray-500">{{ shop.city_CN }} - {{ shop.address }}</p>
-              <div class="flex items-center text-sm text-gray-500">
-                <star-rating :rating="shop.rating" :read-only="true" :star-size="15" />
-                <span class="ml-2">{{ shop.rating }}</span>
+              <div class="flex items-center mt-1 space-x-4">
+                <!-- 原始評分 -->
+                <div class="flex items-center">
+                  <span class="text-sm text-gray-500 mr-2">評分:</span>
+                  <star-rating :rating="5" :read-only="true" :star-size="15" />
+                </div>
+                <!-- 平均評分 -->
+                <div class="flex items-center">
+                  <span class="text-sm text-gray-500 mr-2">平均:</span>
+                  <star-rating :rating="shop.rating" :read-only="true" :star-size="15" />
+                </div>
               </div>
             </div>
             <div class="text-right">
@@ -177,26 +185,61 @@ export default {
     const latestReviews = ref([])
     const systemLogs = ref([])
     const activityData = ref({})
-    const currentPeriod = ref('日')
+    const currentPeriod = ref('月')
+    const loading = ref({
+      stats: true,
+      shops: true,
+      reviews: true,
+      logs: true,
+      activity: true
+    })
     
     const periods = ['日', '週', '月']
 
     const fetchDashboardData = async () => {
       try {
-        const response = await dashboardAPI.getDashboardStats()
-        console.log('Dashboard data:', response)
-        stats.value = response.data.stats
-        console.log('Stats after assignment:', stats.value)
-        topShops.value = response.data.topShops
-        console.log('topShops assignment:', topShops.value)
-        latestReviews.value = response.data.latestReviews
-        console.log('latestReviews assignment:', latestReviews.value)
-        systemLogs.value = response.data.systemLogs
-        console.log('systemLogs assignment:', systemLogs.value)
-        activityData.value = response.data.activityData
-        console.log('activityData assignment:', activityData.value)
+        // 使用 Promise.all 並行請求所有數據
+        const [
+          statsResponse,
+          shopsResponse,
+          reviewsResponse,
+          logsResponse,
+          activityResponse
+        ] = await Promise.all([
+          dashboardAPI.getBasicStats(),
+          dashboardAPI.getTopShops(),
+          dashboardAPI.getLatestReviews(),
+          dashboardAPI.getSystemLogs(),
+          dashboardAPI.getActivityData()
+        ])
+
+        // 更新各個部分的數據
+        stats.value = statsResponse.data.stats
+        loading.value.stats = false
+        console.log('Stats loaded:', stats.value)
+
+        topShops.value = shopsResponse.data.topShops
+        loading.value.shops = false
+        console.log('Shops loaded:', topShops.value)
+
+        latestReviews.value = reviewsResponse.data.latestReviews
+        loading.value.reviews = false
+        console.log('Reviews loaded:', latestReviews.value)
+
+        systemLogs.value = logsResponse.data.systemLogs
+        loading.value.logs = false
+        console.log('Logs loaded:', systemLogs.value)
+
+        activityData.value = activityResponse.data.activityData
+        loading.value.activity = false
+        console.log('Activity data loaded:', activityData.value)
+
       } catch (error) {
         console.error('獲取儀表板數據失敗:', error)
+        // 在錯誤時也要更新載入狀態
+        Object.keys(loading.value).forEach(key => {
+          loading.value[key] = false
+        })
       }
     }
 
@@ -214,9 +257,9 @@ export default {
       
       // 根據不同時間範圍處理數據
       if (currentPeriod.value === '日') {
-        // 只顯示今天的數據
+        // 只顯示今天的24小時數據
         const today = new Date()
-        const todayStr = today.toISOString().split('T')[0]  // 格式: YYYY-MM-DD
+        const todayStr = today.toISOString().split('T')[0]
         
         // 生成24小時的時間點
         const hours = Array.from({ length: 24 }, (_, i) => 
@@ -232,36 +275,72 @@ export default {
         
         // 使用後端返回的 hourly 數據
         if (activityData.value.hourly) {
-          const { dates: hourlyDates, values: hourlyValues } = activityData.value.hourly
-          hourlyDates.forEach((date, index) => {
-            const [dateStr, timeStr] = date.split(' ')  // 分離日期和時間
+          activityData.value.hourly.dates.forEach((date, index) => {
+            const [dateStr, timeStr] = date.split(' ')
             if (dateStr === todayStr) {
-              const hour = timeStr.split(':')[0] + ':00'  // 只取小時部分
+              const hour = timeStr.split(':')[0] + ':00'
               const hourIndex = hourlyData.dates.findIndex(h => h === hour)
               if (hourIndex !== -1) {
-                hourlyData.values[hourIndex] = hourlyValues[index]
+                hourlyData.values[hourIndex] = activityData.value.hourly.values[index]
               }
             }
           })
         }
         
         return hourlyData
+        
       } else if (currentPeriod.value === '週') {
-        // 顯示包含今天在內的最近7天數據
-        return {
-          dates: dates.slice(-7).map(date => {
-            // 將日期格式從 YYYY-MM-DD 轉換為 MM/DD
-            const [_, month, day] = date.split('-')
-            return `${month}/${day}`
-          }),
-          values: values.slice(-7)
+        // 獲取最近7天的數據
+        const endDate = new Date()
+        const startDate = new Date()
+        startDate.setDate(endDate.getDate() - 7)
+        
+        // 生成最近7天的日期陣列
+        const weekDates = []
+        const weekValues = []
+        
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+          const dateStr = d.toISOString().split('T')[0]
+          const index = dates.findIndex(date => date.startsWith(dateStr))
+          
+          weekDates.push(`${d.getMonth() + 1}/${d.getDate()}`)
+          weekValues.push(index !== -1 ? values[index] : 0)
         }
-      } else if (currentPeriod.value === '月') {
+        
         return {
-          dates: dates.map(date => date.split(' ')[0]),  // 只顯示日期部分
-          values: values
+          dates: weekDates,
+          values: weekValues
+        }
+        
+      } else if (currentPeriod.value === '月') {
+        // 獲取最近30天的數據
+        const endDate = new Date()
+        const startDate = new Date()
+        startDate.setDate(endDate.getDate() - 30)
+        
+        // 生成最近30天的日期陣列
+        const monthDates = []
+        const monthValues = []
+        let dayCount = 0
+        
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+          const dateStr = d.toISOString().split('T')[0]
+          const index = dates.findIndex(date => date.startsWith(dateStr))
+          
+          // 每6天顯示一次日期，最後一天也顯示
+          const showDate = dayCount % 6 === 0 || d.getTime() === endDate.getTime()
+          monthDates.push(showDate ? `${d.getMonth() + 1}/${d.getDate()}` : '')
+          monthValues.push(index !== -1 ? values[index] : 0)
+          dayCount++
+        }
+        
+        return {
+          dates: monthDates,
+          values: monthValues
         }
       }
+      
+      return { dates: [], values: [] }
     })
 
     const changePeriod = (period) => {
@@ -286,7 +365,8 @@ export default {
       currentPeriod,
       processedActivityData,
       changePeriod,
-      goToStore
+      goToStore,
+      loading
     }
   }
 }

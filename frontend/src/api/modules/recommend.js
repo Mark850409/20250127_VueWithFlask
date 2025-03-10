@@ -1,6 +1,34 @@
 import axios from '@/utils/axios'
 
 export default {
+  // 獲取導航 URL
+  getNavigation(params) {
+    console.log('getNavigation params:', params)
+    return axios.get('/v1/maps/navigation', {
+      params: {
+        start_address: encodeURIComponent(params.origin),  // URL 編碼
+        end_address: encodeURIComponent(params.destination),  // URL 編碼
+        mode: params.mode || 'driving',
+        avoid: []
+      },
+      paramsSerializer: {
+        encode: (param) => param  // 防止 axios 重複編碼
+      }
+    }).catch(error => {
+      console.error('Get Navigation URL Error:', error)
+      if (error.response) {
+        console.error('Response Error:', error.response.data)
+        throw new Error(error.response.data.message || '獲取導航連結失敗')
+      } else if (error.request) {
+        console.error('Request Error:', error.request)
+        throw new Error('網路連接失敗')
+      } else {
+        console.error('Error:', error.message)
+        throw new Error('發生未知錯誤')
+      }
+    })
+  },
+
   // 計算路線距離
   calculateDistance(params) {
     return axios.get('/v1/maps/distance-matrix', {

@@ -3,95 +3,103 @@
     :name="viewMode === 'grid' ? 'layout-grid' : 'layout-list'"
     tag="div"
     :class="{
-      'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8': viewMode === 'grid',
-      'space-y-4': viewMode === 'list'
+      'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-20': viewMode === 'grid',
+      'space-y-4 pb-20': viewMode === 'list'
     }"
   >
-    <div v-for="drink in drinks" :key="drink.id" 
-        class="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer hover:shadow-xl"
-        @click="showDrinkDetail(drink)">
-      <!-- 店家圖片 -->
-      <div class="relative">
-        <img 
-          :src="drink.image_url" 
-          :alt="drink.name" 
-          class="w-full h-52 object-cover"
-          @error="handleImageError"
-        >
-        <!-- 促銷標籤 -->
-        <div v-if="drink.promotion" class="absolute top-4 left-4">
-          <span class="px-3 py-1 text-sm bg-purple-600 bg-opacity-70 text-white rounded-full inline-flex items-center shadow-md">
-            <i class="fas fa-tag text-xs mr-1.5"></i>
-            {{ drink.promotion }}
-          </span>
-        </div>
-      </div>
-
-      <!-- 店家資訊 -->
-        <div class="p-4">
-        <!-- 店家名稱 -->
-        <div class="flex justify-between items-start mb-4">
-          <h3 class="text-lg font-bold text-gray-900">{{ drink.name }}</h3>
-          <button @click.stop="toggleFavorite(drink)" 
-                  class="text-2xl focus:outline-none transition-colors duration-300">
-            <i class="fas fa-heart" 
-              :class="{ 'text-red-500': favoriteStates[drink.id], 'text-gray-400': !favoriteStates[drink.id] }">
-            </i>
-          </button>
-        </div>
-
-        <!-- 縣市和評分資訊 -->
-        <div class="flex justify-between items-center mb-3">
-          <div class="flex items-center text-gray-600">
-            <i class="fas fa-map-marker-alt mr-2"></i>
-            <span>{{ drink.city_CN }}</span>
-          </div>
-          <div class="flex items-center">
-            <span class="text-yellow-400 mr-1"><i class="fas fa-star"></i></span>
-            <span class="font-bold">{{ drink.rating }}</span>
-            <span class="text-gray-500 ml-1">({{ drink.review_number }}次瀏覽)</span>
-          </div>
-        </div>
-
-        <!-- 店家標籤 -->
-        <div v-if="drink.tag" class="mb-3 flex">
-          <span class="px-3 py-1 text-sm bg-purple-400 bg-opacity-20 text-purple-600 rounded-full inline-flex items-center">
-            <i class="fas fa-tag text-xs mr-1.5"></i>
-            {{ drink.tag }}
-          </span>
-        </div>
-
-        <!-- 店家描述 -->
-        <p class="text-gray-600 mb-4 line-clamp-2">
-            {{ truncateDescription(drink.description) }}
-        </p>
-
-        <!-- 分隔線 -->
-        <div class="h-px bg-gray-200 dark:bg-gray-700 mb-4"></div>
-
-        <!-- 功能按鈕 -->
-        <div class="flex justify-end space-x-4">
-          <a 
-            :href="drink.foodpanda_url" 
-            target="_blank"
-            @click.stop
-            class="p-2 text-gray-600 hover:text-pink-500 transition-colors duration-300"
-            title="前往點餐"
-          >
-            <i class="fas fa-utensils text-xl"></i>
-          </a>
-          <a 
-            :href="drink.navigation_url" 
-            target="_blank"
-            @click.stop
-            class="p-2 text-gray-600 hover:text-indigo-500 transition-colors duration-300"
-            title="查看地圖"
-          >
-            <i class="fas fa-map-marker-alt text-xl"></i>
-          </a>
-        </div>
-      </div>
+    <div v-if="loading" key="loading" class="col-span-full flex justify-center items-center py-8">
+      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
     </div>
+    <template v-else>
+      <div v-for="drink in sortedDrinks" :key="drink.id" 
+          class="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transform transition-all duration-300"
+          :data-drink-id="drink.id"
+          @click="showDrinkDetail(drink)">
+        <!-- 店家圖片 -->
+        <div class="relative">
+          <img 
+            :src="drink.image_url" 
+            :alt="drink.name" 
+            class="w-full h-52 object-cover transition-opacity duration-300"
+            :class="{ 'opacity-0': !imageLoaded[drink.id] }"
+            loading="lazy"
+            @load="handleImageLoad(drink.id)"
+            @error="handleImageError"
+          >
+          <div v-if="!imageLoaded[drink.id]" class="absolute inset-0 bg-gray-200 animate-pulse"></div>
+          <!-- 促銷標籤 -->
+          <div v-if="drink.promotion" class="absolute top-4 left-4">
+            <span class="px-3 py-1 text-sm bg-purple-600 bg-opacity-70 text-white rounded-full inline-flex items-center shadow-md">
+              <i class="fas fa-tag text-xs mr-1.5"></i>
+              {{ drink.promotion }}
+            </span>
+          </div>
+        </div>
+
+        <!-- 店家資訊 -->
+        <div class="p-4">
+          <!-- 店家名稱 -->
+          <div class="flex justify-between items-start mb-4">
+            <h3 class="text-lg font-bold text-gray-900">{{ drink.name }}</h3>
+            <button @click.stop="toggleFavorite(drink)" 
+                    class="text-2xl focus:outline-none transition-colors duration-300">
+              <i class="fas fa-heart" 
+                :class="{ 'text-red-500': favoriteStates[drink.id], 'text-gray-400': !favoriteStates[drink.id] }">
+              </i>
+            </button>
+          </div>
+
+          <!-- 縣市和評分資訊 -->
+          <div class="flex justify-between items-center mb-3">
+            <div class="flex items-center text-gray-600">
+              <i class="fas fa-map-marker-alt mr-2"></i>
+              <span>{{ drink.city_CN }}</span>
+            </div>
+            <div class="flex items-center">
+              <span class="text-yellow-400 mr-1"><i class="fas fa-star"></i></span>
+              <span class="font-bold">{{ drink.rating }}</span>
+              <span class="text-gray-500 ml-1">({{ drink.review_number }}次瀏覽)</span>
+            </div>
+          </div>
+
+          <!-- 店家標籤 -->
+          <div v-if="drink.tag" class="mb-3 flex">
+            <span class="px-3 py-1 text-sm bg-purple-400 bg-opacity-20 text-purple-600 rounded-full inline-flex items-center">
+              <i class="fas fa-tag text-xs mr-1.5"></i>
+              {{ drink.tag }}
+            </span>
+          </div>
+
+          <!-- 店家描述 -->
+          <p class="text-gray-600 mb-4 line-clamp-2">
+              {{ truncateDescription(drink.description) }}
+          </p>
+
+          <!-- 分隔線 -->
+          <div class="h-px bg-gray-200 dark:bg-gray-700 mb-4"></div>
+
+          <!-- 功能按鈕 -->
+          <div class="flex justify-end space-x-4">
+            <a 
+              :href="drink.foodpanda_url" 
+              target="_blank"
+              @click.stop
+              class="p-2 text-gray-600 hover:text-pink-500 transition-colors duration-300"
+              title="前往點餐"
+            >
+              <i class="fas fa-utensils text-xl"></i>
+            </a>
+            <button 
+              @click.stop="handleMapClick(drink)"
+              class="p-2 text-gray-600 hover:text-indigo-500 transition-colors duration-300"
+              title="查看地圖"
+            >
+              <i class="fas fa-map-marker-alt text-xl"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </template>
   </transition-group>
 
   <!-- 飲料店詳細資訊彈窗 -->
@@ -102,8 +110,12 @@
       <div class="relative">
         <img :src="selectedDrink.image_url" 
              :alt="selectedDrink.name"
-             class="w-full h-64 object-cover"
+             class="w-full h-64 object-cover transition-opacity duration-300"
+             :class="{ 'opacity-0': !modalImageLoaded }"
+             loading="lazy"
+             @load="handleModalImageLoad"
              @error="handleImageError">
+        <div v-if="!modalImageLoaded" class="absolute inset-0 bg-gray-200 animate-pulse"></div>
         <button @click="closeDetailModal"
                 class="absolute top-4 right-4 bg-black bg-opacity-50 text-white rounded-full p-2 hover:bg-opacity-70">
           <i class="fas fa-times"></i>
@@ -204,10 +216,19 @@
         </div>
 
         <div class="flex justify-end mt-6 space-x-4">
-          <button class="p-2 text-gray-600 hover:text-pink-500 transition-colors duration-300">
+          <a 
+            :href="selectedDrink.foodpanda_url" 
+            target="_blank"
+            class="p-2 text-gray-600 hover:text-pink-500 transition-colors duration-300"
+            title="前往點餐"
+          >
             <i class="fas fa-utensils text-xl"></i>
-          </button>
-          <button class="p-2 text-gray-600 hover:text-blue-500 transition-colors duration-300">
+          </a>
+          <button 
+            @click="handleMapClick(selectedDrink)"
+            class="p-2 text-gray-600 hover:text-blue-500 transition-colors duration-300"
+            title="查看地圖"
+          >
             <i class="fas fa-map-marker-alt text-xl"></i>
           </button>
         </div>
@@ -386,6 +407,8 @@ export default {
     const rating = ref(null)
     const hoverRating = ref(0)
     const defaultAvatar = ref('https://api.dicebear.com/7.x/avataaars/svg?seed=default')
+    const imageLoaded = ref({})
+    const modalImageLoaded = ref(false)
     let cityChangeHandler = null
 
     const getStoredCity = () => {
@@ -397,7 +420,15 @@ export default {
       return description.length > 100 ? description.slice(0, 100) + '...' : description
     }
 
+    const handleImageLoad = (id) => {
+      imageLoaded.value[id] = true
+    }
+
     const handleImageError = (event) => {
+      const drinkId = event.target.closest('[data-drink-id]')?.dataset.drinkId
+      if (drinkId) {
+        imageLoaded.value[drinkId] = true
+      }
       event.target.src = defaultImage
     }
 
@@ -405,33 +436,19 @@ export default {
       event.target.src = defaultAvatar.value
     }
 
-    const showDrinkDetail = async (drink) => {
-      try {
-        // 獲取店家評論資訊
-        const response = await messageAPI.getMessages()
-        if (response.data && response.data.messages) {
-          // 過濾出當前店家的評論
-          const storeReviews = response.data.messages.filter(
-            message => message.store_id === drink.id
-          )
-          
-          selectedDrink.value = {
-            ...drink,
-            reviews: storeReviews
-          }
-          
-          console.log('Selected drink with reviews:', selectedDrink.value)
-        } else {
-          selectedDrink.value = drink
-        }
-      } catch (error) {
-        console.error('獲取店家評論失敗:', error)
-        selectedDrink.value = drink
-      }
+    const handleModalImageLoad = () => {
+      modalImageLoaded.value = true
+    }
+
+    const showDrinkDetail = (drink) => {
+      selectedDrink.value = drink
+      activeTab.value = 'info'
+      modalImageLoaded.value = false // 重置模態框圖片載入狀態
     }
 
     const closeDetailModal = () => {
       selectedDrink.value = null
+      modalImageLoaded.value = false
     }
 
     const checkFavoriteStatus = async (storeId) => {
@@ -489,9 +506,76 @@ export default {
       }
     }
 
+    // 新增一個方法來處理地圖點擊
+    const handleMapClick = async (store) => {
+      try {
+        // 如果已經有有效的導航 URL，直接使用
+        if (store.navigation_url && store.navigation_url !== '#') {
+          window.open(store.navigation_url, '_blank')
+          return
+        }
+
+        // 否則獲取新的導航 URL
+        const navigationResponse = await recommendAPI.getNavigation({
+          origin: '東吳大學(城中校區)',
+          destination: store.name,
+          mode: 'driving'
+        })
+
+        if (navigationResponse.data && navigationResponse.data.navigation_url) {
+          store.navigation_url = navigationResponse.data.navigation_url
+          window.open(store.navigation_url, '_blank')
+        } else {
+          console.warn(`無法獲取 ${store.name} 的導航連結`)
+          Swal.fire({
+            icon: 'error',
+            title: '無法獲取導航連結',
+            text: '請稍後再試'
+          })
+        }
+      } catch (error) {
+        console.error(`獲取導航連結失敗 (${store.name}):`, error)
+        Swal.fire({
+          icon: 'error',
+          title: '獲取導航連結失敗',
+          text: '請稍後再試'
+        })
+      }
+    }
+
+    const sortedDrinks = computed(() => {
+      if (!drinks.value.length) return []
+      
+      const drinksList = [...drinks.value]
+      
+      switch (props.sortBy) {
+        case 'distance':
+          return drinksList.sort((a, b) => {
+            if (a.distance === Infinity) return 1
+            if (b.distance === Infinity) return -1
+            return a.distance - b.distance
+          })
+        case 'rating':
+          return drinksList.sort((a, b) => {
+            if (b.rating === a.rating) {
+              return b.review_number - a.review_number
+            }
+            return b.rating - a.rating
+          })
+        case 'review_number':
+          return drinksList.sort((a, b) => b.review_number - a.review_number)
+        default:
+          return drinksList
+      }
+    })
+
     const fetchPopularDrinks = async () => {
       loading.value = true
+      drinks.value = [] // 清空當前數據
+      imageLoaded.value = {} // 重置圖片載入狀態
+      
       try {
+        await new Promise(resolve => setTimeout(resolve, 300)) // 添加短暫延遲確保動畫效果
         const params = {
           sort_by: props.sortBy,
           limit: 12
@@ -500,6 +584,7 @@ export default {
         params.city = selectedCity.value || getStoredCity()
         
         const response = await recommendAPI.getPopularDrinks(params)
+        console.log('Popular drinks response:', response.data)
         
         if (response.data && response.data.stores) {
           let mappedStores = response.data.stores.map(shop => ({
@@ -516,16 +601,25 @@ export default {
             tag: Array.isArray(shop.tag) ? shop.tag.join(', ') : (shop.tag || ''),
             promotion: shop.promotion || shop.tag || '',
             foodpanda_url: shop.redirection_url || '#',
-            navigation_url: shop.navigation_url || '#',
-            distance: null
+            navigation_url: '#',
+            distance: null,
+            duration: null
           }))
 
-          const needToCalculateDistance = 
+          // 修改距離計算的觸發條件
+          const needToCalculateDistance = props.sortBy === 'distance' && (
             !distanceCalculated.value || 
-            currentCity.value !== (selectedCity.value || getStoredCity()) ||
-            storesWithDistance.value.length === 0;
+            currentCity.value !== params.city ||
+            storesWithDistance.value.length === 0
+          )
+          
+          console.log('需要計算距離:', needToCalculateDistance)
+          console.log('當前排序方式:', props.sortBy)
+          console.log('當前城市:', currentCity.value)
+          console.log('選擇的城市:', params.city)
 
-          if (props.sortBy === 'distance' && needToCalculateDistance) {
+          if (needToCalculateDistance) {
+            console.log('開始計算距離...')
             const distancePromises = mappedStores.map(async (store) => {
               try {
                 const response = await recommendAPI.calculateDistance({
@@ -557,18 +651,24 @@ export default {
             
             mappedStores = await Promise.all(distancePromises)
             distanceCalculated.value = true
-            currentCity.value = selectedCity.value || getStoredCity()
+            currentCity.value = params.city
             storesWithDistance.value = [...mappedStores]
-          } else if (props.sortBy === 'distance') {
-            mappedStores = storesWithDistance.value
+          } else if (props.sortBy === 'distance' && storesWithDistance.value.length > 0) {
+            console.log('使用已計算的距離數據')
+            mappedStores = [...storesWithDistance.value]
           }
           
+          // 根據排序方式進行排序
           if (props.sortBy === 'distance') {
             mappedStores.sort((a, b) => {
               if (a.distance === Infinity) return 1
               if (b.distance === Infinity) return -1
-              return b.distance - a.distance
+              return a.distance - b.distance  // 修改為升序排序，距離近的排前面
             })
+          } else if (props.sortBy === 'rating') {
+            mappedStores.sort((a, b) => b.rating - a.rating)
+          } else if (props.sortBy === 'review_number') {
+            mappedStores.sort((a, b) => b.review_number - a.review_number)
           }
           
           drinks.value = mappedStores
@@ -745,39 +845,24 @@ export default {
       return count
     })
 
-    watch(() => props.sortBy, () => {
-      if (props.sortBy === 'distance') {
-        if (storesWithDistance.value.length > 0) {
-          drinks.value = [...storesWithDistance.value].sort((a, b) => {
-            if (a.distance === Infinity) return 1
-            if (b.distance === Infinity) return -1
-            return b.distance - a.distance
-          })
-        }
-      } else {
-        const params = {
-          sort_by: props.sortBy,
-          limit: 12,
-          city: selectedCity.value || getStoredCity()
-        }
-        drinks.value = drinks.value.sort((a, b) => {
-          if (props.sortBy === 'rating') {
-            return b.rating - a.rating
-          } else if (props.sortBy === 'review_number') {
-            return b.review_number - a.review_number
-          }
-          return 0
-        })
+    watch(() => props.sortBy, (newValue) => {
+      console.log('排序方式改變:', newValue)
+      if (newValue === 'distance') {
+        // 強制重新計算距離
+        distanceCalculated.value = false
+        storesWithDistance.value = []
       }
+      fetchPopularDrinks()
     }, { immediate: true })
 
     onMounted(() => {
       cityChangeHandler = (event) => {
         selectedCity.value = event.detail
         localStorage.setItem('selectedCity', event.detail)
+        // 城市改變時也需要重新計算距離
         distanceCalculated.value = false
         storesWithDistance.value = []
-      fetchPopularDrinks()
+        fetchPopularDrinks()
       }
       
       window.addEventListener('cityChanged', cityChangeHandler)
@@ -797,6 +882,8 @@ export default {
       loading,
       error,
       handleImageError,
+      handleImageLoad,
+      imageLoaded,
       truncateDescription,
       selectedDrink,
       showDrinkDetail,
@@ -825,7 +912,11 @@ export default {
       displayedReviews,
       getReviewCount,
       defaultAvatar,
-      handleAvatarError
+      handleAvatarError,
+      handleMapClick,
+      modalImageLoaded,
+      handleModalImageLoad,
+      sortedDrinks
     }
   }
 }
@@ -834,14 +925,14 @@ export default {
 <style scoped>
 .layout-grid-move,
 .layout-list-move {
-  transition: transform 0.5s ease;
+  transition: all 0.5s ease;
 }
 
 .layout-grid-enter-active,
 .layout-grid-leave-active,
 .layout-list-enter-active,
 .layout-list-leave-active {
-  transition: all 0.5s ease;
+  transition: all 0.5s ease-out;
 }
 
 .layout-grid-enter-from,
@@ -855,6 +946,35 @@ export default {
 .layout-grid-leave-active,
 .layout-list-leave-active {
   position: absolute;
+  width: 100%;
+}
+
+/* 添加新的過渡效果 */
+.fade-move,
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: scaleY(0.01) translate(30px, 0);
+}
+
+.fade-leave-active {
+  position: absolute;
+}
+
+/* 優化卡片hover效果 */
+.cursor-pointer {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow;
+}
+
+.cursor-pointer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .line-clamp-2 {
@@ -862,11 +982,6 @@ export default {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.cursor-pointer:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 a {

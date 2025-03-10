@@ -1,58 +1,64 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
+import fs from 'fs'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
-  console.log('Current mode:', mode)
-  console.log('Current command:', command)
+  // 明確指定環境檔案路徑
+  const envDir = __dirname
+  const envFile = mode === 'development' ? '.env.development' : '.env.production'
+  const envPath = path.resolve(envDir, envFile)
 
-  // 載入環境變數
-  const env = loadEnv(mode, process.cwd(), '')
+  // 確保環境檔案存在
+  if (!fs.existsSync(envPath)) {
+    console.error(`環境檔案不存在: ${envPath}`)
+    process.exit(1)
+  }
+
+  // 只載入指定的環境檔案
+  const env = loadEnv(mode, envDir, '')
   
-  console.log('Environment Variables:', {
+  console.log('Build Info:', {
     mode,
     command,
-    VITE_API_URL: env.VITE_API_URL || process.env.VITE_API_URL,
-    VITE_BACKEND_URL: env.VITE_BACKEND_URL || process.env.VITE_BACKEND_URL,
-    currentDir: __dirname
+    envFile,
+    envPath,
+    loadedEnv: env
   })
+
+  // 根據模式設定預設值
+  const defaultConfig = {
+    development: {
+      apiUrl: 'http://localhost:5000',
+      backendUrl: 'http://localhost:5000'
+    },
+    production: {
+      apiUrl: 'https://backend-recommend-app.azurewebsites.net/api',
+      backendUrl: 'https://backend-recommend-app.azurewebsites.net'
+    }
+  }[mode]
 
   return {
     plugins: [vue()],
+    envDir: envDir,
+    envFile: envFile, // 明確指定環境檔案
     server: {
       host: '0.0.0.0',
       port: 3000,
       proxy: {
         '/api': {
-          target: env.VITE_BACKEND_URL,
+          target: mode === 'development' 
+            ? defaultConfig.backendUrl 
+            : (env.VITE_BACKEND_URL || defaultConfig.backendUrl),
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, '/api'),
-          secure: false,
-          configure: (proxy, options) => {
-            proxy.on('error', (err, req, res) => {
-              console.log('proxy error', err)
-            })
-            proxy.on('proxyReq', (proxyReq, req, res) => {
-              console.log('Sending Request to the Target:', req.method, req.url)
-            })
-            proxy.on('proxyRes', (proxyRes, req, res) => {
-              console.log('Received Response from the Target:', proxyRes.statusCode, req.url)
-            })
-          }
+          secure: false
         }
       }
     },
-    // 明確指定生產環境配置
     build: {
-      sourcemap: false,
-      mode: 'production',
-      // 添加環境變數注入
-      rollupOptions: {
-        output: {
-          manualChunks: undefined
-        }
-      }
+      sourcemap: mode === 'development'
     },
     css: {
       postcss: {
@@ -67,14 +73,18 @@ export default defineConfig(({ command, mode }) => {
         '@': path.resolve(__dirname, 'src'),
       },
     },
-    // 明確定義環境變數
     define: {
       __VUE_OPTIONS_API__: true,
-      __VUE_PROD_DEVTOOLS__: false,
+      __VUE_PROD_DEVTOOLS__: mode === 'development',
       'process.env': {
-        VITE_API_URL: JSON.stringify(env.VITE_API_URL || process.env.VITE_API_URL),
-        VITE_BACKEND_URL: JSON.stringify(env.VITE_BACKEND_URL || process.env.VITE_BACKEND_URL),
-        NODE_ENV: JSON.stringify(env.NODE_ENV || process.env.NODE_ENV)
+        ...env,
+        MODE: mode,
+        VITE_API_URL: mode === 'development' 
+          ? defaultConfig.apiUrl 
+          : (env.VITE_API_URL || defaultConfig.apiUrl),
+        VITE_BACKEND_URL: mode === 'development'
+          ? defaultConfig.backendUrl
+          : (env.VITE_BACKEND_URL || defaultConfig.backendUrl)
       }
     }
   }

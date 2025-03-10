@@ -1,5 +1,24 @@
 <template>
   <div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex" :class="theme">
+    <!-- 預載入動畫 -->
+    <div v-if="isLoading" 
+         class="fixed inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div class="flex flex-col items-center space-y-4">
+        <div class="relative">
+          <!-- 外圈動畫 -->
+          <div class="absolute inset-0 rounded-full border-4 border-indigo-100 dark:border-indigo-900"></div>
+          <!-- 旋轉的邊框 -->
+          <div class="w-16 h-16 rounded-full border-4 border-indigo-600 dark:border-indigo-400 border-t-transparent animate-spin"></div>
+          <!-- 內圈脈衝 -->
+          <div class="absolute inset-3 rounded-full bg-indigo-500/20 dark:bg-indigo-400/20 animate-pulse"></div>
+        </div>
+        <!-- 載入文字 -->
+        <div class="text-gray-600 dark:text-gray-300 text-lg font-medium tracking-wider animate-pulse">
+          載入中...
+        </div>
+      </div>
+    </div>
+
     <!-- 側邊欄 -->
     <aside :class="[
       'fixed top-0 left-0 h-full bg-white dark:bg-gray-800 border-r dark:border-gray-700 z-40 flex flex-col transition-all duration-300',
@@ -250,6 +269,7 @@ export default {
     const authStore = useAuthStore()
     const bannerData = ref({})
     const isTokenVerified = ref(false)
+    const isLoading = ref(false)
     
     // 動態載入 CSS
     const loadThemeCSS = async (themeName) => {
@@ -305,10 +325,16 @@ export default {
     }
 
     // 監聽路由變化
-    router.beforeEach(async (to, from, next) => {
-      // 確保在路由切換時重新應用主題
-      await syncTheme()
+    router.beforeEach((to, from, next) => {
+      isLoading.value = true
       next()
+    })
+
+    router.afterEach(() => {
+      // 添加短暫延遲以確保動畫效果
+      setTimeout(() => {
+        isLoading.value = false
+      }, 500)
     })
 
     onMounted(async () => {
@@ -621,7 +647,8 @@ export default {
       getAvatarUrl,
       handleLogout,
       logout,
-      bannerData
+      bannerData,
+      isLoading
     }
   },
   computed: {
@@ -850,5 +877,42 @@ aside {
 aside.w-0 {
   visibility: hidden;
   opacity: 0;
+}
+
+/* 預載入動畫相關樣式 */
+@keyframes fadeIn {
+  from { 
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  from { 
+    opacity: 1;
+    transform: scale(1);
+  }
+  to { 
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+.fixed {
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fixed.hidden {
+  animation: fadeOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 添加漸變背景效果 */
+.bg-white\/80, .dark\:bg-gray-900\/80 {
+  backdrop-filter: blur(8px);
+  transition: background-color 0.3s ease;
 }
 </style> 

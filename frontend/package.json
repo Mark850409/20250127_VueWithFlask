@@ -16,6 +16,7 @@
     "axios": "^1.6.2",
     "echarts": "^5.4.3",
     "element-plus": "^2.4.4",
+    "esbuild": "^0.25.0",
     "firebase": "^10.8.0",
     "js-cookie": "^3.0.5",
     "pinia": "^2.1.7",

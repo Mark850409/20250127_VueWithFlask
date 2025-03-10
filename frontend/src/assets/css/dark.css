@@ -971,7 +971,7 @@
 .dark .admin-btn-primary,
 .dark .admin-page button[class*="bg-blue"],
 .dark .admin-page button[class*="bg-indigo"] {
-  background-color: var(--btn-primary);
+  background-color: var(--btn-secondary);
   border-color: var(--btn-secondary-hover);
   color: white;
   backdrop-filter: blur(4px);
@@ -1296,7 +1296,7 @@
 
 /* 按鈕圖標基礎樣式 */
 .dark button i {
-  /* color: var(--btn-icon-color); */
+  color: var(--btn-icon-color);
   transition: all 0.2s ease;
 }
 
@@ -1449,7 +1449,7 @@
 
 /* 對話群組容器 */
 .dark .bg-white.rounded-xl {
-  background-color: rgba(45, 47, 54, 0.8);
+  /* background-color: rgba(45, 47, 54, 0.8); */
   border-color: var(--admin-border);
 }
 
@@ -1670,11 +1670,11 @@
 }
 
 /* 未追蹤文件區塊樣式 */
-.dark .mb-4 {
+/* .dark .mb-4 { */
   /* background-color: var(--admin-bg-secondary); */
-  border-radius: 0.5rem;
-  padding: 1rem;
-}
+  /* border-radius: 0.5rem;
+  padding: 1rem; */
+/* } */
 
 /* 未追蹤文件標題 */
 .dark .text-sm.font-semibold.text-gray-600.mb-2 {

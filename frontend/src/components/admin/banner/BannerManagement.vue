@@ -103,157 +103,191 @@
     </div>
 
     <!-- 內容區域 -->
-    <div class="bg-white rounded-lg shadow-sm p-4">
+    <div class="relative bg-white rounded-lg shadow-sm p-4 min-h-[300px]">
       <!-- 當前位置提示 -->
-      <div class="mb-4 text-sm text-gray-500">
+      <div class="mb-4 text-sm text-gray-500" :class="{ 'opacity-50': isLoading }">
         <span class="font-medium text-gray-700">當前位置：</span>
         {{ getBannerTypeLabel(currentTab) }}
       </div>
 
       <!-- 卡片視圖 -->
-      <TransitionGroup 
-        v-if="viewMode === 'card'"
-        name="layout-card" 
-        tag="div" 
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
-        <!-- 無資料提示 -->
-        <div v-if="filteredBanners.length === 0"
-             class="col-span-full">
-          <div class="bg-white rounded-xl shadow-sm p-8 text-center">
-            <div class="text-gray-400 mb-4">
-              <i class="fas fa-image text-4xl"></i>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">
-              {{ searchQuery ? '找不到相關內容' : '尚無輪播圖' }}
-            </h3>
-            <p class="text-gray-500 mb-4">
-              {{ searchQuery ? '請嘗試其他關鍵字' : '點擊上方按鈕開始新增輪播圖' }}
-            </p>
-          </div>
-        </div>
-
-        <div v-else
-             v-for="banner in filteredBanners" 
-             :key="banner.id"
-             class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-shadow duration-300">
-          <!-- 圖片預覽 -->
-          <div class="relative aspect-video group">
-            <img :src="getBannerImage(banner)"
-                 :alt="banner.alt"
-                 class="w-full h-full object-cover"
-                 @click="previewImage(banner.image_url)"
-                 @error="(e) => handleImageError(e, banner.id)">
-            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 
-                        transition-opacity duration-300 flex items-center justify-center space-x-4">
-              <button @click.stop="openEditModal(banner)"
-                      class="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button @click.stop="confirmDelete(banner)"
-                      class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </div>
-
-          <!-- 內容資訊 -->
-          <div class="p-4">
-            <div class="flex justify-between items-center mb-2">
-              <h3 class="font-medium text-gray-800">{{ banner.title }}</h3>
-              <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                {{ getBannerTypeLabel(banner.banner_type) }}
-              </span>
-            </div>
-            <p class="text-sm text-gray-600 line-clamp-2 mb-4">{{ banner.subtitle }}</p>
-            <div class="flex justify-between items-center">
-              <span :class="[
-                'px-2 py-1 rounded-full text-xs',
-                banner.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-              ]">
-                {{ banner.is_active ? '啟用中' : '已停用' }}
-              </span>
-              <span class="text-sm text-gray-500">
-                排序: {{ banner.sort_order }}
-              </span>
+      <div class="relative">
+        <!-- 載入動畫覆蓋層 -->
+        <div v-if="isLoading" 
+             class="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-10 rounded-lg">
+          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div class="flex flex-col items-center space-y-4">
+              <div class="relative">
+                <div class="absolute inset-0 rounded-full border-4 border-indigo-100 dark:border-indigo-900"></div>
+                <div class="w-16 h-16 rounded-full border-4 border-indigo-600 dark:border-indigo-400 border-t-transparent animate-spin"></div>
+                <div class="absolute inset-3 rounded-full bg-indigo-500/20 dark:bg-indigo-400/20 animate-pulse"></div>
+              </div>
+              <div class="text-gray-600 dark:text-gray-300 text-lg font-medium tracking-wider animate-pulse whitespace-nowrap">
+                載入中...
+              </div>
             </div>
           </div>
         </div>
-      </TransitionGroup>
 
-      <!-- 列表視圖 -->
-      <div v-else class="bg-white rounded-lg shadow-sm overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">圖片</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">標題</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">類型</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">排序</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">狀態</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">更新時間</th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <!-- 無資料提示 -->
-            <tr v-if="filteredBanners.length === 0">
-              <td colspan="6" class="px-6 py-12 text-center">
-                <i class="fas fa-image text-4xl text-gray-300 mb-2 block"></i>
-                <p class="text-gray-500">暫無輪播圖資料</p>
-              </td>
-            </tr>
+        <TransitionGroup 
+          v-if="viewMode === 'card'"
+          name="layout-card" 
+          tag="div" 
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          :class="{ 'opacity-50': isLoading }">
+          <!-- 無資料提示 -->
+          <div v-if="filteredBanners.length === 0"
+               class="col-span-full">
+            <div class="bg-white rounded-xl shadow-sm p-8 text-center">
+              <div class="text-gray-400 mb-4">
+                <i class="fas fa-image text-4xl"></i>
+              </div>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">
+                {{ searchQuery ? '找不到相關內容' : '尚無輪播圖' }}
+              </h3>
+              <p class="text-gray-500 mb-4">
+                {{ searchQuery ? '請嘗試其他關鍵字' : '點擊上方按鈕開始新增輪播圖' }}
+              </p>
+            </div>
+          </div>
 
-            <tr v-else
-                v-for="banner in filteredBanners" 
-                :key="banner.id">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <img :src="getBannerImage(banner)"
-                     :alt="banner.alt"
-                     class="h-16 w-24 object-cover rounded cursor-pointer"
-                     @click="previewImage(banner.image_url)"
-                     @error="(e) => handleImageError(e, banner.id)">
-              </td>
-              <td class="px-6 py-4">
-                <div class="text-sm font-medium text-gray-900">{{ banner.title }}</div>
-                <div class="text-sm text-gray-500">{{ banner.subtitle }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
+          <div v-else
+               v-for="banner in filteredBanners" 
+               :key="banner.id"
+               class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <!-- 圖片預覽 -->
+            <div class="relative aspect-video group">
+              <!-- 懶加載容器 -->
+              <div class="w-full h-full bg-gray-100 dark:bg-gray-800 animate-pulse" 
+                   v-if="!imageLoadedMap[banner.id]">
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <i class="fas fa-image text-gray-400 text-3xl"></i>
+                </div>
+              </div>
+              <img :src="getBannerImage(banner)"
+                   :alt="banner.alt || banner.title"
+                   loading="lazy"
+                   :key="banner.id + '_' + currentTab"
+                   class="w-full h-full object-cover transition-all duration-300"
+                   :class="{ 
+                     'opacity-0': !imageLoadedMap[banner.id], 
+                     'opacity-100 scale-100': imageLoadedMap[banner.id],
+                     'filter blur-sm': !imageLoadedMap[banner.id]
+                   }"
+                   @load="handleImageLoad(banner.id)"
+                   @error="(e) => handleImageError(e, banner.id)"
+                   @click="previewImage(banner.image_url)">
+              <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 
+                          transition-opacity duration-300 flex items-center justify-center space-x-4">
+                <button @click.stop="openEditModal(banner)"
+                        class="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors transform hover:scale-110">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button @click.stop="confirmDelete(banner)"
+                        class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors transform hover:scale-110">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- 內容資訊 -->
+            <div class="p-4">
+              <div class="flex justify-between items-center mb-2">
+                <h3 class="font-medium text-gray-800">{{ banner.title }}</h3>
                 <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
                   {{ getBannerTypeLabel(banner.banner_type) }}
                 </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {{ banner.sort_order }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
+              </div>
+              <p class="text-sm text-gray-600 line-clamp-2 mb-4">{{ banner.subtitle }}</p>
+              <div class="flex justify-between items-center">
                 <span :class="[
                   'px-2 py-1 rounded-full text-xs',
                   banner.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
                 ]">
                   {{ banner.is_active ? '啟用中' : '已停用' }}
                 </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {{ new Date(banner.updated_at).toLocaleDateString() }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div class="flex justify-end space-x-2">
-                  <button @click="openEditModal(banner)"
-                          class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors">
-                    <i class="fas fa-edit text-sm mr-1.5"></i>
-                    編輯
-                  </button>
-                  <button @click="confirmDelete(banner)"
-                          class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors">
-                    <i class="fas fa-trash text-sm mr-1.5"></i>
-                    刪除
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                <span class="text-sm text-gray-500">
+                  排序: {{ banner.sort_order }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </TransitionGroup>
+
+        <!-- 列表視圖 -->
+        <div v-else class="bg-white rounded-lg shadow-sm overflow-hidden" :class="{ 'opacity-50': isLoading }">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">圖片</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">標題</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">類型</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">排序</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">狀態</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">更新時間</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <!-- 無資料提示 -->
+              <tr v-if="filteredBanners.length === 0">
+                <td colspan="6" class="px-6 py-12 text-center">
+                  <i class="fas fa-image text-4xl text-gray-300 mb-2 block"></i>
+                  <p class="text-gray-500">暫無輪播圖資料</p>
+                </td>
+              </tr>
+
+              <tr v-else
+                  v-for="banner in filteredBanners" 
+                  :key="banner.id">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <img :src="getBannerImage(banner)"
+                       :alt="banner.alt"
+                       class="h-16 w-24 object-cover rounded cursor-pointer"
+                       @click="previewImage(banner.image_url)"
+                       @error="(e) => handleImageError(e, banner.id)">
+                </td>
+                <td class="px-6 py-4">
+                  <div class="text-sm font-medium text-gray-900">{{ banner.title }}</div>
+                  <div class="text-sm text-gray-500">{{ banner.subtitle }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                    {{ getBannerTypeLabel(banner.banner_type) }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ banner.sort_order }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span :class="[
+                    'px-2 py-1 rounded-full text-xs',
+                    banner.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                  ]">
+                    {{ banner.is_active ? '啟用中' : '已停用' }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ new Date(banner.updated_at).toLocaleDateString() }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div class="flex justify-end space-x-2">
+                    <button @click="openEditModal(banner)"
+                            class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors">
+                      <i class="fas fa-edit text-sm mr-1.5"></i>
+                      編輯
+                    </button>
+                    <button @click="confirmDelete(banner)"
+                            class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors">
+                      <i class="fas fa-trash text-sm mr-1.5"></i>
+                      刪除
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -629,14 +663,71 @@ const getBannerTypeLabel = (type) => {
   }
 }
 
-// 處理頁籤切換
+// 添加圖片載入狀態管理
+const imageLoadedMap = ref({})
+
+// 添加載入狀態
+const isLoading = ref(false)
+
+// 修改頁籤切換函數
 const handleTabChange = async (tab) => {
-  currentTab.value = tab
-  await logOperation(`【Banner管理】切換到${getBannerTypeLabel(tab)}頁籤`, '查看')
-  if (tab === 'all') {
-    await fetchAllActiveBanners()
-  } else {
-    await fetchBannersByType(tab)
+  try {
+    if (isLoading.value) return
+    isLoading.value = true
+    
+    // 先重置圖片載入狀態
+    imageLoadedMap.value = {}
+    
+    // 延遲更新 currentTab，讓動畫有時間顯示
+    await new Promise(resolve => setTimeout(resolve, 100))
+    currentTab.value = tab
+    
+    await logOperation(`【Banner管理】切換到${getBannerTypeLabel(tab)}頁籤`, '查看')
+    
+    if (tab === 'all') {
+      await fetchAllActiveBanners()
+    } else {
+      await fetchBannersByType(tab)
+    }
+    
+    // 預加載圖片
+    if (banners.value.length > 0) {
+      const loadPromises = banners.value.map(banner => {
+        return new Promise((resolve) => {
+          const img = new Image()
+          img.onload = () => {
+            imageLoadedMap.value[banner.id] = true
+            resolve()
+          }
+          img.onerror = () => {
+            handleImageError({ target: img }, banner.id)
+            resolve()
+          }
+          img.src = getBannerImage(banner)
+        })
+      })
+      
+      // 等待所有圖片預加載完成或超時
+      await Promise.race([
+        Promise.all(loadPromises),
+        new Promise(resolve => setTimeout(resolve, 2000)) // 2秒超時
+      ])
+    }
+    
+  } catch (error) {
+    console.error('切換頁籤失敗:', error)
+  } finally {
+    // 添加小延遲確保動畫流暢
+    setTimeout(() => {
+      isLoading.value = false
+    }, 300)
+  }
+}
+
+// 修改圖片載入處理函數
+const handleImageLoad = (bannerId) => {
+  if (bannerId) {
+    imageLoadedMap.value[bannerId] = true
   }
 }
 
@@ -731,44 +822,47 @@ const isValidUrl = (url) => {
   return /^https?:\/\/.+/.test(url)
 }
 
+// 添加預設圖片常量
+const defaultImage = 'https://placehold.co/600x400/e2e8f0/475569?text=無法載入圖片'
+
+// 修改圖片錯誤處理函數
+const handleImageError = (event, bannerId) => {
+  console.error('圖片載入失敗:', event.target.src)
+  event.target.src = defaultImage
+  if (bannerId) {
+    imageLoadedMap.value[bannerId] = true
+  }
+}
+
+// 修改獲取圖片 URL 的函數
+const getBannerImage = (banner) => {
+  if (!banner.image_url) return defaultImage
+  
+  // 檢查是否為完整的 URL
+  if (banner.image_url.startsWith('http')) {
+    return banner.image_url
+  }
+  
+  // 如果是相對路徑，添加基礎 URL
+  return `${import.meta.env.VITE_BACKEND_URL}${banner.image_url}`
+}
+
 // 修改圖片預覽函數
 const previewImage = (url) => {
-  if (!url || !isValidUrl(url)) return
-
-  const img = new Image()
+  if (!url) return
   
+  const img = new Image()
   img.onload = () => {
     previewImageUrl.value = url
     document.body.style.overflow = 'hidden'
   }
   
   img.onerror = () => {
-    // 如果是從新增/編輯 modal 中預覽的，就關閉該 modal
-    if (showModal.value) {
-      closeModal()
-    }
-    
-    Swal.fire({
-      icon: 'error',
-      title: '錯誤',
-      text: '圖片載入失敗，請確認網址是否正確',
-      confirmButtonText: '確定',
-      confirmButtonColor: '#3085d6',
-      customClass: {
-        container: 'swal2-container',
-        popup: 'swal2-popup',
-        backdrop: 'swal2-backdrop-show'
-      }
-    })
+    previewImageUrl.value = defaultImage
+    document.body.style.overflow = 'hidden'
   }
-
-  img.src = url
-}
-
-// 修改圖片錯誤處理函數
-const handleImageError = (event, bannerId) => {
-  // 不管是否處理過，都設置預設圖片
-  event.target.src = ''
+  
+  img.src = url.startsWith('http') ? url : `${import.meta.env.VITE_BACKEND_URL}${url}`
 }
 
 // 修改圖片預覽相關功能
@@ -907,11 +1001,6 @@ const closeModal = () => {
   resetForm()
 }
 
-// 修改為使用 computed 來處理圖片 URL
-const getBannerImage = (banner) => {
-  return banner.image_url
-}
-
 // 修改表單驗證邏輯
 const validateForm = () => {
   errors.value = {}
@@ -1021,145 +1110,183 @@ const handleMoreTabSelect = (value) => {
 <style scoped>
 /* 移除原有的卡片視圖動畫 */
 .layout-card-move {
-  transition: all 0.3s ease;
+  transition: transform 0.5s ease, opacity 0.5s ease;
 }
 
-.layout-card-enter-active,
+.layout-card-enter-active {
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  transform-origin: center;
+}
+
 .layout-card-leave-active {
-  transition: all 0.3s ease;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  position: absolute;
+  transform-origin: center;
 }
 
-.layout-card-enter-from,
+.layout-card-enter-from {
+  opacity: 0;
+  transform: scale(0.8) translateY(20px);
+}
+
 .layout-card-leave-to {
   opacity: 0;
-  transform: translateY(10px);  /* 改用輕微的上下位移 */
+  transform: scale(0.8) translateY(-20px);
 }
 
-/* 列表視圖動畫 */
+/* 列表視圖動畫優化 */
 .layout-list-move {
-  transition: all 0.3s ease;
+  transition: transform 0.5s ease, opacity 0.5s ease;
 }
 
-.layout-list-enter-active,
+.layout-list-enter-active {
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
 .layout-list-leave-active {
-  transition: all 0.3s ease;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  position: absolute;
 }
 
-.layout-list-enter-from,
+.layout-list-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
 .layout-list-leave-to {
   opacity: 0;
-  transform: translateY(10px);  /* 統一使用相同的動畫效果 */
+  transform: translateX(30px);
 }
 
-/* 淡入淡出動畫 */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
+/* 圖片載入動畫 */
+@keyframes imageFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-.fade-enter-from,
-.fade-leave-to {
+img.opacity-100 {
+  animation: imageFadeIn 0.3s ease-out forwards;
+}
+
+/* 懶加載佔位元素動畫 */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-pulse {
+  background: linear-gradient(
+    90deg,
+    rgba(226, 232, 240, 0.4) 0%,
+    rgba(226, 232, 240, 0.7) 50%,
+    rgba(226, 232, 240, 0.4) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+.dark .animate-pulse {
+  background: linear-gradient(
+    90deg,
+    rgba(55, 65, 81, 0.4) 0%,
+    rgba(55, 65, 81, 0.7) 50%,
+    rgba(55, 65, 81, 0.4) 100%
+  );
+}
+
+/* 優化圖片載入效果 */
+img {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.opacity-0 {
   opacity: 0;
+  transform: scale(1.05);
 }
 
-/* 圖片預覽時禁用選取 */
-.select-none {
-  user-select: none;
-  -webkit-user-select: none;
+.opacity-100 {
+  opacity: 1;
+  transform: scale(1);
 }
 
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
-/* Dialog 樣式 */
-:deep(.custom-dialog .el-dialog) {
-  @apply rounded-lg shadow-xl;
+/* 添加頁面載入動畫相關樣式 */
+.fixed {
+  animation: fadeIn 0.3s ease-in-out;
 }
 
-:deep(.custom-dialog .el-dialog__header) {
-  @apply px-6 py-4 border-b border-gray-200;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+  }
 }
 
-:deep(.custom-dialog .el-dialog__body) {
-  @apply p-6;
+/* 內容區域過渡效果 */
+.opacity-50 {
+  transition: opacity 0.3s ease-in-out;
 }
 
-:deep(.custom-dialog .el-dialog__footer) {
-  @apply px-6 py-4 border-t border-gray-200;
+/* 優化載入指示器動畫 */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
-/* 表單元素樣式 */
-:deep(.custom-input .el-input__wrapper) {
-  @apply shadow-none border border-gray-300 rounded-md transition-colors;
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-:deep(.custom-input .el-input__wrapper:hover) {
-  @apply border-gray-400;
+/* 優化旋轉動畫 */
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
 
-:deep(.custom-input-number) {
-  @apply w-full;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-:deep(.custom-input-number .el-input__wrapper) {
-  @apply shadow-none border border-gray-300 rounded-md;
+/* 修改載入動畫相關樣式 */
+/* .min-h-[400px] {
+  min-height: 400px;
+} */
+
+/* 優化載入指示器定位 */
+.sticky {
+  position: sticky;
 }
 
-:deep(.custom-btn-primary) {
-  @apply bg-blue-500 border-blue-500 hover:bg-blue-600 hover:border-blue-600;
-}
-
-:deep(.custom-btn-cancel) {
-  @apply border-gray-300 text-gray-700 hover:bg-gray-50;
-}
-
-/* 修改 z-index 層級 */
-.swal2-high-z-index {
-  z-index: 100000 !important; /* 提高到比 modal 更高的層級 */
-}
-
-.swal2-container {
-  z-index: 100000 !important; /* 提高到比 modal 更高的層級 */
-}
-
-/* Modal 相關的 z-index */
-.modal-backdrop {
-  z-index: 9999;
-}
-
-.modal-content {
-  z-index: 10000;
-}
-
-/* 將 Sweetalert2 的樣式設置為全局 */
-:root {
-  --z-modal: 9999;
-  --z-sweetalert: 999999;
-}
-
-/* Sweetalert2 相關樣式 */
-.swal2-container {
-  z-index: var(--z-sweetalert) !important;
-}
-
-.swal2-popup {
-  z-index: calc(var(--z-sweetalert) + 1) !important;
-}
-
-.swal2-backdrop-show {
-  background: rgba(0, 0, 0, 0.4) !important;
-}
-
-/* Modal 相關樣式 */
-.modal-backdrop {
-  z-index: var(--z-modal);
-}
-
-.modal-content {
-  z-index: calc(var(--z-modal) + 1);
+/* 確保載入文字不會換行 */
+.whitespace-nowrap {
+  white-space: nowrap;
 }
 </style> 

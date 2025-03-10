@@ -31,7 +31,7 @@
         leave-from-class="opacity-100 transform translate-y-0"
         leave-to-class="opacity-0 transform translate-y-12"
       >
-        <div id="recommend" v-if="isLoggedIn" class="py-20 bg-white">
+        <div id="recommend" v-if="isLoggedIn" class="py-20 pb-32 bg-white">
           <!-- 標題區塊 -->
           <div class="text-center mb-16">
             <span class="span-title inline-block px-4 py-1 bg-blue-50 text-blue-500 font-medium rounded-full mb-4">

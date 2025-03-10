@@ -7,8 +7,13 @@
       'space-y-4': viewMode === 'list'
     }"
   >
+    <!-- 載入中動畫 -->
+    <div v-if="loading" key="loading" class="col-span-full flex justify-center items-center py-8">
+      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+    </div>
+
     <!-- 當是最愛排序且沒有資料時顯示提示 -->
-    <div v-if="sortBy === 'favorite' && (!drinks || drinks.length === 0)"
+    <div v-else-if="sortBy === 'favorite' && (!drinks || drinks.length === 0)"
          class="col-span-full flex flex-col items-center justify-center py-12 bg-white rounded-lg shadow">
       <i class="fas fa-heart text-6xl text-gray-300 mb-4"></i>
       <p class="text-xl text-gray-600 mb-2">目前尚未加入最愛</p>
@@ -16,16 +21,21 @@
     </div>
 
     <div v-else v-for="drink in drinks" :key="drink.id" 
-        class="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer"
+        class="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transform transition-all duration-300"
+        :data-drink-id="drink.id"
         @click="showDrinkDetail(drink)">
       <!-- 店家圖片 -->
       <div class="relative">
         <img 
           :src="drink.image_url" 
           :alt="drink.name" 
-          class="w-full h-48 object-cover"
+          class="w-full h-48 object-cover transition-opacity duration-300"
+          :class="{ 'opacity-0': !imageLoaded[drink.id] }"
+          loading="lazy"
+          @load="handleImageLoad(drink.id)"
           @error="handleImageError"
         >
+        <div v-if="!imageLoaded[drink.id]" class="absolute inset-0 bg-gray-200 animate-pulse"></div>
         <!-- 商品標籤 -->
         <div v-if="drink.tag" class="absolute top-4 left-4">
           <span class="px-3 py-1 text-sm bg-purple-600 bg-opacity-70 text-white rounded-full flex items-center shadow-md">
@@ -114,8 +124,12 @@
         <!-- 店家圖片 -->
         <img :src="selectedDrink.image_url" 
              :alt="selectedDrink.name"
-             class="w-full h-64 object-cover"
+             class="w-full h-64 object-cover transition-opacity duration-300"
+             :class="{ 'opacity-0': !modalImageLoaded }"
+             loading="lazy"
+             @load="handleModalImageLoad"
              @error="handleImageError">
+        <div v-if="!modalImageLoaded" class="absolute inset-0 bg-gray-200 animate-pulse"></div>
         
         <!-- 關閉按鈕 -->
         <button @click="closeDetailModal"
@@ -406,7 +420,7 @@ export default {
   setup(props) {
     console.log('props', props)
     const drinks = ref([])
-    const loading = ref(false)
+    const loading = ref(true)
     const error = ref(null)
     const defaultImage = 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=500'
     const selectedDrink = ref(null)
@@ -422,8 +436,22 @@ export default {
     const rating = ref(0)
     const hoverRating = ref(0)
     const comment = ref('')
+    const imageLoaded = ref({})
+    const modalImageLoaded = ref(false)
+
+    const handleImageLoad = (id) => {
+      imageLoaded.value[id] = true
+    }
+
+    const handleModalImageLoad = () => {
+      modalImageLoaded.value = true
+    }
 
     const handleImageError = (event) => {
+      const drinkId = event.target.closest('[data-drink-id]')?.dataset.drinkId
+      if (drinkId) {
+        imageLoaded.value[drinkId] = true
+      }
       event.target.src = defaultImage
     }
 
@@ -439,6 +467,7 @@ export default {
         return
       }
       selectedDrink.value = drink
+      modalImageLoaded.value = false // 重置模態框圖片載入狀態
       const storeId = Number(drink.id)
       console.log('準備檢查最愛狀態，店家ID:', storeId)
       checkFavoriteStatus(storeId)
@@ -648,8 +677,13 @@ export default {
     }
 
     const fetchRecommendations = async () => {
+      loading.value = true
+      drinks.value = []
+      imageLoaded.value = {}
+
       try {
-        loading.value = true
+        await new Promise(resolve => setTimeout(resolve, 300))
+
         let response
 
         // 根據排序方式選擇不同的推薦 API
@@ -779,6 +813,10 @@ export default {
       loading,
       error,
       handleImageError,
+      handleImageLoad,
+      imageLoaded,
+      modalImageLoaded,
+      handleModalImageLoad,
       selectedDrink,
       showDrinkDetail,
       activeTab,
@@ -808,13 +846,9 @@ export default {
 
 <style scoped>
 /* 網格布局動畫 */
-.layout-grid-move {
-  transition: transform 0.5s ease;
-}
-
-/* 列表布局動畫 */
+.layout-grid-move,
 .layout-list-move {
-  transition: transform 0.5s ease;
+  transition: all 0.5s ease;
 }
 
 /* 進入和離開動畫 */
@@ -822,7 +856,7 @@ export default {
 .layout-grid-leave-active,
 .layout-list-enter-active,
 .layout-list-leave-active {
-  transition: all 0.5s ease;
+  transition: all 0.5s ease-out;
 }
 
 .layout-grid-enter-from,
@@ -837,6 +871,35 @@ export default {
 .layout-grid-leave-active,
 .layout-list-leave-active {
   position: absolute;
+  width: 100%;
+}
+
+/* 添加新的過渡效果 */
+.fade-move,
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: scaleY(0.01) translate(30px, 0);
+}
+
+.fade-leave-active {
+  position: absolute;
+}
+
+/* 優化卡片hover效果 */
+.cursor-pointer {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow;
+}
+
+.cursor-pointer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 /* 按鈕動畫效果 */
