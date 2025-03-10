@@ -7,18 +7,20 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
+# 確保配置目錄存在
+RUN mkdir -p /usr/src/app/config
+
 # 複製 requirements.txt
 COPY ./backend/requirements.txt .
 
 # 安裝依賴
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 複製源代碼和 Firebase 配置文件
-COPY ./backend .
-COPY ./backend/config/firebase-adminsdk.json /usr/src/app/config/firebase-adminsdk.json
+# 首先複製 Firebase 配置文件
+COPY ./backend/config/firebase-adminsdk.json ./config/
 
-# 確保配置目錄存在
-RUN mkdir -p /usr/src/app/config
+# 然後複製其餘的源代碼
+COPY ./backend .
 
 # 設置環境變量
 ENV FLASK_APP=app.py
