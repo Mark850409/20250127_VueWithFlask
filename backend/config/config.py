@@ -74,9 +74,28 @@ PORT = os.getenv('PORT', 5000)
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev')
 
-    SQLALCHEMY_DATABASE_URI=SQLALCHEMY_DATABASE_URI
+    SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # 資料庫連接池配置
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_size': 20,
+        'pool_recycle': 1800,
+        'pool_pre_ping': True,
+        'pool_timeout': 60,
+        'max_overflow': 10,
+        'connect_args': {
+            'charset': 'utf8mb4'
+        }
+    }
+
+    # 設置 SQLAlchemy 的其他選項
+    SQLALCHEMY_COMMIT_ON_TEARDOWN = False
+    SQLALCHEMY_ENGINE_OPTIONS['echo'] = False
+    SQLALCHEMY_POOL_RECYCLE = 1800
+    SQLALCHEMY_POOL_TIMEOUT = 60
+    SQLALCHEMY_MAX_OVERFLOW = 10
 
     # API 配置
     API_URL = API_URL
@@ -97,10 +116,6 @@ class Config:
     FOODPANDA_RECOMMENDATION_URL = os.getenv('FOODPANDA_RECOMMENDATION_URL')
     FOODPANDA_SERVICE_URL = os.getenv('FOODPANDA_SERVICE_URL')
 
-    # 其他配置保持不變...
-    SQLALCHEMY_POOL_SIZE = 10
-    SQLALCHEMY_MAX_OVERFLOW = 20
-    
     # JWT配置
     JWT_SECRET_KEY = 'your-default-secret-key-here-123456789'
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)

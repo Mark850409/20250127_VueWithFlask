@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 # 獲取專案根目錄
 BASE_DIR = Path(__file__).parent.parent
 
+print(f"BASE_DIR: {BASE_DIR}")
+
 def initialize_firebase():
     """初始化 Firebase Admin SDK"""
     try:

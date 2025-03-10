@@ -28,3 +28,4 @@ marshmallow==3.19.0
 Flask-Mail==0.9.1
 flask-migrate==4.0.5
 firebase-admin==6.4.0
+tenacity==8.2.3

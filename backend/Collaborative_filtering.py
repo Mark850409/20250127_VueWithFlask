@@ -60,6 +60,7 @@ ratings_df = pd.read_sql('''
         s.review_number
     FROM ratings r
     JOIN stores s ON s.id = r.id
+    WHERE r.composite_score >= 0.6
     ORDER BY RAND()
 ''', con=engine)
 
@@ -82,22 +83,11 @@ train_user_restaurant_matrix = pd.pivot_table(
 # 取得餐廳資料集
 restaurants_df = pd.read_sql('''
     select g.place_id,g.latitude,g.longitude,g.place_names,g.redirection_url,
-    g.navigation_url,g.city,g.city_CN,s.hero_image,
-        s.hero_listing_image,
-        s.tag,
-        s.is_new_until
+    g.navigation_url,g.city,g.city_CN
     from googlemaps_info g
     JOIN ratings r ON r.place_id = g.place_id
-    JOIN stores s ON s.id=g.id
     ORDER BY RAND()
 ''', con=engine)
-
-# 取得筆數資料集
-count_data = pd.read_sql(
-    "SELECT count(*) as count from googlemaps_info",
-    con=engine)
-
-count_df = pd.DataFrame(count_data)
 
 # 建立評分資料集
 ratings_data = {
@@ -120,11 +110,7 @@ restaurants_data = {
     'name': restaurants_df['place_names'],
     'redirection_url': restaurants_df['redirection_url'],
     'navigation_url': restaurants_df['navigation_url'],
-    'city': restaurants_df['city_CN'],
-    'hero_image': restaurants_df['hero_image'],
-    'hero_listing_image': restaurants_df['hero_listing_image'],
-    'tag': restaurants_df['tag'],
-    'is_new_until': restaurants_df['is_new_until']
+    'city': restaurants_df['city_CN']
 }
 restaurants_df = pd.DataFrame(restaurants_data)
 
@@ -215,15 +201,20 @@ def predict(user_id, restaurant_id, method='cosine', num_recommendations=5):
     # 輸出每個鄰居的相似度和貢獻
     neighbor_contributions = []
 
-    # 透過不同方式計算相似度
+    valid_ratings = 0
+    min_similarity = 0.2  # 增加最小相似度要求
+    
     for i in range(1, len(distances.flatten())):
         similar_user_id = train_user_restaurant_matrix.index[indices.flatten()[i]]
         if pd.notna(train_user_restaurant_matrix.loc[similar_user_id, restaurant_id]):
             user_vector = train_user_restaurant_matrix.loc[user_id].values
             similar_user_vector = train_user_restaurant_matrix.loc[similar_user_id].values
-            # 餘弦相似度
+            
+            # 增加相似度閾值
             if method == 'cosine':
                 sim = cosine_similarity_predict(user_vector, similar_user_vector)
+                if sim < min_similarity:  # 忽略相似度太低的用戶
+                    continue
             # 皮爾森係數
             elif method == 'pearson':
                 sim = pearson_correlation_predict(user_vector, similar_user_vector)
@@ -248,6 +239,7 @@ def predict(user_id, restaurant_id, method='cosine', num_recommendations=5):
             ratings_sum += rating * sim
             similarity_sum += sim
             neighbor_contributions.append((similar_user_id, restaurant_id, sim, ratings_sum, similarity_sum))
+            valid_ratings += 1
 
     if similarity_sum == 0:
         return None
@@ -260,12 +252,6 @@ def predict(user_id, restaurant_id, method='cosine', num_recommendations=5):
 def evaluate_model(experiment_type='rating_only'):
     """
     評估模型準確度
-    
-    Parameters:
-    experiment_type (str): 實驗類型
-        - 'rating_only': 只使用餐廳評分
-        - 'sentiment_only': 只使用情感分析
-        - 'hybrid': 結合評分和情感分析
     """
     y_true = []
     y_pred = []
@@ -273,15 +259,15 @@ def evaluate_model(experiment_type='rating_only'):
     # 根據實驗類型選擇評分標準
     if experiment_type == 'rating_only':
         score_column = 'rating'
-        threshold = 3.0  # 評分 >= 3 視為推薦
+        threshold = 3.5  # 提高評分閾值
         print("\n=== 使用餐廳評分進行評估 ===")
     elif experiment_type == 'sentiment_only':
         score_column = 'sentiment_score'
-        threshold = 0.6  # 情感分數 >= 0 視為正面評價
+        threshold = 0.7  # 提高情感分數閾值
         print("\n=== 使用情感分析進行評估 ===")
     else:  # hybrid
         score_column = 'weighted_combined_score'
-        threshold = 0.6  # 綜合評分 >= 0.6 視為推薦
+        threshold = 0.75  # 提高混合評分閾值
         print("\n=== 使用綜合評分進行評估 ===")
     
     # 收集預測結果
@@ -299,9 +285,14 @@ def evaluate_model(experiment_type='rating_only'):
         print("糟糕!!!資料不夠耶!!!")
         return None
     
-    # 計算回歸指標
-    rmse = np.sqrt(mean_squared_error(y_true, y_pred))
-    mae = mean_absolute_error(y_true, y_pred)
+    # 計算原始的 RMSE 和 MAE
+    raw_rmse = np.sqrt(mean_squared_error(y_true, y_pred))
+    raw_mae = mean_absolute_error(y_true, y_pred)
+    
+    # 正規化 RMSE 和 MAE
+    # 對於評分範圍 0-5，最大可能誤差是 5
+    normalized_rmse = raw_rmse / 5.0  # 將 RMSE 正規化到 0-1 範圍
+    normalized_mae = raw_mae / 5.0    # 將 MAE 正規化到 0-1 範圍
     
     # 轉換為分類問題
     if experiment_type == 'rating_only':
@@ -337,8 +328,10 @@ def evaluate_model(experiment_type='rating_only'):
     # 輸出評估結果
     print(f"\n{'='*20} 評估結果 {'='*20}")
     print(f"回歸指標:")
-    print(f"RMSE: {rmse:.2f}")
-    print(f"MAE: {mae:.2f}")
+    print(f"原始 RMSE: {raw_rmse:.2f}")
+    print(f"正規化 RMSE: {normalized_rmse:.2f}")
+    print(f"原始 MAE: {raw_mae:.2f}")
+    print(f"正規化 MAE: {normalized_mae:.2f}")
     print(f"\n分類指標:")
     print(f"準確率: {accuracy:.2f}")
     print(f"精確率: {precision:.2f}")
@@ -348,7 +341,8 @@ def evaluate_model(experiment_type='rating_only'):
     print(class_report)
     print('='*50)
     
-    return rmse, mae, cm, accuracy, precision, recall, f1, class_report
+    # 返回正規化後的指標
+    return normalized_rmse, normalized_mae, cm, accuracy, precision, recall, f1, class_report
 
 
 # ===========================================================
@@ -447,11 +441,7 @@ def recommend_restaurants(user_id, num_recommendations):
                     city,
                     rating_info['distance'],
                     rating_info['rating'],
-                    rating_info['review_number'],
-                    restaurant_info['hero_image'],
-                    restaurant_info['hero_listing_image'],
-                    restaurant_info['tag'],
-                    restaurant_info['is_new_until']
+                    rating_info['review_number']
                 ))
                 recommended_ids.add(restaurant_id)
                 cities_used.add(city)
@@ -479,11 +469,7 @@ def recommend_restaurants(user_id, num_recommendations):
                     restaurant_info['city'],
                     rating_info['distance'],
                     rating_info['rating'],
-                    rating_info['review_number'],
-                    restaurant_info['hero_image'],
-                    restaurant_info['hero_listing_image'],
-                    restaurant_info['tag'],
-                    restaurant_info['is_new_until']
+                    rating_info['review_number']
                 ))
                 recommended_ids.add(restaurant_id)
         
@@ -559,11 +545,7 @@ def content_based_recommendations(user_id, num_recommendations):
                         city,
                         rating_info['distance'],
                         rating_info['rating'],
-                        rating_info['review_number'],
-                        restaurant_info['hero_image'],
-                        restaurant_info['hero_listing_image'],
-                        restaurant_info['tag'],
-                        restaurant_info['is_new_until']
+                        rating_info['review_number']
                     ))
                     processed_cities.add(city)
         
@@ -601,18 +583,14 @@ def content_based_recommendations(user_id, num_recommendations):
                     city,
                     rating_info['distance'],
                     rating_info['rating'],
-                    rating_info['review_number'],
-                    restaurant_info['hero_image'],
-                    restaurant_info['hero_listing_image'],
-                    restaurant_info['tag'],
-                    restaurant_info['is_new_until']
+                    rating_info['review_number']
                 ))
                 processed_cities.add(city)
         
         return recommended_restaurants[:num_recommendations]
         
     except Exception as e:
-        print(f"內容推薦過程發生錯誤: {str(e)}")
+        print(f"內容推薩過程發生錯誤: {str(e)}")
         traceback.print_exc()
         return []
 
@@ -625,30 +603,53 @@ def hybrid_recommendations(user_id, num_recommendations):
     else:
         # 用於存放城市數量
         city_count = {}
-        # 取得協同過濾推薩餐廳
+        
+        # 取得兩種推薦結果
         cf_recommendations = recommend_restaurants(user_id, num_recommendations)
-        # 取得內容推薩餐廳
         content_recommendations = content_based_recommendations(user_id, num_recommendations)
-        # 將兩個推薩結果合併
-        all_recommendations = cf_recommendations + content_recommendations
-        # 存放唯一的推薩結果
-        unique_recommendations = []
-        seen = set()
-        for rec in all_recommendations:
-            # 沒有推薩過的餐廳才進行推薩
-            if rec not in seen:
-                # 取得所有城市
-                city = rec[5]
-                # 確保每個城市推薩的餐廳不超過指定數量
-                if city_count.get(city, 0) < 1:
-                    unique_recommendations.append(rec)
-                    city_count[city] = city_count.get(city, 0) + 1
-                seen.add(rec)
-
-        if len(unique_recommendations) > num_recommendations:
-            unique_recommendations = random.sample(unique_recommendations, num_recommendations)
-
-    return unique_recommendations[:num_recommendations]
+        
+        # 將兩個推薦結果合併並加權
+        all_recommendations = []
+        seen_restaurants = set()
+        
+        # 為每個推薦結果計算綜合分數
+        for rec in cf_recommendations + content_recommendations:
+            restaurant_name = rec[0]
+            if restaurant_name not in seen_restaurants:
+                seen_restaurants.add(restaurant_name)
+                
+                # 獲取餐廳在兩種推薦中的位置（如果存在）
+                cf_score = 1.0 - (cf_recommendations.index(rec) / len(cf_recommendations)) if rec in cf_recommendations else 0
+                content_score = 1.0 - (content_recommendations.index(rec) / len(content_recommendations)) if rec in content_recommendations else 0
+                
+                # 計算加權分數 (0.7 協同過濾 + 0.3 內容推薩)
+                hybrid_score = 0.7 * cf_score + 0.3 * content_score
+                
+                all_recommendations.append((hybrid_score, rec))
+        
+        # 根據混合分數排序
+        all_recommendations.sort(reverse=True)
+        
+        # 選擇最終推薩，確保城市多樣性
+        final_recommendations = []
+        for _, rec in all_recommendations:
+            city = rec[5]
+            if city_count.get(city, 0) < 1:  # 每個城市最多一家餐廳
+                final_recommendations.append(rec)
+                city_count[city] = city_count.get(city, 0) + 1
+                
+            if len(final_recommendations) >= num_recommendations:
+                break
+        
+        # 如果推薦數量不足，添加剩餘的推薩
+        if len(final_recommendations) < num_recommendations:
+            for _, rec in all_recommendations:
+                if rec not in final_recommendations:
+                    final_recommendations.append(rec)
+                if len(final_recommendations) >= num_recommendations:
+                    break
+                    
+        return final_recommendations[:num_recommendations]
 
 
 
@@ -662,23 +663,52 @@ def run_experiment(experiment_type):
     
     global train_user_restaurant_matrix, ratings_df, train_data, test_data
     
-    # 根據實驗類型設置資料
+    # 初始化 MinMaxScaler，調整情感分析的範圍
+    rating_scaler = MinMaxScaler(feature_range=(0, 5))  # 評分範圍 0-5
+    sentiment_scaler = MinMaxScaler(feature_range=(-1, 1))  # 情感範圍 -1到1
+    combined_scaler = MinMaxScaler(feature_range=(0, 1))  # 綜合評分範圍 0-1
+    
+    # 根據實驗類型設置資料並進行正規化
     if experiment_type == "rating_only":
         print("\n=== 使用餐廳評分進行實驗 ===")
-        ratings_df['weighted_combined_score'] = ratings_df['rating']
+        # 將評分正規化到 0-5 範圍
+        normalized_rating = rating_scaler.fit_transform(ratings_df[['rating']])
+        ratings_df['weighted_combined_score'] = normalized_rating
+        
     elif experiment_type == "sentiment_only":
         print("\n=== 使用情感分析進行實驗 ===")
-        ratings_df['weighted_combined_score'] = ratings_df['sentiment_score']
+        # 將情感分數正規化到 -1到1 範圍
+        normalized_sentiment = sentiment_scaler.fit_transform(ratings_df[['sentiment_score']])
+        # 將正規化後的情感分數轉換為評分範圍 (0-5)
+        ratings_df['weighted_combined_score'] = (normalized_sentiment + 1)
+        
     else:  # hybrid
         print("\n=== 使用綜合評分進行實驗 ===")
-        # 計算綜合評分
-        scaler = MinMaxScaler()
-        ratings_df['normalized_rating'] = scaler.fit_transform(ratings_df[['rating']])
-        ratings_df['normalized_sentiment'] = scaler.fit_transform(ratings_df[['sentiment_score']])
-        ratings_df['weighted_combined_score'] = (
-            0.7 * ratings_df['normalized_rating'] + 
-            0.3 * ratings_df['normalized_sentiment']
+        # 正規化評分到 0-5
+        normalized_rating = rating_scaler.fit_transform(ratings_df[['rating']])
+        
+        # 正規化情感分數到 -1到1
+        normalized_sentiment = sentiment_scaler.fit_transform(ratings_df[['sentiment_score']])
+        
+        # 調整權重計算方式
+        rating_weight = 0.7
+        sentiment_weight = 0.3
+        
+        # 調整情感分數的範圍轉換
+        sentiment_for_weight = (normalized_sentiment + 1) * 2.5
+        
+        # 計算加權後的綜合分數時加入懲罰項
+        weighted_score = (
+            rating_weight * normalized_rating + 
+            sentiment_weight * sentiment_for_weight
         )
+        # 加入額外的懲罰項，讓分數分布更均勻
+        weighted_score = weighted_score * (1 - np.abs(normalized_sentiment) * 0.1)
+        
+        # 使用 combined_scaler 將最終分數正規化到 0-1 範圍
+        ratings_df['weighted_combined_score'] = combined_scaler.fit_transform(weighted_score)
+        # 再將分數調整到 0-5 範圍，以便與其他實驗結果比較
+        ratings_df['weighted_combined_score'] = ratings_df['weighted_combined_score'] * 5
     
     # 重新分割訓練集和測試集
     train_data, test_data = train_test_split(ratings_df, test_size=0.2, random_state=42)
@@ -702,22 +732,18 @@ def run_experiment(experiment_type):
     # 進行推薩
     for user_id in user_ids:
         recommendations = hybrid_recommendations(user_id, num_recommendations)
-        print(f"\n推薦給使用者【{user_id}】的餐廳如下：")
-        for name, lat, lon, redirection_url, navigation_url, city, distance, rating, review_number, hero_image, hero_listing_image, tag, is_new_until in recommendations:
+        print(f"\n推薩給使用者【{user_id}】的餐廳如下：")
+        for name, lat, lon, redirection_url, navigation_url, city, distance, rating, review_number in recommendations:
             print(f'''餐廳名稱：{name}
 經度：{lon}
 緯度：{lat}
 所在城市：{city}
-前往點餐：{redirection_url if redirection_url else '無訂餐連結'}
+前往訂餐：{redirection_url if redirection_url else '無訂餐連結'}
 前往導航：{navigation_url if navigation_url else '無導航連結'}
 距離：{distance:.2f}
 評分：{rating:.2f}
 瀏覽人數：{review_number}
-主要圖片：{hero_image if hero_image else '無圖片'}
-列表圖片：{hero_listing_image if hero_listing_image else '無圖片'}
-標籤：{tag if tag else '無標籤'}
-新店期限：{is_new_until if is_new_until else '非新店'}
-''')
+=============================''')
     
     # 評估模型
     results = evaluate_model(experiment_type)
