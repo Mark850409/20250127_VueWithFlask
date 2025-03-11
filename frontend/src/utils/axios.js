@@ -12,7 +12,7 @@ const getBaseURL = () => {
   let baseURL
   if (mode === 'development') {
     // 開發環境：強制使用本地 URL
-    baseURL = 'http://localhost:5000/api'
+    baseURL = import.meta.env.VITE_API_URL
     console.log('Development Mode: Using local URL')
   } else {
     // 生產環境：使用 .env.production 中的設定

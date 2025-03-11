@@ -77,6 +77,7 @@ def create_favorite(body: FavoriteCreateSchema):
     except ValueError as e:
         return {'message': str(e)}, 400
     except Exception as e:
+        print(str(e))
         logger.error(f"創建最愛錯誤: {str(e)}", exc_info=True)
         return {'message': '創建最愛失敗'}, 500
 

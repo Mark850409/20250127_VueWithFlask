@@ -755,6 +755,7 @@ const fetchBannersByType = async (type) => {
     const response = await bannerAPI.getBannersByType(type)
     if (response.data?.data) {
       banners.value = response.data.data
+      console.log('獲取輪播圖:', banners.value)
     }
   } catch (error) {
     console.error('獲取輪播圖失敗:', error)
@@ -796,23 +797,46 @@ const resetForm = () => {
 }
 
 // 打開編輯 Modal
-const openEditModal = (banner) => {
+const openEditModal = async (banner) => {
   isEditing.value = true
   currentBannerId.value = banner.id
-  // 如果 banner_type 包含 admin，設置相應的值
-  if (banner.banner_type?.includes('admin_')) {
+  
+  // 確保有選單數據
+  if (!menuList.value.length) {
+    await fetchMenus()
+  }
+  
+  // 處理後台類型的 banner
+  if (banner.banner_type?.startsWith('admin_')) {
+    const routePath = banner.banner_type.replace('admin_', '')
+    
+    // 在設置表單值之前，先找到對應的選單項
+    const menuItem = menuList.value.find(menu => 
+      menu.path === routePath || 
+      menu.path === `admin/${routePath}` || 
+      menu.path.endsWith(`/${routePath}`)
+    )
+    
+    console.log('找到的選單項:', menuItem)
+    
     form.value = {
       ...banner,
       banner_type: 'admin',
-      menu_route: banner.banner_type.replace('admin_', '')  // 例如: 'logs' 從 'admin_logs'
+      menu_route: menuItem ? menuItem.path : (
+        routePath === 'dashboard' ? 'dashboard' : routePath
+      )
     }
-    // 確保有選單數據
-    if (!menuList.value.length) {
-      fetchMenus()
-    }
+    
+    console.log('後台類型 banner:', {
+      原始類型: banner.banner_type,
+      處理後類型: form.value.banner_type,
+      路由: form.value.menu_route,
+      選單列表: menuList.value
+    })
   } else {
     form.value = { ...banner }
   }
+  
   showModal.value = true
   logOperation(`【Banner管理】開始編輯輪播圖: ${banner.title}`, '編輯')
 }

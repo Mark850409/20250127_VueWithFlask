@@ -397,6 +397,10 @@ export default {
     const defaultImage = 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=500'
     const selectedDrink = ref(null)
     const favoriteStates = ref({})
+    const favoriteCache = ref({})
+    const favoritesCacheExpiry = 5 * 60 * 1000
+    const lastFavoriteCheck = ref(0)
+    const isFirstLoad = ref(true)
     const activeTab = ref('info')
     const showingReviewModal = ref(false)
     const userRating = ref(0)
@@ -451,13 +455,43 @@ export default {
       modalImageLoaded.value = false
     }
 
-    const checkFavoriteStatus = async (storeId) => {
+    const checkFavoriteStatus = async (stores) => {
       try {
-        const response = await favoriteAPI.checkFavorite(storeId)
-        favoriteStates.value[storeId] = response.data.favorites?.length > 0
+        const currentTime = Date.now()
+        if (currentTime - lastFavoriteCheck.value < favoritesCacheExpiry && 
+            Object.keys(favoriteCache.value).length > 0) {
+          favoriteStates.value = { ...favoriteCache.value }
+          return
+        }
+
+        const userInfo = JSON.parse(localStorage.getItem('user'))
+        if (!userInfo || !userInfo.username) {
+          stores.forEach(store => {
+            favoriteStates.value[store.id] = false
+          })
+          return
+        }
+
+        // 一次性獲取所有收藏狀態
+        const response = await favoriteAPI.getFavorites(userInfo.username)
+        const favorites = response.data.favorites || []
+        
+        // 建立收藏店家 ID 的集合，方便快速查找
+        const favoriteStoreIds = new Set(favorites.map(fav => fav.store_id))
+        
+        // 更新所有店家的收藏狀態
+        stores.forEach(store => {
+          favoriteStates.value[store.id] = favoriteStoreIds.has(store.id)
+        })
+
+        // 更新快取
+        favoriteCache.value = { ...favoriteStates.value }
+        lastFavoriteCheck.value = currentTime
       } catch (error) {
         console.error('檢查收藏狀態失敗:', error)
-        favoriteStates.value[storeId] = false
+        stores.forEach(store => {
+          favoriteStates.value[store.id] = false
+        })
       }
     }
 
@@ -469,39 +503,79 @@ export default {
         }
 
         const isFavorited = favoriteStates.value[drink.id]
+        console.log('切換收藏狀態:', {
+          store_id: drink.id,
+          store_name: drink.name,
+          current_state: isFavorited
+        })
+        
         if (isFavorited) {
-          const response = await favoriteAPI.checkFavorite(drink.id)
-          if (response.data.favorites?.length > 0) {
-            await favoriteAPI.deleteFavorite(response.data.favorites[0].id)
+          // 如果已收藏，直接獲取所有收藏並找到要刪除的項目
+          const response = await favoriteAPI.getFavorites(userInfo.username)
+          const favoriteItem = response.data.favorites?.find(f => f.store_id === drink.id)
+          
+          if (favoriteItem) {
+            await favoriteAPI.deleteFavorite(favoriteItem.id)
             favoriteStates.value[drink.id] = false
+            favoriteCache.value[drink.id] = false
+            
+            Swal.fire({
+              icon: 'success',
+              title: '已取消收藏',
+              showConfirmButton: false,
+              timer: 1500
+            })
           }
-          Swal.fire({
-            icon: 'success',
-            title: '已取消收藏',
-            showConfirmButton: false,
-            timer: 1500
-          })
         } else {
-          await favoriteAPI.addFavorite({
+          // 如果未收藏，直接添加
+          const favoriteData = {
             store_id: drink.id,
             store_name: drink.name,
             store_image: drink.image_url || '',
             username: userInfo.username
-          })
-          favoriteStates.value[drink.id] = true
-          Swal.fire({
-            icon: 'success',
-            title: '已加入收藏',
-            showConfirmButton: false,
-            timer: 1500
-          })
+          }
+          
+          console.log('準備添加收藏:', favoriteData)
+          
+          try {
+            const addResponse = await favoriteAPI.addFavorite(favoriteData)
+            console.log('添加收藏響應:', addResponse)
+            
+            if (addResponse.data) {
+              favoriteStates.value[drink.id] = true
+              favoriteCache.value[drink.id] = true
+              
+              Swal.fire({
+                icon: 'success',
+                title: '已加入收藏',
+                showConfirmButton: false,
+                timer: 1500
+              })
+            }
+          } catch (addError) {
+            console.error('添加收藏詳細錯誤:', {
+              message: addError.message,
+              response: addError.response?.data,
+              status: addError.response?.status
+            })
+            throw addError
+          }
         }
       } catch (error) {
-        console.error('切換收藏狀態失敗:', error)
+        console.error('切換收藏狀態失敗:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status
+        })
+        
+        // 恢復原始狀態
+        favoriteStates.value[drink.id] = !favoriteStates.value[drink.id]
+        
         Swal.fire({
           icon: 'error',
           title: '操作失敗',
-          text: error.message === '請先登入' ? '請先登入後再收藏' : '請稍後再試'
+          text: error.response?.data?.message || error.message || '請稍後再試',
+          confirmButtonText: '確定'
         })
       }
     }
@@ -571,11 +645,11 @@ export default {
 
     const fetchPopularDrinks = async () => {
       loading.value = true
-      drinks.value = [] // 清空當前數據
-      imageLoaded.value = {} // 重置圖片載入狀態
+      drinks.value = []
+      imageLoaded.value = {}
       
       try {
-        await new Promise(resolve => setTimeout(resolve, 300)) // 添加短暫延遲確保動畫效果
+        await new Promise(resolve => setTimeout(resolve, 300))
         const params = {
           sort_by: props.sortBy,
           limit: 12
@@ -673,9 +747,10 @@ export default {
           
           drinks.value = mappedStores
 
-          if (!Object.keys(favoriteStates.value).length) {
-            const checkPromises = drinks.value.map(drink => checkFavoriteStatus(drink.id))
-            await Promise.all(checkPromises)
+          // 只在首次載入時檢查收藏狀態
+          if (isFirstLoad.value) {
+            await checkFavoriteStatus(mappedStores)
+            isFirstLoad.value = false
           }
         }
       } catch (err) {

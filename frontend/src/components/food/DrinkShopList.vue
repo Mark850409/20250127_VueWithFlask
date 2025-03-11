@@ -183,7 +183,7 @@
         </div>
 
         <!-- 頁籤內容 -->
-        <div class="p-6">
+        <div class="px-6 py-4 space-y-4 max-h-[calc(85vh-8rem)] overflow-y-auto">
           <!-- 基本資訊 -->
           <div v-if="activeTab === 'info'" class="space-y-6">
             <!-- 店家名稱和評分 -->
@@ -438,7 +438,13 @@ export default {
     const comment = ref('')
     const imageLoaded = ref({})
     const modalImageLoaded = ref(false)
-
+    const preloadedImages = ref(new Map()) // 新增圖片預加載 Map
+    const cacheKey = ref('')
+    const cacheData = ref(new Map())
+    const cacheExpiry = 5 * 60 * 1000 // 5分鐘快取時間
+    const lastFetchTime = ref(new Map())
+    const viewCache = ref(new Map()) // 新增視圖快取
+    
     const handleImageLoad = (id) => {
       imageLoaded.value[id] = true
     }
@@ -676,69 +682,90 @@ export default {
       return truncatedDescription
     }
 
-    const fetchRecommendations = async () => {
-      loading.value = true
-      drinks.value = []
-      imageLoaded.value = {}
+    // 修改快取 key 生成方法，移除視圖模式
+    const getCacheKey = (sortBy, userId) => {
+      return `drinks_${sortBy}_${userId}`
+    }
 
-      try {
-        await new Promise(resolve => setTimeout(resolve, 300))
+    const getFromCache = (key) => {
+      const cached = cacheData.value.get(key)
+      const lastFetch = lastFetchTime.value.get(key)
+      
+      if (cached && lastFetch && (Date.now() - lastFetch < cacheExpiry)) {
+        console.log('從快取讀取數據:', key)
+        return cached
+      }
+      return null
+    }
 
-        let response
+    const setToCache = (key, data) => {
+      cacheData.value.set(key, data)
+      lastFetchTime.value.set(key, Date.now())
+      console.log('數據已快取:', key)
+    }
 
-        // 根據排序方式選擇不同的推薦 API
-        switch (props.sortBy) {
-          case 'rating':
-            response = await recommendAPI.getContentRecommendations({
-              limit: 10,
-              user_id: props.userId
-            })
-            break
-          case 'preference':
-            response = await recommendAPI.getCollaborativeRecommendations({
-              limit: 10,
-              user_id: props.userId
-            })
-            break
-          case 'favorite':
-            response = await favoriteAPI.getFavorites()
-            console.log('收藏列表資料:', response.data)
-            break
-          default:
-            response = await recommendAPI.getHybridRecommendations({
-              limit: 10,
-              user_id: props.userId
-            })
-        }
-        
-        // 統一處理不同 API 的回傳格式
-        let storesData = []
-        if (response.data) {
-          if (props.sortBy === 'favorite') {
-            console.log('收藏列表資料:', response.data)
-            // 處理收藏列表的資料格式
-            storesData = response.data.favorites.map(favorite => ({
-              store_id: favorite.store_id,
-              name: favorite.store_name,
-              store_image: favorite.store_image,
-              // 其他必要欄位設置預設值
-              rating: favorite.rating,
-              review_number: favorite.review_number,
-              city: favorite.city,
-              city_CN: favorite.city_CN,
-              description: favorite.description,
-              navigation_url: favorite.navigation_url,
-              redirection_url: favorite.redirection_url
-            }))
-          } else if (response.data.stores) {
-            storesData = response.data.stores
-          } else if (response.data.data) {
-            storesData = response.data.data
+    // 新增圖片預加載函數
+    const preloadImages = (images) => {
+      images.forEach(imageUrl => {
+        if (!preloadedImages.value.has(imageUrl)) {
+          const img = new Image()
+          img.src = imageUrl
+          img.onload = () => {
+            preloadedImages.value.set(imageUrl, true)
           }
         }
+      })
+    }
 
-        // 統一數據格式
-        drinks.value = storesData.map(shop => ({
+    // 修改 preloadNextData 函數，加入圖片預加載
+    const preloadNextData = async (currentSortBy) => {
+      const sortTypes = ['hybrid', 'rating', 'preference', 'favorite']
+      const nextSortIndex = (sortTypes.indexOf(currentSortBy) + 1) % sortTypes.length
+      const nextSortBy = sortTypes[nextSortIndex]
+      
+      const nextSortCacheKey = getCacheKey(nextSortBy, props.userId)
+      
+      if (!getFromCache(nextSortCacheKey)) {
+        console.log('預熱數據:', nextSortCacheKey)
+        try {
+          let response
+          // ... existing API calls ...
+          if (response?.data) {
+            const processedData = processApiResponse(response.data, nextSortBy)
+            setToCache(nextSortCacheKey, processedData)
+            // 預加載下一頁籤的圖片
+            const imageUrls = processedData.map(drink => drink.image_url).filter(Boolean)
+            preloadImages(imageUrls)
+          }
+        } catch (error) {
+          console.error('預熱數據失敗:', error)
+        }
+      }
+    }
+
+    // 處理 API 響應數據的統一方法
+    const processApiResponse = (data, sortBy) => {
+      let storesData = []
+      if (sortBy === 'favorite') {
+        storesData = data.favorites.map(favorite => ({
+          id: favorite.store_id,
+          name: favorite.store_name,
+          rating: favorite.rating || 0,
+          review_number: favorite.review_number || 0,
+          city: favorite.city || '',
+          city_CN: favorite.city_CN || '',
+          navigation_url: favorite.navigation_url || '#',
+          foodpanda_url: favorite.redirection_url || '#',
+          image_url: favorite.store_image,
+          address: favorite.address || '暫無地址資訊',
+          phone: favorite.customer_phone || '暫無電話資訊',
+          start_time: favorite.is_new_until || '暫無營業時間資訊',
+          description: favorite.description || '暫無店家介紹',
+          tag: favorite.tag || '',
+        }))
+      } else {
+        const stores = data.stores || data.data || []
+        storesData = stores.map(shop => ({
           id: shop.store_id || shop.id,
           name: shop.name || shop.store_name,
           rating: shop.rating || 0,
@@ -754,14 +781,72 @@ export default {
           description: shop.description || '暫無店家介紹',
           tag: shop.tag || '',
         }))
+      }
+      return storesData
+    }
 
-        // 如果是最愛排序，設置所有店家的收藏狀態為 true
-        if (props.sortBy === 'favorite') {
-          drinks.value.forEach(drink => {
-            favoriteStates.value[drink.id] = true
-          })
+    const fetchRecommendations = async () => {
+      const sortBy = props.sortBy || 'hybrid' // 添加預設值
+      const currentCacheKey = getCacheKey(sortBy, props.userId)
+      const cachedData = getFromCache(currentCacheKey)
+
+      if (cachedData) {
+        drinks.value = cachedData
+        loading.value = false
+        // 在背景預熱下一個頁籤的數據
+        preloadNextData(sortBy)
+        return
+      }
+
+      loading.value = true
+      drinks.value = []
+      imageLoaded.value = {}
+
+      try {
+        await new Promise(resolve => setTimeout(resolve, 300))
+        let response
+
+        switch (sortBy) {
+          case 'rating':
+            response = await recommendAPI.getContentRecommendations({
+              limit: 10,
+              user_id: props.userId
+            })
+            break
+          case 'preference':
+            response = await recommendAPI.getCollaborativeRecommendations({
+              limit: 10,
+              user_id: props.userId
+            })
+            break
+          case 'favorite':
+            response = await favoriteAPI.getFavorites()
+            break
+          case 'hybrid':
+          default:
+            response = await recommendAPI.getHybridRecommendations({
+              limit: 10,
+              user_id: props.userId
+            })
         }
 
+        if (response?.data) {
+          const processedData = processApiResponse(response.data, sortBy)
+          drinks.value = processedData
+          
+          // 儲存到快取
+          setToCache(currentCacheKey, processedData)
+
+          // 設置收藏狀態
+          if (sortBy === 'favorite') {
+            processedData.forEach(drink => {
+              favoriteStates.value[drink.id] = true
+            })
+          }
+
+          // 在背景預熱下一個頁籤的數據
+          preloadNextData(sortBy)
+        }
       } catch (err) {
         error.value = err.message
         console.error('獲取推薦飲料店失敗:', err)
@@ -770,13 +855,80 @@ export default {
       }
     }
 
-    // 監聽排序變化和用戶 ID 變化
-    watch([() => props.sortBy, () => props.userId], ([newSort, newUserId]) => {
-      fetchRecommendations()
+    // 清除快取的方法
+    const clearCache = () => {
+      cacheData.value.clear()
+      lastFetchTime.value.clear()
+      console.log('快取已清除')
+    }
+
+    // 初始化數據
+    const initializeData = async () => {
+      const sortBy = props.sortBy || 'hybrid'
+      const currentCacheKey = getCacheKey(sortBy, props.userId)
+      const cachedData = getFromCache(currentCacheKey)
+
+      if (cachedData) {
+        drinks.value = cachedData
+        loading.value = false
+        preloadNextData(sortBy)
+        return
+      }
+
+      // 如果沒有快取數據，則獲取新數據
+      await fetchRecommendations()
+    }
+
+    // 監聽排序變化、用戶 ID 和視圖模式變化
+    watch([() => props.sortBy, () => props.userId, () => props.viewMode], 
+      ([newSort, newUserId, newViewMode], [oldSort, oldUserId, oldViewMode]) => {
+      // 當用戶 ID 改變時，清除所有快取並重新初始化
+      if (newUserId !== oldUserId) {
+        clearCache()
+        initializeData()
+        return
+      }
+
+      // 如果只是視圖模式改變，直接返回，不做任何操作
+      if (newViewMode !== oldViewMode) {
+        return
+      }
+
+      // 排序方式改變時，先檢查快取
+      if (newSort !== oldSort) {
+        const currentCacheKey = getCacheKey(newSort, props.userId)
+        const cachedData = getFromCache(currentCacheKey)
+        
+        if (cachedData) {
+          drinks.value = cachedData
+          loading.value = false
+          preloadNextData(newSort)
+        } else {
+          fetchRecommendations()
+        }
+      }
     })
 
+    // 監聽 props.drinks 的變化
+    watch(() => props.drinks, (newDrinks) => {
+      if (newDrinks && newDrinks.length > 0) {
+        drinks.value = newDrinks
+        // 預加載所有圖片
+        const imageUrls = newDrinks.map(drink => drink.image_url).filter(Boolean)
+        preloadImages(imageUrls)
+        
+        const sortBy = props.sortBy || 'hybrid'
+        const currentCacheKey = getCacheKey(sortBy, props.userId)
+        if (!getFromCache(currentCacheKey)) {
+          setToCache(currentCacheKey, newDrinks)
+          preloadNextData(sortBy)
+        }
+      }
+    }, { immediate: true })
+
     onMounted(() => {
-      fetchRecommendations()
+      // 首次載入時初始化數據
+      initializeData()
     })
 
     const closeReviewForm = () => {
@@ -848,7 +1000,7 @@ export default {
 /* 網格布局動畫 */
 .layout-grid-move,
 .layout-list-move {
-  transition: all 0.5s ease;
+  transition: all 0.3s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 /* 進入和離開動畫 */
@@ -856,7 +1008,10 @@ export default {
 .layout-grid-leave-active,
 .layout-list-enter-active,
 .layout-list-leave-active {
-  transition: all 0.5s ease-out;
+  transition: opacity 0.3s cubic-bezier(0.33, 1, 0.68, 1);
+  position: absolute;
+  width: 100%;
+  will-change: opacity;
 }
 
 .layout-grid-enter-from,
@@ -864,83 +1019,85 @@ export default {
 .layout-list-enter-from,
 .layout-list-leave-to {
   opacity: 0;
-  transform: translateY(30px);
 }
 
-/* 確保動畫期間元素不會消失 */
-.layout-grid-leave-active,
-.layout-list-leave-active {
-  position: absolute;
-  width: 100%;
-}
-
-/* 添加新的過渡效果 */
-.fade-move,
-.fade-enter-active,
-.fade-leave-active {
-  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-  transform: scaleY(0.01) translate(30px, 0);
-}
-
-.fade-leave-active {
-  position: absolute;
-}
-
-/* 優化卡片hover效果 */
-.cursor-pointer {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform, box-shadow;
-}
-
-.cursor-pointer:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-/* 按鈕動畫效果 */
-a {
-  transition: all 0.3s ease;
-}
-
-a:hover {
-  transform: translateY(-2px);
-}
-
-/* 添加工具提示效果 */
-a {
+.layout-grid-enter-to,
+.layout-list-enter-to {
   position: relative;
 }
 
-a:hover::after {
-  content: attr(title);
-  position: absolute;
-  bottom: -25px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 4px 8px;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
-  pointer-events: none;
+/* 容器樣式 */
+.grid,
+.space-y-4 {
+  position: relative;
+  min-height: 200px;
 }
 
-/* 確保按鈕在暗色模式下也有正確的樣式 */
-.dark a:hover::after {
-  background-color: rgba(255, 255, 255, 0.9);
-  color: black;
+/* 確保元素在過渡期間的定位 */
+.grid > *,
+.space-y-4 > * {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
-/* 添加彈窗動畫 */
+/* 圖片載入過渡效果 */
+.image-fade-enter-active,
+.image-fade-leave-active {
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.image-fade-enter-from,
+.image-fade-leave-to {
+  opacity: 0;
+}
+
+/* 優化圖片容器 */
+.drink-image-container {
+  position: relative;
+  overflow: hidden;
+  background-color: #f5f5f5;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+.drink-image-container img {
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.6, 1);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* 載入中動畫優化 */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* 優化卡片效果 */
+.cursor-pointer {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.6, 1);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+.cursor-pointer:hover {
+  transform: translateY(-2px) translateZ(0);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* 彈窗動畫 */
 .modal-enter-active,
 .modal-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 .modal-enter-from,
@@ -948,9 +1105,17 @@ a:hover::after {
   opacity: 0;
 }
 
-/* 添加懸停效果 */
-.cursor-pointer:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+/* 工具提示動畫 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+a:hover::after {
+  animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.6, 1) forwards;
 }
 </style> 

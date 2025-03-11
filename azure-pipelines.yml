@@ -256,21 +256,17 @@ stages:
 
           # 配置容器設定
           az webapp config container set \
-            --resource-group $(RESOURCE_GROUP) \
             --name frontend-$(APP_NAME) \
+            --resource-group $(RESOURCE_GROUP) \
             --docker-registry-server-url $(ACR_LOGIN_SERVER) \
             --docker-registry-server-user $(ACR_USERNAME) \
-            --docker-registry-server-password $(ACR_PASSWORD) \
-            --docker-custom-image-name $(ACR_LOGIN_SERVER)/frontend:latest
+            --docker-registry-server-password $(ACR_PASSWORD)
 
           # 配置前端環境變數
           az webapp config appsettings set \
             --resource-group $(RESOURCE_GROUP) \
             --name frontend-$(APP_NAME) \
             --settings \
-              DOCKER_REGISTRY_SERVER_URL=$(ACR_LOGIN_SERVER) \
-              DOCKER_REGISTRY_SERVER_USERNAME=$(ACR_USERNAME) \
-              DOCKER_REGISTRY_SERVER_PASSWORD=$(ACR_PASSWORD) \
               WEBSITES_PORT=$(FRONTEND_WEBSITES_PORT) \
               NODE_ENV=$(NODE_ENV) \
               VITE_BACKEND_URL=$(VITE_BACKEND_URL) \
@@ -309,8 +305,7 @@ stages:
             --name backend-$(APP_NAME) \
             --docker-registry-server-url $(ACR_LOGIN_SERVER) \
             --docker-registry-server-user $(ACR_USERNAME) \
-            --docker-registry-server-password $(ACR_PASSWORD) \
-            --docker-custom-image-name $(ACR_LOGIN_SERVER)/backend:latest
+            --docker-registry-server-password $(ACR_PASSWORD)
 
           # 配置後端環境變數
           az webapp config appsettings set \
@@ -338,4 +333,11 @@ stages:
               RESET_TOKEN_EXPIRE_TYPE=$(RESET_TOKEN_EXPIRE_TYPE) \
               RESET_TOKEN_EXPIRE_VALUE=$(RESET_TOKEN_EXPIRE_VALUE) \
               GOOGLE_APPLICATION_CREDENTIALS=$(GOOGLE_APPLICATION_CREDENTIALS) \
-              CORS_ORIGINS=$(CORS_ORIGINS)
+              CORS_ORIGINS=$(CORS_ORIGINS) \
+              API_URL=$(API_URL) \
+              LANGFLOW_API_URL=$(LANGFLOW_API_URL) \
+              LANGFLOW_API_KEY=$(LANGFLOW_API_KEY) \
+              LANGFLOW_AUTH_TOKEN=$(LANGFLOW_AUTH_TOKEN) \
+              LANGFLOW_FOLDER_BASE_URL=$(LANGFLOW_FOLDER_BASE_URL) \
+              LANGFLOW_API_BASE_URL=$(LANGFLOW_API_BASE_URL)
+

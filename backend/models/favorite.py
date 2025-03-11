@@ -23,7 +23,7 @@ class Favorite(db.Model):
     description = db.Column(db.Text, nullable=True)
     is_new_until = db.Column(db.String(100), nullable=True)
     redirection_url = db.Column(db.String(255), nullable=True)
-    navigation_url = db.Column(db.String(255), nullable=True)
+    navigation_url = db.Column(db.String(500), nullable=True)
     rating = db.Column(db.Float, nullable=True, default=0)
     review_number = db.Column(db.Integer, nullable=True, default=0)
     username = db.Column(db.String(50), nullable=False)
