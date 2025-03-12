@@ -59,10 +59,21 @@
               <!-- 用戶訊息 -->
               <div v-if="message.isUser" class="flex justify-end">
                 <div class="flex items-end space-x-2">
-                  <div class="max-w-xl bg-indigo-500 text-white px-6 py-3 rounded-2xl rounded-br-sm">
-                    {{ message.content }}
+                  <div class="max-w-[70%] bg-indigo-500 text-white px-4 py-2 rounded-2xl rounded-br-sm">
+                    <!-- 處理用戶圖片訊息 -->
+                    <template v-if="message.type === 'image' || isImageUrl(message.content)">
+                      <div class="relative">
+                        <a :href="extractImageSrc(message.content)" target="_blank" class="block hover:opacity-90 transition-opacity">
+                          <img :src="extractImageSrc(message.content)" class="w-64 h-64 object-cover rounded-lg cursor-pointer" alt="用戶上傳的圖片">
+                        </a>
+                      </div>
+                    </template>
+                    <!-- 處理用戶文字訊息 -->
+                    <template v-else>
+                      {{ message.content }}
+                    </template>
                   </div>
-                  <div class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white">
+                  <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white text-sm">
                     <i class="fas fa-user"></i>
                   </div>
                 </div>
@@ -77,8 +88,16 @@
                   <div
                     class="max-w-xl bg-gray-50 dark:bg-gray-800/50 text-gray-800 dark:text-gray-200 px-6 py-4 rounded-xl shadow-sm">
                     <div v-if="message.content" class="space-y-3">
+                      <!-- 處理圖片回應 -->
+                      <template v-if="isImageUrl(message.content)">
+                        <div class="relative">
+                          <a :href="extractImageSrc(message.content)" target="_blank" class="block hover:opacity-90 transition-opacity">
+                            <img :src="extractImageSrc(message.content)" class="w-64 h-64 object-cover rounded-lg cursor-pointer" alt="AI生成的圖片">
+                          </a>
+                        </div>
+                      </template>
                       <!-- 一般文字內容 -->
-                      <template v-if="!message.content.includes('★')">
+                      <template v-else-if="!message.content.includes('★')">
                         <div class="text-base text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                           {{ message.content }}
                         </div>
@@ -191,7 +210,18 @@
             <div v-if="message.isUser" class="flex justify-end">
               <div class="flex items-end space-x-2">
                 <div class="max-w-[70%] bg-indigo-500 text-white px-4 py-2 rounded-2xl rounded-br-sm">
-                  {{ message.content }}
+                  <!-- 處理用戶圖片訊息 -->
+                  <template v-if="message.type === 'image' || isImageUrl(message.content)">
+                    <div class="relative">
+                      <a :href="extractImageSrc(message.content)" target="_blank" class="block hover:opacity-90 transition-opacity">
+                        <img :src="extractImageSrc(message.content)" class="w-64 h-64 object-cover rounded-lg cursor-pointer" alt="用戶上傳的圖片">
+                      </a>
+                    </div>
+                  </template>
+                  <!-- 處理用戶文字訊息 -->
+                  <template v-else>
+                    {{ message.content }}
+                  </template>
                 </div>
                 <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white text-sm">
                   <i class="fas fa-user"></i>
@@ -206,8 +236,16 @@
                 </div>
                 <div class="max-w-[70%] bg-gray-50 text-gray-800 px-4 py-2 rounded-xl">
                   <div v-if="message.content" class="space-y-3">
+                    <!-- 處理圖片回應 -->
+                    <template v-if="isImageUrl(message.content)">
+                      <div class="relative">
+                        <a :href="extractImageSrc(message.content)" target="_blank" class="block hover:opacity-90 transition-opacity">
+                          <img :src="extractImageSrc(message.content)" class="w-64 h-64 object-cover rounded-lg cursor-pointer" alt="AI生成的圖片">
+                        </a>
+                      </div>
+                    </template>
                     <!-- 一般文字內容 -->
-                    <template v-if="!message.content.includes('★')">
+                    <template v-else-if="!message.content.includes('★')">
                       <div class="text-base text-gray-700 leading-relaxed whitespace-pre-wrap">
                         {{ message.content }}
                       </div>
@@ -544,6 +582,27 @@ export default {
       }
     }
 
+    // 在 setup 函數中修改 isImageUrl 方法
+    const extractImageSrc = (content) => {
+      if (typeof content !== 'string') return content;
+      
+      // 如果是 HTML img 標籤，提取 src
+      if (content.startsWith('<img')) {
+        const match = content.match(/src="([^"]+)"/)
+        return match ? match[1] : content
+      }
+      return content
+    }
+
+    const isImageUrl = (content) => {
+      // 檢查是否為圖片URL格式
+      return typeof content === 'string' && (
+        content.startsWith('<img') || // 處理HTML標籤格式
+        content.match(/\.(jpg|jpeg|png|gif|webp)/) || // 處理一般圖片URL
+        content.includes('storage.googleapis.com') // 處理Google Storage圖片
+      )
+    }
+
     return {
       isOpen,
       isFullscreen,
@@ -559,7 +618,9 @@ export default {
       toggleQuickQuestions,
       handleQuickQuestion,
       clearHistory,
-      quickQuestions
+      quickQuestions,
+      isImageUrl,
+      extractImageSrc
     }
   }
 }
@@ -769,5 +830,25 @@ button:hover .fa-trash-alt {
 .backdrop-blur-sm {
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+}
+
+/* 圖片懸停效果 */
+.hover\:opacity-90:hover {
+  opacity: 0.9;
+}
+
+/* 圖片過渡效果 */
+.transition-opacity {
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* 確保圖片在容器中正確顯示 */
+.object-cover {
+  object-fit: cover;
+}
+
+/* 添加指針樣式 */
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>

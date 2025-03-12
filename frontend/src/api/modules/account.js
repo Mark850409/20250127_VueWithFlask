@@ -117,5 +117,14 @@ export default {
       console.error('Firebase 登入 API 錯誤:', error)
       throw error
     }
+  },
+
+  // 獲取指定用戶資訊
+  getUserById(user_id) {
+    return axios.get(`/users/${user_id}`)
+      .catch(error => {
+        console.error('Get User Error:', error.response?.data || error.message)
+        throw error
+      })
   }
 } 

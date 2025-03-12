@@ -104,206 +104,221 @@
 
   <!-- 飲料店詳細資訊彈窗 -->
   <div v-if="selectedDrink" 
-       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+       class="fixed inset-0 bg-black bg-opacity-50 flex justify-center z-50 overflow-y-auto pt-20 px-4 pb-4"
        @click.self="closeDetailModal">
-    <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-4xl mx-4 overflow-hidden">
-      <div class="relative">
-        <img :src="selectedDrink.image_url" 
-             :alt="selectedDrink.name"
-             class="w-full h-64 object-cover transition-opacity duration-300"
-             :class="{ 'opacity-0': !modalImageLoaded }"
-             loading="lazy"
-             @load="handleModalImageLoad"
-             @error="handleImageError">
-        <div v-if="!modalImageLoaded" class="absolute inset-0 bg-gray-200 animate-pulse"></div>
-        <button @click="closeDetailModal"
-                class="absolute top-4 right-4 bg-black bg-opacity-50 text-white rounded-full p-2 hover:bg-opacity-70">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
+    <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-4xl relative" 
+         style="min-height: 200px; max-height: calc(100vh - 120px);">
+      <!-- 關閉按鈕固定在右上角 -->
+      <button @click="closeDetailModal"
+              class="absolute -top-4 -right-4 bg-white text-gray-600 rounded-full p-2 hover:bg-gray-100 shadow-lg z-[60] transition-colors duration-200">
+        <i class="fas fa-times text-xl"></i>
+      </button>
 
-      <!-- 頁籤選項 -->
-      <div class="border-b border-gray-200 dark:border-gray-700">
-        <nav class="flex space-x-8 px-6">
-          <button 
-            @click="activeTab = 'info'"
-            :class="[
-              'py-4 px-1 border-b-2 font-medium text-sm flex items-center',
-              activeTab === 'info' 
-                ? 'border-indigo-500 text-indigo-600' 
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            ]"
-          >
-            <i class="fas fa-info-circle mr-2"></i>
-            基本資訊
-          </button>
-          <button 
-            @click="activeTab = 'description'"
-            :class="[
-              'py-4 px-1 border-b-2 font-medium text-sm flex items-center',
-              activeTab === 'description' 
-                ? 'border-indigo-500 text-indigo-600' 
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            ]"
-          >
-            <i class="fas fa-store mr-2"></i>
-            店家介紹
-          </button>
-          <button 
-            @click="activeTab = 'reviews'"
-            :class="[
-              'py-4 px-1 border-b-2 font-medium text-sm flex items-center',
-              activeTab === 'reviews' 
-                ? 'border-indigo-500 text-indigo-600' 
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            ]"
-          >
-            <i class="fas fa-comments mr-2"></i>
-            顧客評論
-          </button>
-        </nav>
-      </div>
-
-      <!-- 頁籤內容 -->
-      <div v-if="activeTab === 'info'" class="p-6">
-        <div class="mb-6">
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            {{ selectedDrink.name }}
-          </h2>
-          <div class="flex items-center mb-4">
-            <span class="text-yellow-400 mr-1">★</span>
-            <span class="font-bold">{{ selectedDrink.rating }}</span>
-            <span class="text-gray-500 ml-1">({{ selectedDrink.review_number }}次瀏覽)</span>
-          </div>
+      <!-- 內容區塊添加捲動功能 -->
+      <div class="h-full overflow-y-auto">
+        <!-- 店家圖片容器固定高度 -->
+        <div class="relative h-48 bg-gray-100">
+          <img :src="selectedDrink.image_url" 
+               :alt="selectedDrink.name"
+               class="w-full h-full object-cover"
+               loading="lazy"
+               @error="handleImageError">
         </div>
 
-        <h3 class="text-lg font-semibold mb-4">飲料店資訊</h3>
-        <div class="space-y-4 text-gray-600 dark:text-gray-400">
-          <!-- 店家標籤 -->
-          <div v-if="selectedDrink.tag" class="flex items-center">
-            <i class="fas fa-tags w-6"></i>
-            <div class="ml-2 flex flex-wrap gap-2">
-              <span v-for="(tag, index) in selectedDrink.tag.split(',')" :key="index"
-                    class="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-full flex items-center">
-                <i class="fas fa-tag text-xs mr-1.5"></i>
-                {{ tag.trim() }}
-              </span>
-            </div>
+        <!-- 店家資訊 -->
+        <div class="p-6">
+          <!-- 頁籤選項固定在頂部 -->
+          <div class="border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white z-10">
+            <nav class="flex">
+              <button 
+                @click="activeTab = 'info'"
+                :class="[
+                  'py-4 px-6 border-b-2 font-medium text-sm flex items-center',
+                  activeTab === 'info' 
+                    ? 'border-indigo-500 text-indigo-600' 
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ]"
+              >
+                <i class="fas fa-info-circle mr-2"></i>
+                基本資訊
+              </button>
+              <button 
+                @click="activeTab = 'description'"
+                :class="[
+                  'py-4 px-6 border-b-2 font-medium text-sm flex items-center',
+                  activeTab === 'description' 
+                    ? 'border-indigo-500 text-indigo-600' 
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ]"
+              >
+                <i class="fas fa-store mr-2"></i>
+                店家介紹
+              </button>
+              <button 
+                @click="activeTab = 'reviews'"
+                :class="[
+                  'py-4 px-6 border-b-2 font-medium text-sm flex items-center',
+                  activeTab === 'reviews' 
+                    ? 'border-indigo-500 text-indigo-600' 
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ]"
+              >
+                <i class="fas fa-comments mr-2"></i>
+                顧客評論
+              </button>
+            </nav>
           </div>
-          <!-- 距離和預估時間 -->
-          <div v-if="selectedDrink.distance" class="flex items-center space-x-6">
-            <div class="flex items-center">
-              <i class="fas fa-route w-6 text-indigo-500"></i>
-              <span class="ml-2">距離：{{ formatDistance(selectedDrink.distance) }}</span>
-            </div>
-            <div class="flex items-center">
-              <i class="fas fa-clock w-6 text-indigo-500"></i>
-              <span class="ml-2">預估時間：{{ formatDuration(selectedDrink.duration) }}</span>
-            </div>
-          </div>
-          <div class="flex items-center">
-            <i class="fas fa-map-marker-alt w-6"></i>
-            <span class="ml-2">縣市：{{ selectedDrink.city_CN }}</span>
-          </div>
-          <div class="flex items-center">
-            <i class="fas fa-location-arrow w-6"></i>
-            <span class="ml-2">地址：{{ selectedDrink.address || '暫無資訊' }}</span>
-          </div>
-          <div class="flex items-center">
-            <i class="fas fa-phone w-6"></i>
-            <span class="ml-2">電話：{{ selectedDrink.customer_phone || '暫無資訊' }}</span>
-          </div>
-        </div>
 
-        <div class="flex justify-end mt-6 space-x-4">
-          <a 
-            :href="selectedDrink.foodpanda_url" 
-            target="_blank"
-            class="p-2 text-gray-600 hover:text-pink-500 transition-colors duration-300"
-            title="前往點餐"
-          >
-            <i class="fas fa-utensils text-xl"></i>
-          </a>
-          <button 
-            @click="handleMapClick(selectedDrink)"
-            class="p-2 text-gray-600 hover:text-blue-500 transition-colors duration-300"
-            title="查看地圖"
-          >
-            <i class="fas fa-map-marker-alt text-xl"></i>
-          </button>
-        </div>
-      </div>
-
-      <div v-if="activeTab === 'description'" class="p-6">
-        <h3 class="text-lg font-semibold mb-4">店家介紹</h3>
-        <div class="text-gray-600 dark:text-gray-400">
-          <p class="whitespace-pre-line leading-relaxed">
-            {{ selectedDrink.description || '暫無介紹' }}
-          </p>
-        </div>
-      </div>
-      
-      <!-- 顧客評論 -->
-      <div v-if="activeTab === 'reviews'" class="p-6">
-        <!-- 評論統計 -->
-        <div class="flex items-center justify-between mb-6">
-          <div class="flex items-center space-x-4">
-            <div class="text-center">
-              <div class="text-3xl font-bold text-gray-900">{{ selectedDrink.rating }}</div>
-              <div class="flex text-yellow-400 mt-1">
-                <i v-for="n in 5" :key="n" 
-                   :class="['fas', n <= selectedDrink.rating ? 'fa-star' : 'fa-star-o']">
-                </i>
+          <!-- 頁籤內容區域 -->
+          <div class="space-y-6 mt-6">
+            <!-- 基本資訊 -->
+            <div v-if="activeTab === 'info'" class="space-y-4">
+              <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  {{ selectedDrink.name }}
+                </h2>
+                <div class="flex items-center mb-4">
+                  <span class="text-yellow-400 mr-1">★</span>
+                  <span class="font-bold">{{ selectedDrink.rating }}</span>
+                  <span class="text-gray-500 ml-1">({{ selectedDrink.review_number }}次瀏覽)</span>
+                </div>
               </div>
-              <div class="text-sm text-gray-500 mt-1">{{ selectedDrink.review_number }}次瀏覽</div>
-            </div>
-          </div>
-          <button @click="showReviewForm = true" 
-                  class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-300">
-            撰寫評論
-          </button>
-        </div>
 
-        <!-- 評論列表 -->
-        <div class="max-h-[400px] overflow-y-auto pr-2">
-          <div v-if="displayedReviews.length > 0" 
-                class="space-y-4">
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="text-lg font-medium text-gray-900">最新評論</h3>
-              <span class="text-sm text-gray-500">
-                (顯示最新 3 則評論)
-              </span>
-            </div>
-            <!-- 評論內容 -->
-            <div v-for="review in displayedReviews" 
-                 :key="review.id" 
-                 class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
-              <div class="flex items-start">
-                <img :src="review.user_avatar || defaultAvatar" 
-                     :alt="review.user"
-                     class="w-10 h-10 rounded-full"
-                     @error="handleAvatarError">
-                <div class="ml-4 flex-1">
-                  <div class="flex items-center justify-between">
-                    <h4 class="font-medium text-gray-900">{{ review.user }}</h4>
-                    <span class="text-sm text-gray-500">{{ formatDate(review.created_at) }}</span>
+              <h3 class="text-lg font-semibold mb-4">飲料店資訊</h3>
+              <div class="space-y-4 text-gray-600 dark:text-gray-400">
+                <!-- 店家標籤 -->
+                <div v-if="selectedDrink.tag" class="flex items-center">
+                  <i class="fas fa-tags w-6"></i>
+                  <div class="ml-2 flex flex-wrap gap-2">
+                    <span v-for="(tag, index) in selectedDrink.tag.split(',')" :key="index"
+                          class="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-full flex items-center">
+                      <i class="fas fa-tag text-xs mr-1.5"></i>
+                      {{ tag.trim() }}
+                    </span>
                   </div>
-                  <div class="flex text-yellow-400 my-1">
-                    <i v-for="n in 5" :key="n" 
-                       :class="['fas', n <= review.rating ? 'fa-star' : 'fa-star-o']">
-                    </i>
+                </div>
+                <!-- 距離和預估時間 -->
+                <div v-if="selectedDrink.distance" class="flex items-center space-x-6">
+                  <div class="flex items-center">
+                    <i class="fas fa-route w-6 text-indigo-500"></i>
+                    <span class="ml-2">距離：{{ formatDistance(selectedDrink.distance) }}</span>
                   </div>
-                  <p class="text-gray-600 mt-1">{{ review.content }}</p>
+                  <div class="flex items-center">
+                    <i class="fas fa-clock w-6 text-indigo-500"></i>
+                    <span class="ml-2">預估時間：{{ formatDuration(selectedDrink.duration) }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center">
+                  <i class="fas fa-map-marker-alt w-6"></i>
+                  <span class="ml-2">縣市：{{ selectedDrink.city_CN }}</span>
+                </div>
+                <div class="flex items-center">
+                  <i class="fas fa-location-arrow w-6"></i>
+                  <span class="ml-2">地址：{{ selectedDrink.address || '暫無資訊' }}</span>
+                </div>
+                <div class="flex items-center">
+                  <i class="fas fa-phone w-6"></i>
+                  <span class="ml-2">電話：{{ selectedDrink.customer_phone || '暫無資訊' }}</span>
+                </div>
+              </div>
+
+              <!-- 分隔線和按鈕 -->
+              <div class="pt-4 mt-6">
+                <div class="h-px bg-gray-200 dark:bg-gray-700 mb-4"></div>
+                <div class="flex justify-end space-x-4">
+                  <a 
+                    :href="selectedDrink.foodpanda_url" 
+                    target="_blank"
+                    class="p-2 text-gray-600 hover:text-pink-500 transition-colors duration-300"
+                    title="前往點餐"
+                  >
+                    <i class="fas fa-utensils text-xl"></i>
+                  </a>
+                  <button 
+                    @click="handleMapClick(selectedDrink)"
+                    class="p-2 text-gray-600 hover:text-blue-500 transition-colors duration-300"
+                    title="查看地圖"
+                  >
+                    <i class="fas fa-map-marker-alt text-xl"></i>
+                  </button>
                 </div>
               </div>
             </div>
-            <div v-if="selectedDrink.reviews.length > 3" 
-                 class="text-center text-gray-500 mt-4">
-              僅顯示最新 3 則評論
+
+            <!-- 店家介紹 -->
+            <div v-else-if="activeTab === 'description'" class="space-y-6">
+              <h3 class="text-lg font-semibold mb-4">店家介紹</h3>
+              <div class="text-gray-600 dark:text-gray-400">
+                <p class="whitespace-pre-line leading-relaxed">
+                  {{ selectedDrink.description || '暫無介紹' }}
+                </p>
+              </div>
             </div>
-          </div>
-          <div v-else class="text-center text-gray-500 py-8">
-            暫無評論，成為第一個評論的人吧！
+            
+            <!-- 顧客評論 -->
+            <div v-else-if="activeTab === 'reviews'" class="space-y-6">
+              <!-- 評論統計 -->
+              <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center space-x-4">
+                  <div class="text-center">
+                    <div class="text-3xl font-bold text-gray-900">{{ selectedDrink.rating }}</div>
+                    <div class="flex text-yellow-400 mt-1">
+                      <i v-for="n in 5" :key="n" 
+                         :class="['fas', n <= selectedDrink.rating ? 'fa-star' : 'fa-star-o']">
+                      </i>
+                    </div>
+                    <div class="text-sm text-gray-500 mt-1">{{ selectedDrink.review_number }}次瀏覽</div>
+                  </div>
+                </div>
+                <button @click="showReviewForm = true" 
+                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-300">
+                  撰寫評論
+                </button>
+              </div>
+
+              <!-- 評論列表 -->
+              <div class="max-h-[400px] overflow-y-auto pr-2">
+                <div v-if="processedReviews.length > 0" 
+                      class="space-y-4">
+                  <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">最新評論</h3>
+                    <span class="text-sm text-gray-500">
+                      (顯示最新 3 則評論)
+                    </span>
+                  </div>
+                  <!-- 評論內容 -->
+                  <div v-for="review in processedReviews" 
+                       :key="review.id" 
+                       class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
+                    <div class="flex items-start">
+                      <img :src="review.user_avatar" 
+                           :alt="review.user"
+                           class="w-10 h-10 rounded-full"
+                           @error="handleAvatarError">
+                      <div class="ml-4 flex-1">
+                        <div class="flex items-center justify-between">
+                          <h4 class="font-medium text-gray-900">{{ review.user }}</h4>
+                          <span class="text-sm text-gray-500">{{ formatDate(review.created_at) }}</span>
+                        </div>
+                        <div class="flex text-yellow-400 my-1">
+                          <i v-for="n in 5" :key="n" 
+                             :class="['fas', n <= review.rating ? 'fa-star' : 'fa-star-o']">
+                          </i>
+                        </div>
+                        <p class="text-gray-600 mt-1">{{ review.content }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="selectedDrink.reviews.length > 3" 
+                       class="text-center text-gray-500 mt-4">
+                    僅顯示最新 3 則評論
+                  </div>
+                </div>
+                <div v-else class="text-center text-gray-500 py-8">
+                  暫無評論，成為第一個評論的人吧！
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -312,16 +327,17 @@
 
   <!-- 評論表單彈窗 -->
   <div v-if="showReviewForm" 
-       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+       class="fixed inset-0 bg-black bg-opacity-50 flex justify-center z-[70] pt-20 px-4 pb-4"
        @click.self="closeReviewForm">
-    <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-lg mx-4 p-6">
+    <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-lg relative">
+      <button @click="closeReviewForm" 
+              class="absolute -top-4 -right-4 bg-white text-gray-600 rounded-full p-2 hover:bg-gray-100 shadow-lg z-[80] transition-colors duration-200">
+        <i class="fas fa-times text-xl"></i>
+      </button>
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
           撰寫評論
         </h3>
-        <button @click="closeReviewForm" class="text-gray-500 hover:text-gray-700">
-          <i class="fas fa-times"></i>
-        </button>
       </div>
       <div class="rating mb-4">
         <div class="flex items-center mb-2">
@@ -367,6 +383,7 @@ import { recommendAPI } from '@/api'
 import favoriteAPI from '@/api/modules/favorite'
 import Swal from 'sweetalert2'
 import messageAPI from '@/api/modules/message'
+import accountAPI from '@/api/modules/account'
 
 export default {
   name: 'PopularDrinkList',
@@ -413,6 +430,7 @@ export default {
     const defaultAvatar = ref('https://api.dicebear.com/7.x/avataaars/svg?seed=default')
     const imageLoaded = ref({})
     const modalImageLoaded = ref(false)
+    const processedReviews = ref([])
     let cityChangeHandler = null
 
     const getStoredCity = () => {
@@ -444,10 +462,25 @@ export default {
       modalImageLoaded.value = true
     }
 
-    const showDrinkDetail = (drink) => {
-      selectedDrink.value = drink
-      activeTab.value = 'info'
-      modalImageLoaded.value = false // 重置模態框圖片載入狀態
+    const showDrinkDetail = async (drink) => {
+      try {
+        selectedDrink.value = drink
+        activeTab.value = 'info'
+        modalImageLoaded.value = false
+
+        // 獲取評論數據
+        const response = await messageAPI.getMessages()
+        if (response.data && response.data.messages) {
+          // 將評論數據添加到 selectedDrink 中
+          selectedDrink.value = {
+            ...drink,
+            reviews: response.data.messages
+          }
+        }
+      } catch (error) {
+        console.error('獲取評論數據失敗:', error)
+        selectedDrink.value = drink
+      }
     }
 
     const closeDetailModal = () => {
@@ -880,45 +913,58 @@ export default {
       hoverRating.value = 0
     }
 
-    const displayedReviews = computed(() => {
-      // 檢查 selectedDrink 是否存在且有 reviews 屬性
-      if (!selectedDrink.value?.reviews) {
-        console.log('No reviews available for selected drink')
-        return []
-      }
-      
-      // 確保 reviews 是陣列
-      const reviews = Array.isArray(selectedDrink.value.reviews) 
-        ? selectedDrink.value.reviews 
-        : []
-      
-      // 過濾並排序評論
-      const approvedReviews = reviews
-        .filter(review => review.status === 'approved')
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        .slice(0, 3)
-      
-      console.log('Approved reviews:', approvedReviews)
-      return approvedReviews
-    })
+    // 監聽 selectedDrink 的變化
+    watch(() => selectedDrink.value?.reviews, async (newReviews) => {
+      try {
+        if (!newReviews || !Array.isArray(newReviews)) {
+          processedReviews.value = []
+          return
+        }
 
-    const getReviewCount = computed(() => {
-      // 檢查 selectedDrink 是否存在且有 reviews 屬性
-      if (!selectedDrink.value?.reviews) {
-        console.log('No reviews available for review count')
-        return 0
+        // 過濾並處理評論
+        const filteredReviews = newReviews
+          .filter(review => review.status === 'approved' && review.store_id === selectedDrink.value.id)
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 3)
+
+        // 處理每條評論的用戶頭像
+        const reviews = await Promise.all(
+          filteredReviews.map(async review => {
+            let avatarUrl = defaultAvatar.value
+
+            if (review.user_id) {
+              try {
+                const userResponse = await accountAPI.getUserById(review.user_id)
+                if (userResponse.data && userResponse.data.avatar) {
+                  const avatar = userResponse.data.avatar
+                  if (avatar.startsWith('http')) {
+                    avatarUrl = avatar
+                  } else {
+                    avatarUrl = `${import.meta.env.VITE_BACKEND_URL}/uploads/avatars/${avatar}`
+                  }
+                }
+              } catch (error) {
+                console.error('獲取用戶頭像失敗:', error)
+              }
+            }
+
+            return {
+              id: review.id,
+              content: review.content,
+              rating: review.rating || 0,
+              created_at: review.created_at,
+              user: review.user || '匿名用戶',
+              user_avatar: avatarUrl
+            }
+          })
+        )
+
+        processedReviews.value = reviews
+      } catch (error) {
+        console.error('處理評論時出錯:', error)
+        processedReviews.value = []
       }
-      
-      // 確保 reviews 是陣列
-      const reviews = Array.isArray(selectedDrink.value.reviews) 
-        ? selectedDrink.value.reviews 
-        : []
-      
-      // 計算審核通過的評論數量
-      const count = reviews.filter(review => review.status === 'approved').length
-      console.log('Approved review count:', count)
-      return count
-    })
+    }, { immediate: true })
 
     watch(() => props.sortBy, (newValue) => {
       console.log('排序方式改變:', newValue)
@@ -984,8 +1030,7 @@ export default {
       formatDate,
       handleSubmitComment,
       closeReviewForm,
-      displayedReviews,
-      getReviewCount,
+      processedReviews,
       defaultAvatar,
       handleAvatarError,
       handleMapClick,
