@@ -5,10 +5,15 @@ WORKDIR /usr/src/app
 # 安裝系統依賴
 RUN apt-get update && apt-get install -y \
     git \
+    dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
 # 確保配置目錄存在
 RUN mkdir -p /usr/src/app/config
+
+# 先複製 entrypoint.sh
+COPY ./backend/entrypoint.sh .
+RUN dos2unix entrypoint.sh && chmod +x entrypoint.sh
 
 # 複製 requirements.txt
 COPY ./backend/requirements.txt .
@@ -28,7 +33,4 @@ ENV GOOGLE_APPLICATION_CREDENTIALS=/usr/src/app/config/firebase-adminsdk.json
 # 暴露端口
 EXPOSE 5000
 
-COPY ./backend/entrypoint.sh /usr/src/app/
-RUN chmod +x /usr/src/app/entrypoint.sh
-
-CMD ["/usr/src/app/entrypoint.sh"]
+CMD ["./entrypoint.sh"]

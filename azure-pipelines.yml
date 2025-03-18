@@ -173,6 +173,11 @@ stages:
       env:
         FIREBASE_CONFIG: $(FIREBASE_CONFIG)
 
+    - script: |
+        ls -la backend/entrypoint.sh
+        cat backend/entrypoint.sh
+      displayName: 'Check entrypoint.sh'
+
 # - stage: Deploy
 #   displayName: 'Deploy to Azure Web App'
 #   variables:
