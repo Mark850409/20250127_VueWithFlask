@@ -166,6 +166,13 @@ stages:
           docker push recommendacr20250226.azurecr.io/backend:$(Build.BuildId)
           docker push recommendacr20250226.azurecr.io/backend:latest
 
+    - script: |
+        mkdir -p /usr/src/app/config
+        echo "$(FIREBASE_CONFIG)" > /usr/src/app/config/firebase-adminsdk.json
+      displayName: '設定 Firebase 憑證'
+      env:
+        FIREBASE_CONFIG: $(FIREBASE_CONFIG)
+
 # - stage: Deploy
 #   displayName: 'Deploy to Azure Web App'
 #   variables:

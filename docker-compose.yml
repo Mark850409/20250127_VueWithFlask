@@ -24,12 +24,15 @@ services:
     environment:
       - GIT_PYTHON_GIT_EXECUTABLE=/usr/bin/git
       - GIT_REPO_PATH=/git-repo
+      - FIREBASE_CONFIG=${FIREBASE_CONFIG}
     depends_on:
       db:
         condition: service_healthy
     networks:
       - api_bridge
     restart: always
+    volumes:
+      - ./firebase-config:/usr/src/app/config
     
   db:
     image: mysql:5.7
