@@ -184,8 +184,8 @@ stages:
           fi
 
           echo "開始構建 Docker 映像..."
-          docker build -t $(REGISTRY_NAME)/backend:$(Build.BuildId) \
-                      -t $(REGISTRY_NAME)/backend:latest \
+          docker build -t recommendacr20250226.azurecr.io/backend:$(Build.BuildId) \
+                      -t recommendacr20250226.azurecr.io/backend:latest \
                       -f dockerfiles/backend/Dockerfile_python .
 
           # 推送映像到 ACR
