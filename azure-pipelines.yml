@@ -104,7 +104,7 @@ stages:
 
 - stage: Build
   displayName: 'Build and Push'
-  dependsOn: Infrastructure
+  #dependsOn: Infrastructure
   variables:
     REGISTRY_NAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.REGISTRY_NAME'] ]
     ACR_USERNAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_USERNAME'] ]
