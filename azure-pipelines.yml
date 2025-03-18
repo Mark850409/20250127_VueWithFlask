@@ -160,12 +160,33 @@ stages:
           echo "FIREBASE_CONFIG_BASE64 length: ${#FIREBASE_CONFIG_BASE64}"
           echo "$FIREBASE_CONFIG_BASE64" | base64 -d
 
+          # 創建臨時目錄結構
+          mkdir -p ./backend/config
+          
+          # 顯示目錄結構（用於調試）
+          echo "目錄結構："
+          ls -la ./backend/config
+          
+          # 從 Pipeline 變數創建 firebase-adminsdk.json
+          echo "正在創建 firebase-adminsdk.json..."
+          echo '$(FIREBASE_CONFIG_BASE64)' > ./backend/config/firebase-adminsdk.json
+
+          # 確認文件內容（不顯示敏感信息）
+          echo "檢查文件是否創建成功..."
+          if [ -f "./backend/config/firebase-adminsdk.json" ]; then
+            echo "文件創建成功"
+            ls -l ./backend/config/firebase-adminsdk.json
+            echo "文件內容："
+            cat ./backend/config/firebase-adminsdk.json
+          else
+            echo "錯誤：firebase-adminsdk.json 文件未創建成功"
+            exit 1
+          fi
+
           echo "開始構建 Docker 映像..."
-          docker build \
-            --build-arg FIREBASE_CONFIG_BASE64=$FIREBASE_CONFIG_BASE64 \
-            -t recommendacr20250226.azurecr.io/backend:$(Build.BuildId) \
-            -t recommendacr20250226.azurecr.io/backend:latest \
-            -f dockerfiles/backend/Dockerfile_python .
+          docker build -t $(REGISTRY_NAME)/backend:$(Build.BuildId) \
+                      -t $(REGISTRY_NAME)/backend:latest \
+                      -f dockerfiles/backend/Dockerfile_python .
 
           # 推送映像到 ACR
           echo "推送映像到 ACR..."

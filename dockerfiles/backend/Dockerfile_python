@@ -5,7 +5,6 @@ WORKDIR /usr/src/app
 # 安裝系統依賴
 RUN apt-get update && apt-get install -y \
     git \
-    dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
 # 確保配置目錄存在
@@ -17,26 +16,20 @@ COPY ./backend/requirements.txt .
 # 安裝依賴
 RUN pip install --no-cache-dir -r requirements.txt
 
+# 首先複製 Firebase 配置文件
+COPY ./backend/config/firebase-adminsdk.json /usr/src/app/config/
+
 # 然後複製其餘的源代碼
 COPY ./backend .
-
-# 設置環境變量
-ARG FIREBASE_CONFIG_BASE64
-ENV FLASK_APP=app.py
-ENV PYTHONPATH=/usr/src/app
-ENV FLASK_ENV=production
-
-# 確保 config 目錄存在
-RUN mkdir -p /usr/src/app/config
-
-# 解碼 Base64 內容並存成 JSON
-RUN echo "$FIREBASE_CONFIG_BASE64" | base64 -d > /usr/src/app/config/firebase-config.json
 
 # 驗證文件是否存在
 RUN ls -la /usr/src/app/config/firebase-adminsdk.json || exit 1
 
-# 設置環境變數（如果你的應用程式需要它）
-ENV FIREBASE_CONFIG=/usr/src/app/config/firebase-config.json
+# 設置環境變量
+ENV FLASK_APP=app.py
+ENV PYTHONPATH=/usr/src/app
+ENV FLASK_ENV=production
+ENV GOOGLE_APPLICATION_CREDENTIALS=/usr/src/app/config/firebase-adminsdk.json
 
 # 暴露端口
 EXPOSE 5000
