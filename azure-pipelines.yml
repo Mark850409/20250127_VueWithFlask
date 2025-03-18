@@ -155,10 +155,11 @@ stages:
       inputs:
         targetType: 'inline'
         script: |  
-         # 先將 FIREBASE_CONFIG 進行 Base64 編碼
-          FIREBASE_CONFIG_BASE64=$(echo "$FIREBASE_CONFIG" | base64 -w 0)
-          echo "FIREBASE_CONFIG_BASE64 length: ${#FIREBASE_CONFIG_BASE64}"
-          echo "$FIREBASE_CONFIG_BASE64" | base64 -d
+         # 檢查環境變數是否存在
+          if [ -z "$FIREBASE_CONFIG_BASE64" ]; then
+            echo "錯誤：FIREBASE_CONFIG_BASE64 變數未設定"
+            exit 1
+          fi
 
           # 創建臨時目錄結構
           mkdir -p ./backend/config
@@ -169,7 +170,7 @@ stages:
           
           # 從 Pipeline 變數創建 firebase-adminsdk.json
           echo "正在創建 firebase-adminsdk.json..."
-          echo '$(FIREBASE_CONFIG_BASE64)' > ./backend/config/firebase-adminsdk.json
+          echo "$FIREBASE_CONFIG_BASE64" | base64 -d > ./backend/config/firebase-adminsdk.json
 
           # 確認文件內容（不顯示敏感信息）
           echo "檢查文件是否創建成功..."
@@ -182,6 +183,10 @@ stages:
             echo "錯誤：firebase-adminsdk.json 文件未創建成功"
             exit 1
           fi
+
+          # 確認文件內容是否正確
+          echo "檢查 JSON 文件內容："
+          cat ./backend/config/firebase-adminsdk.json
 
           echo "開始構建 Docker 映像..."
           docker build -t recommendacr20250226.azurecr.io/backend:$(Build.BuildId) \
