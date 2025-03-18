@@ -157,6 +157,8 @@ stages:
         script: |  
          # 先將 FIREBASE_CONFIG 進行 Base64 編碼
           FIREBASE_CONFIG_BASE64=$(echo "$FIREBASE_CONFIG" | base64 -w 0)
+          echo "FIREBASE_CONFIG_BASE64 length: ${#FIREBASE_CONFIG_BASE64}"
+          echo "$FIREBASE_CONFIG_BASE64" | base64 -d
 
           echo "開始構建 Docker 映像..."
           docker build \

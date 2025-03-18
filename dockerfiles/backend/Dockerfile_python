@@ -26,8 +26,14 @@ ENV FLASK_APP=app.py
 ENV PYTHONPATH=/usr/src/app
 ENV FLASK_ENV=production
 
+# 確保 config 目錄存在
+RUN mkdir -p /usr/src/app/config
+
 # 解碼 Base64 內容並存成 JSON
 RUN echo "$FIREBASE_CONFIG_BASE64" | base64 -d > /usr/src/app/config/firebase-config.json
+
+# 驗證文件是否存在
+RUN ls -la /usr/src/app/config/firebase-adminsdk.json || exit 1
 
 # 設置環境變數（如果你的應用程式需要它）
 ENV FIREBASE_CONFIG=/usr/src/app/config/firebase-config.json
