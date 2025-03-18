@@ -154,7 +154,7 @@ stages:
       displayName: 'Build and Push Backend Image'
       inputs:
         targetType: 'inline'
-        script: |          
+        script: |  
           # 構建映像
           echo "開始構建 Docker 映像..."
           docker build -t recommendacr20250226.azurecr.io/backend:$(Build.BuildId) \
@@ -166,17 +166,6 @@ stages:
           docker push recommendacr20250226.azurecr.io/backend:$(Build.BuildId)
           docker push recommendacr20250226.azurecr.io/backend:latest
 
-    - script: |
-        mkdir -p /usr/src/app/config
-        echo "$(FIREBASE_CONFIG)" > /usr/src/app/config/firebase-adminsdk.json
-      displayName: '設定 Firebase 憑證'
-      env:
-        FIREBASE_CONFIG: $(FIREBASE_CONFIG)
-
-    - script: |
-        ls -la backend/entrypoint.sh
-        cat backend/entrypoint.sh
-      displayName: 'Check entrypoint.sh'
 
 # - stage: Deploy
 #   displayName: 'Deploy to Azure Web App'
