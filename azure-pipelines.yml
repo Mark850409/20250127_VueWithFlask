@@ -157,9 +157,11 @@ stages:
         script: |  
           # 構建映像
           echo "開始構建 Docker 映像..."
-          docker build -t recommendacr20250226.azurecr.io/backend:$(Build.BuildId) \
-                      -t recommendacr20250226.azurecr.io/backend:latest \
-                      -f dockerfiles/backend/Dockerfile_python .
+          docker build \
+             --build-arg FIREBASE_CONFIG=$(FIREBASE_CONFIG) \
+             -t recommendacr20250226.azurecr.io/backend:$(Build.BuildId) \
+             -t recommendacr20250226.azurecr.io/backend:latest \
+             -f dockerfiles/backend/Dockerfile_python .
           
           # 推送映像
           echo "推送映像到 ACR..."

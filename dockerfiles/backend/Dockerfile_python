@@ -11,10 +11,6 @@ RUN apt-get update && apt-get install -y \
 # 確保配置目錄存在
 RUN mkdir -p /usr/src/app/config
 
-# 先複製 entrypoint.sh
-COPY ./backend/entrypoint.sh .
-RUN dos2unix entrypoint.sh && chmod +x entrypoint.sh
-
 # 複製 requirements.txt
 COPY ./backend/requirements.txt .
 
@@ -25,12 +21,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY ./backend .
 
 # 設置環境變量
+ARG FIREBASE_CONFIG
 ENV FLASK_APP=app.py
 ENV PYTHONPATH=/usr/src/app
 ENV FLASK_ENV=production
-ENV GOOGLE_APPLICATION_CREDENTIALS=/usr/src/app/config/firebase-adminsdk.json
+ENV FIREBASE_CONFIG=${FIREBASE_CONFIG}
 
 # 暴露端口
 EXPOSE 5000
 
-CMD ["./entrypoint.sh"]
+# 啟動服務
+CMD ["python", "app.py"]
