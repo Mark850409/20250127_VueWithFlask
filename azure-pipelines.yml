@@ -155,15 +155,17 @@ stages:
       inputs:
         targetType: 'inline'
         script: |  
-          # 構建映像
+         # 先將 FIREBASE_CONFIG 進行 Base64 編碼
+          FIREBASE_CONFIG_BASE64=$(echo "$FIREBASE_CONFIG" | base64 -w 0)
+
           echo "開始構建 Docker 映像..."
           docker build \
-             --build-arg FIREBASE_CONFIG=$(FIREBASE_CONFIG) \
-             -t recommendacr20250226.azurecr.io/backend:$(Build.BuildId) \
-             -t recommendacr20250226.azurecr.io/backend:latest \
-             -f dockerfiles/backend/Dockerfile_python .
-          
-          # 推送映像
+            --build-arg FIREBASE_CONFIG_BASE64=$FIREBASE_CONFIG_BASE64 \
+            -t recommendacr20250226.azurecr.io/backend:$(Build.BuildId) \
+            -t recommendacr20250226.azurecr.io/backend:latest \
+            -f dockerfiles/backend/Dockerfile_python .
+
+          # 推送映像到 ACR
           echo "推送映像到 ACR..."
           docker push recommendacr20250226.azurecr.io/backend:$(Build.BuildId)
           docker push recommendacr20250226.azurecr.io/backend:latest

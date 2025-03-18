@@ -21,11 +21,16 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY ./backend .
 
 # 設置環境變量
-ARG FIREBASE_CONFIG
+ARG FIREBASE_CONFIG_BASE64
 ENV FLASK_APP=app.py
 ENV PYTHONPATH=/usr/src/app
 ENV FLASK_ENV=production
-ENV FIREBASE_CONFIG=${FIREBASE_CONFIG}
+
+# 解碼 Base64 內容並存成 JSON
+RUN echo "$FIREBASE_CONFIG_BASE64" | base64 -d > /usr/src/app/config/firebase-config.json
+
+# 設置環境變數（如果你的應用程式需要它）
+ENV FIREBASE_CONFIG=/usr/src/app/config/firebase-config.json
 
 # 暴露端口
 EXPOSE 5000
