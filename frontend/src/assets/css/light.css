@@ -810,3 +810,7 @@ div[data-v-435023cb].w-8.h-8 {
 .git-danger-btn:hover i {
   color: var(--btn-danger-hover) !important;
 }
+
+i.chat-icon-color{
+  color: var(--bg-secondary) !important;
+}
