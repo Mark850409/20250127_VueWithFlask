@@ -43,6 +43,8 @@ variables:
     value: '5000'  # 請替換成你想要的應用程式名稱
   - name: FIREBASE_ADMIN_SDK_JSON
     value: '$(FIREBASE_ADMIN_SDK_JSON)'
+  - name: REGISTRY_NAME
+    value: 'recommendacr20250226.azurecr.io'
 
 stages:
 # - stage: Infrastructure
