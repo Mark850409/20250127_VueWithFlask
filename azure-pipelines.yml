@@ -157,14 +157,14 @@ stages:
         script: |          
           # 構建映像
           echo "開始構建 Docker 映像..."
-          docker build -t $(REGISTRY_NAME)/backend:$(Build.BuildId) \
-                      -t $(REGISTRY_NAME)/backend:latest \
+          docker build -t recommendacr20250226.azurecr.io/backend:$(Build.BuildId) \
+                      -t recommendacr20250226.azurecr.io/backend:latest \
                       -f dockerfiles/backend/Dockerfile_python .
           
           # 推送映像
           echo "推送映像到 ACR..."
-          docker push $(REGISTRY_NAME)/backend:$(Build.BuildId)
-          docker push $(REGISTRY_NAME)/backend:latest
+          docker push recommendacr20250226.azurecr.io/backend:$(Build.BuildId)
+          docker push recommendacr20250226.azurecr.io/backend:latest
 
 # - stage: Deploy
 #   displayName: 'Deploy to Azure Web App'
