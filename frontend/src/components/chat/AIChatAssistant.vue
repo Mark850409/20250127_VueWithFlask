@@ -288,7 +288,40 @@
               </button>
             </div>
             
-            <!-- 在輸入區域的 flex 容器中添加圖片上傳按鈕 -->
+            <!-- 在輸入區域的 flex 容器中添加圖片上傳按鈕之前，添加預覽區域 -->
+            <div class="flex gap-4">
+              <!-- 圖片預覽區域 -->
+              <div v-if="previewImage" class="w-full flex flex-col items-center mb-4">
+                <div class="w-[80%] bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 rounded-xl border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm shadow-lg overflow-hidden">
+                  <div class="flex items-center justify-between p-3 border-b border-gray-200/50 dark:border-gray-700/50">
+                    <div class="flex items-center gap-2">
+                      <i class="fas fa-image text-blue-500 dark:text-blue-400"></i>
+                      <span class="text-sm font-medium text-gray-700 dark:text-gray-300">預覽圖片</span>
+                    </div>
+                    <button @click="clearPreview" 
+                      class="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:text-red-500 hover:bg-gray-200/50 dark:hover:bg-gray-600/50 transition-all">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  <div class="relative p-4">
+                    <div class="relative group">
+                      <img :src="previewImage" 
+                           class="max-h-48 w-auto mx-auto rounded-lg object-contain bg-white/50 dark:bg-gray-800/50 shadow-md transition-transform hover:scale-[1.02]" 
+                           alt="預覽圖片">
+                      <div class="absolute inset-0 rounded-lg bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                    <div class="mt-3 text-center">
+                      <span class="text-xs text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        點擊發送按鈕，將圖片與文字一起傳送
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 原有的輸入區域 -->
             <div class="flex gap-4">
               <!-- 圖片上傳按鈕 -->
               <button @click="triggerImageUpload" 
@@ -594,7 +627,37 @@
             </button>
           </div>
           
-          <!-- 在輸入區域的 flex 容器中添加圖片上傳按鈕 -->
+          <!-- 在輸入區域上方添加圖片預覽區域 -->
+          <div v-if="previewImage" class="w-full flex flex-col items-center mb-4">
+            <div class="w-[80%] bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 rounded-xl border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm shadow-lg overflow-hidden">
+              <div class="flex items-center justify-between p-3 border-b border-gray-200/50 dark:border-gray-700/50">
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-image text-blue-500 dark:text-blue-400"></i>
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">預覽圖片</span>
+                </div>
+                <button @click="clearPreview" 
+                  class="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:text-red-500 hover:bg-gray-200/50 dark:hover:bg-gray-600/50 transition-all">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="relative p-4">
+                <div class="relative group">
+                  <img :src="previewImage" 
+                       class="max-h-48 w-auto mx-auto rounded-lg object-contain bg-white/50 dark:bg-gray-800/50 shadow-md transition-transform hover:scale-[1.02]" 
+                       alt="預覽圖片">
+                  <div class="absolute inset-0 rounded-lg bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </div>
+                <div class="mt-3 text-center">
+                  <span class="text-xs text-gray-500 dark:text-gray-400">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    點擊發送按鈕，將圖片與文字一起傳送
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 原有的輸入區域 -->
           <div class="flex gap-4">
             <!-- 圖片上傳按鈕 -->
             <button @click="triggerImageUpload" 
@@ -800,39 +863,124 @@ export default {
 
     // 發送訊息到 Langflow API 或深度推理 API
     const handleSend = async () => {
-      if (!userInput.value.trim() || isLoading.value) return
+      if ((!userInput.value.trim() && !previewImage.value) || isLoading.value) return
 
-      const message = userInput.value
-      chatHistory.value.push({
-        content: message,
-        isUser: true
-      })
+      // 儲存當前的輸入值
+      const currentInput = userInput.value.trim()
+      const currentImage = previewImage.value
 
-      chatHistory.value.push({
-        content: '',
-        isUser: false
-      })
-
+      // 立即清空輸入框和預覽圖片
       userInput.value = ''
-      isLoading.value = true
-      
-      const currentMessageIndex = chatHistory.value.length - 1
+      clearPreview()
 
-      try {
-        if (isImageGenerationEnabled.value) {
-          await sendImageGenerationRequest(message, currentMessageIndex)
-        } else if (isWebSearchEnabled.value) {
-          await sendSearchRequest(message, currentMessageIndex)
-        } else if (isDeepReasoningEnabled.value) {
-          await sendDeepReasoningRequest(message, currentMessageIndex)
-        } else {
-          await sendRegularRequest(message, currentMessageIndex)
+      // 如果有圖片和文字，構建包含圖片的消息
+      if (currentImage) {
+        const messages = [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: {
+                  url: currentImage
+                }
+              },
+              {
+                type: "text",
+                text: currentInput || "請描述這張圖片"
+              }
+            ]
+          }
+        ]
+
+        // 添加用戶的圖片和文字消息到聊天記錄
+        chatHistory.value.push({
+          content: currentImage,
+          type: 'image',
+          isUser: true
+        })
+
+        if (currentInput) {
+          chatHistory.value.push({
+            content: currentInput,
+            isUser: true
+          })
         }
-      } catch (error) {
-        console.error('請求失敗:', error)
-        chatHistory.value[currentMessageIndex].content = '抱歉，我現在無法回應。請稍後再試。'
-      } finally {
-        isLoading.value = false
+
+        chatHistory.value.push({
+          content: '',
+          isUser: false
+        })
+
+        isLoading.value = true
+        const currentMessageIndex = chatHistory.value.length - 1
+
+        try {
+          const response = await fetch(import.meta.env.VITE_MISTRAL_API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+              "Authorization": `Bearer ${import.meta.env.VITE_MISTRAL_API_KEY}`
+            },
+            body: JSON.stringify({
+              model: "mistral-small-latest",
+              messages: messages
+            })
+          })
+
+          if (!response.ok) {
+            throw new Error(`API錯誤: ${response.status}`)
+          }
+
+          const data = await response.json()
+          const aiResponse = data.choices[0].message.content
+
+          chatHistory.value[currentMessageIndex] = {
+            content: s2t(aiResponse),
+            isUser: false
+          }
+        } catch (error) {
+          console.error('Mistral API 錯誤:', error)
+          chatHistory.value[currentMessageIndex] = {
+            content: '抱歉，圖片分析過程中發生錯誤，請稍後再試。',
+            isUser: false
+          }
+        } finally {
+          isLoading.value = false
+        }
+      } else {
+        // 原有的文字訊息處理邏輯
+        chatHistory.value.push({
+          content: currentInput,
+          isUser: true
+        })
+
+        chatHistory.value.push({
+          content: '',
+          isUser: false
+        })
+
+        isLoading.value = true
+        
+        const currentMessageIndex = chatHistory.value.length - 1
+
+        try {
+          if (isImageGenerationEnabled.value) {
+            await sendImageGenerationRequest(currentInput, currentMessageIndex)
+          } else if (isWebSearchEnabled.value) {
+            await sendSearchRequest(currentInput, currentMessageIndex)
+          } else if (isDeepReasoningEnabled.value) {
+            await sendDeepReasoningRequest(currentInput, currentMessageIndex)
+          } else {
+            await sendRegularRequest(currentInput, currentMessageIndex)
+          }
+        } catch (error) {
+          console.error('請求失敗:', error)
+          chatHistory.value[currentMessageIndex].content = '抱歉，我現在無法回應。請稍後再試。'
+        } finally {
+          isLoading.value = false
+        }
       }
     }
     
@@ -874,7 +1022,7 @@ export default {
         console.log('發送深度推理請求:', requestBody)
         
         const response = await fetch(
-          "https://deepsearch.jina.ai/v1/chat/completions",
+          import.meta.env.VITE_JINA_API_URL,
           {
             method: 'POST',
             headers: {
@@ -1034,7 +1182,7 @@ export default {
       try {
         // 使用API端點
         const response = await fetch(
-          `https://mynocodbapi.zeabur.app/knowledge?question=${encodeURIComponent(message)}`,
+          `${import.meta.env.VITE_AUTOGEN_API_URL}/knowledge?question=${encodeURIComponent(message)}`,
           {
             method: 'GET',
             headers: {
@@ -1335,7 +1483,7 @@ export default {
     const sendSearchRequest = async (message, currentMessageIndex) => {
       try {
         const response = await fetch(
-          `https://mynocodbapi.zeabur.app/search?query=${encodeURIComponent(message)}&num_results=1&category=web&search_type=keyword`,
+          `${import.meta.env.VITE_AUTOGEN_API_URL}/search?query=${encodeURIComponent(message)}&num_results=5&category=web&search_type=keyword`,
           {
             method: 'GET',
             headers: {
@@ -1507,84 +1655,20 @@ export default {
       if (!file) return
 
       try {
-        // 轉換圖片為 base64
+        // 轉換圖片為 base64 並顯示預覽
         const base64Image = await convertImageToBase64(file)
-        
-        // 構建消息
-        const messages = [
-          {
-            role: "user",
-            content: [
-              {
-                type: "image_url",
-                image_url: {
-                  url: base64Image
-                }
-              },
-              {
-                type: "text",
-                text: "請描述這張圖片"
-              }
-            ]
-          }
-        ]
-
-        // 添加用戶的圖片消息到聊天記錄
-        chatHistory.value.push({
-          content: base64Image,
-          type: 'image',
-          isUser: true
-        })
-
-        // 添加 AI 的回應佔位
-        chatHistory.value.push({
-          content: '',
-          isUser: false
-        })
-
-        isLoading.value = true
-        const currentMessageIndex = chatHistory.value.length - 1
-
-        try {
-          const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Accept": "application/json",
-              "Authorization": `Bearer ZjfisL5plApv0d7ljLjmlQdnDvDGjtvO`
-            },
-            body: JSON.stringify({
-              model: "mistral-small-latest",
-              messages: messages
-            })
-          })
-
-          if (!response.ok) {
-            throw new Error(`API錯誤: ${response.status}`)
-          }
-
-          const data = await response.json()
-          const aiResponse = data.choices[0].message.content
-
-          // 更新 AI 回應
-          chatHistory.value[currentMessageIndex] = {
-            content: s2t(aiResponse), // 轉換為繁體中文
-            isUser: false
-          }
-        } catch (error) {
-          console.error('Mistral API 錯誤:', error)
-          chatHistory.value[currentMessageIndex] = {
-            content: '抱歉，圖片分析過程中發生錯誤，請稍後再試。',
-            isUser: false
-          }
-        }
+        previewImage.value = base64Image
       } catch (error) {
         console.error('圖片處理錯誤:', error)
       } finally {
-        isLoading.value = false
         // 清除文件輸入，允許重複選擇同一文件
         event.target.value = ''
       }
+    }
+
+    // 添加清除預覽的方法
+    const clearPreview = () => {
+      previewImage.value = null
     }
 
     // 將圖片轉換為 base64
@@ -1596,6 +1680,9 @@ export default {
         reader.readAsDataURL(file)
       })
     }
+
+    // 在 setup 函數中添加新的狀態
+    const previewImage = ref(null)
 
     return {
       isOpen,
@@ -1626,6 +1713,8 @@ export default {
       imageInput,
       triggerImageUpload,
       handleImageUpload,
+      previewImage,
+      clearPreview,
     }
   }
 }
