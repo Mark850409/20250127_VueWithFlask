@@ -90,7 +90,9 @@
                     <div class="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white text-sm">
                       <i class="fas fa-user"></i>
                     </div>
-                    <div class="absolute -bottom-4 left-0 bg-yellow-400 text-white text-[10px] px-1 rounded-md whitespace-nowrap shadow-sm">笨笨的使用者</div>
+                    <div class="absolute -bottom-4 left-0 bg-gradient-to-r from-amber-400 to-orange-400 text-white text-[10px] px-2 py-0.5 rounded-md whitespace-nowrap shadow-md backdrop-blur-sm border border-amber-300/30">
+                      <i class="fas fa-user-circle mr-1"></i>使用者
+                    </div>
                   </div>
                 </div>
               </div>
@@ -101,19 +103,30 @@
                     <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-indigo-500">
                       <i class="fas fa-robot"></i>
                     </div>
-                    <div class="absolute -bottom-4 right-0 bg-green-400 text-white text-[10px] px-1 rounded-md whitespace-nowrap shadow-sm">聰明的AI</div>
+                    <div class="absolute -bottom-4 right-0 bg-gradient-to-r from-emerald-400 to-teal-400 text-white text-[10px] px-2 py-0.5 rounded-md whitespace-nowrap shadow-md backdrop-blur-sm border border-emerald-300/30">
+                      <i class="fas fa-robot mr-1"></i>AI 助手
+                    </div>
                   </div>
                   <!-- 如果有內容，顯示聊天氣泡 -->
                   <div v-if="message.content || message.toolInfo || message.generatedImage || (message.hasDeepReasoning && message.reasoningProcess)" class="max-w-2xl bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-6 py-4 rounded-xl shadow-sm">
                     <!-- 工具調用信息 -->
                     <div v-if="message.toolInfo" 
                          class="mb-4 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800 animate-fade-in">
-                      <div class="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">工具調用：</div>
-                      <div class="text-xs text-blue-600 dark:text-blue-400 font-mono">{{ message.toolInfo.name }}</div>
+                      <div class="flex items-center mb-3">
+                        <div class="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white">
+                          <i class="fas fa-tools text-xs"></i>
+                        </div>
+                        <div class="ml-2">
+                          <div class="text-sm font-medium text-blue-700 dark:text-blue-300">工具調用</div>
+                          <div class="text-xs text-blue-600 dark:text-blue-400 font-mono">{{ message.toolInfo.name }}</div>
+                        </div>
+                      </div>
                       
-                      <div class="text-xs font-medium text-blue-700 dark:text-blue-300 mt-2 mb-1">參數：</div>
-                      <div class="text-xs text-gray-600 dark:text-gray-400 font-mono bg-gray-50 dark:bg-gray-800 p-2 rounded overflow-x-auto">
-                        {{ message.toolInfo.arguments }}
+                      <div class="mt-3">
+                        <div class="text-xs font-medium text-blue-700 dark:text-blue-300 mb-2">參數：</div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400 font-mono bg-white/80 dark:bg-gray-800/80 p-3 rounded-lg border border-blue-100/60 dark:border-blue-800/60 overflow-x-auto">
+                          <pre class="whitespace-pre-wrap break-words">{{ formatToolArguments(message.toolInfo.arguments) }}</pre>
+                        </div>
                       </div>
                     </div>
                     
@@ -236,9 +249,10 @@
         <!-- 底部輸入區域 -->
         <div class="border-t dark:border-gray-800 p-4 md:p-6 bg-white dark:bg-gray-900">
           <div class="max-w-4xl mx-auto">
-            <!-- 深度推理開關 -->
-            <div class="flex items-center justify-end mb-3">
-              <button @click="isDeepReasoningEnabled = !isDeepReasoningEnabled"
+            <!-- 功能開關區域 -->
+            <div class="flex items-center justify-end mb-3 space-x-2">
+              <!-- 深度推理開關 -->
+              <button @click="toggleDeepReasoning"
                 :class="[
                   'px-4 py-2 rounded-full flex items-center gap-2 transition-all',
                   isDeepReasoningEnabled 
@@ -248,13 +262,54 @@
                 <i class="fas fa-brain"></i>
                 <span class="text-sm font-medium">深入研究</span>
               </button>
+              
+              <!-- 網路搜尋開關 -->
+              <button @click="toggleWebSearch"
+                :class="[
+                  'px-4 py-2 rounded-full flex items-center gap-2 transition-all',
+                  isWebSearchEnabled 
+                    ? 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-md hover:shadow-lg' 
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                ]">
+                <i class="fas fa-search"></i>
+                <span class="text-sm font-medium">網路搜尋</span>
+              </button>
+
+              <!-- 圖像生成開關 -->
+              <button @click="toggleImageGeneration"
+                :class="[
+                  'px-4 py-2 rounded-full flex items-center gap-2 transition-all',
+                  isImageGenerationEnabled 
+                    ? 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-md hover:shadow-lg' 
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                ]">
+                <i class="fas fa-image"></i>
+                <span class="text-sm font-medium">圖像生成</span>
+              </button>
             </div>
             
+            <!-- 在輸入區域的 flex 容器中添加圖片上傳按鈕 -->
             <div class="flex gap-4">
-              <input v-model="userInput" @keyup.enter="sendMessage" type="text"
+              <!-- 圖片上傳按鈕 -->
+              <button @click="triggerImageUpload" 
+                class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                title="上傳圖片">
+                <i class="fas fa-image"></i>
+              </button>
+              <!-- 隱藏的文件輸入 -->
+              <input
+                type="file"
+                ref="imageInput"
+                @change="handleImageUpload"
+                accept="image/*"
+                class="hidden"
+              />
+              <!-- 原有的文字輸入框 -->
+              <input v-model="userInput" @keyup.enter="handleSend" type="text"
                 class="fullscreen-input flex-1 px-6 py-3 bg-gray-100 dark:bg-gray-800 border-0 rounded-full focus:ring-2 focus:ring-blue-400 dark:text-white"
                 placeholder="請輸入您的問題...">
-              <button @click="sendMessage" :disabled="isLoading"
+              <!-- 原有的發送按鈕 -->
+              <button @click="handleSend" :disabled="isLoading"
                 class="px-6 py-3 bg-blue-400 text-white rounded-full hover:bg-blue-500 disabled:bg-gray-400 transition-colors">
                 <i :class="['fas', isLoading ? 'fa-spinner fa-spin chat-icon-color' : 'fa-paper-plane chat-icon-color']"></i>
               </button>
@@ -320,7 +375,9 @@
                   <div class="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white text-sm">
                     <i class="fas fa-user"></i>
                   </div>
-                  <div class="absolute -bottom-4 left-0 bg-yellow-400 text-white text-[10px] px-1 rounded-md whitespace-nowrap shadow-sm">笨笨的使用者</div>
+                  <div class="absolute -bottom-4 left-0 bg-gradient-to-r from-amber-400 to-orange-400 text-white text-[10px] px-2 py-0.5 rounded-md whitespace-nowrap shadow-md backdrop-blur-sm border border-amber-300/30">
+                    <i class="fas fa-user-circle mr-1"></i>使用者
+                  </div>
                 </div>
               </div>
             </div>
@@ -331,19 +388,30 @@
                   <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-indigo-500">
                     <i class="fas fa-robot"></i>
                   </div>
-                  <div class="absolute -bottom-4 right-0 bg-green-400 text-white text-[10px] px-1 rounded-md whitespace-nowrap shadow-sm">聰明的AI</div>
+                  <div class="absolute -bottom-4 right-0 bg-gradient-to-r from-emerald-400 to-teal-400 text-white text-[10px] px-2 py-0.5 rounded-md whitespace-nowrap shadow-md backdrop-blur-sm border border-emerald-300/30">
+                    <i class="fas fa-robot mr-1"></i>AI 助手
+                  </div>
                 </div>
                 <!-- 如果有內容，顯示聊天氣泡 -->
                 <div v-if="message.content || message.toolInfo || message.generatedImage || (message.hasDeepReasoning && message.reasoningProcess)" class="max-w-2xl bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-6 py-4 rounded-xl shadow-sm">
                   <!-- 工具調用信息 -->
                   <div v-if="message.toolInfo" 
                        class="mb-4 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800 animate-fade-in">
-                    <div class="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">工具調用：</div>
-                    <div class="text-xs text-blue-600 dark:text-blue-400 font-mono">{{ message.toolInfo.name }}</div>
+                    <div class="flex items-center mb-3">
+                      <div class="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white">
+                        <i class="fas fa-tools text-xs"></i>
+                      </div>
+                      <div class="ml-2">
+                        <div class="text-sm font-medium text-blue-700 dark:text-blue-300">工具調用</div>
+                        <div class="text-xs text-blue-600 dark:text-blue-400 font-mono">{{ message.toolInfo.name }}</div>
+                      </div>
+                    </div>
                     
-                    <div class="text-xs font-medium text-blue-700 dark:text-blue-300 mt-2 mb-1">參數：</div>
-                    <div class="text-xs text-gray-600 dark:text-gray-400 font-mono bg-gray-50 dark:bg-gray-800 p-2 rounded overflow-x-auto">
-                      {{ message.toolInfo.arguments }}
+                    <div class="mt-3">
+                      <div class="text-xs font-medium text-blue-700 dark:text-blue-300 mb-2">參數：</div>
+                      <div class="text-xs text-gray-600 dark:text-gray-400 font-mono bg-white/80 dark:bg-gray-800/80 p-3 rounded-lg border border-blue-100/60 dark:border-blue-800/60 overflow-x-auto">
+                        <pre class="whitespace-pre-wrap break-words">{{ formatToolArguments(message.toolInfo.arguments) }}</pre>
+                      </div>
                     </div>
                   </div>
                   
@@ -489,9 +557,9 @@
 
         <!-- 輸入區域 -->
         <div class="p-4 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 chatbot-input">
-          <!-- 深度推理開關 -->
-          <div class="flex items-center justify-end mb-3">
-            <button @click="isDeepReasoningEnabled = !isDeepReasoningEnabled"
+          <!-- 功能開關區域 -->
+          <div class="flex items-center justify-end mb-3 space-x-2">
+            <button @click="toggleDeepReasoning"
               :class="[
                 'px-4 py-2 rounded-full flex items-center gap-2 transition-all',
                 isDeepReasoningEnabled 
@@ -501,13 +569,53 @@
               <i class="fas fa-brain"></i>
               <span class="text-sm font-medium">深入研究</span>
             </button>
+            
+            <button @click="toggleWebSearch"
+              :class="[
+                'px-4 py-2 rounded-full flex items-center gap-2 transition-all',
+                isWebSearchEnabled 
+                  ? 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-md hover:shadow-lg' 
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              ]">
+              <i class="fas fa-search"></i>
+              <span class="text-sm font-medium">網路搜尋</span>
+            </button>
+
+            <!-- 圖像生成開關 -->
+            <button @click="toggleImageGeneration"
+              :class="[
+                'px-4 py-2 rounded-full flex items-center gap-2 transition-all',
+                isImageGenerationEnabled 
+                  ? 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-md hover:shadow-lg' 
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              ]">
+              <i class="fas fa-image"></i>
+              <span class="text-sm font-medium">圖像生成</span>
+            </button>
           </div>
           
-          <div class="flex gap-2">
-            <input v-model="userInput" @keyup.enter="sendMessage" type="text"
+          <!-- 在輸入區域的 flex 容器中添加圖片上傳按鈕 -->
+          <div class="flex gap-4">
+            <!-- 圖片上傳按鈕 -->
+            <button @click="triggerImageUpload" 
+              class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+              title="上傳圖片">
+              <i class="fas fa-image"></i>
+            </button>
+            <!-- 隱藏的文件輸入 -->
+            <input
+              type="file"
+              ref="imageInput"
+              @change="handleImageUpload"
+              accept="image/*"
+              class="hidden"
+            />
+            <!-- 原有的文字輸入框 -->
+            <input v-model="userInput" @keyup.enter="handleSend" type="text"
               class="chatbot-input flex-1 px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="請輸入您的問題...">
-            <button @click="sendMessage" :disabled="isLoading"
+            <!-- 原有的發送按鈕 -->
+            <button @click="handleSend" :disabled="isLoading"
               class="chatbot-btn px-4 py-2 bg-blue-400 text-white rounded-full hover:bg-blue-500 disabled:bg-gray-400 transition-colors duration-200">
               <i :class="['fas', isLoading ? 'fa-spinner fa-spin' : 'fa-paper-plane']"></i>
             </button>
@@ -521,6 +629,7 @@
 <script>
 import { ref, onMounted, nextTick, watch } from 'vue'
 import { botAPI } from '@/api'
+import { s2t } from 'chinese-s2t'
 
 export default {
   name: 'AIChatAssistant',
@@ -532,7 +641,7 @@ export default {
     const isLoading = ref(false)
     const chatContainer = ref(null)
     const fullscreenChatContainer = ref(null)
-    const isQuickQuestionsOpen = ref(true)
+    const isQuickQuestionsOpen = ref(false)
 
     // 快速提問選項
     const quickQuestions = ref([])
@@ -550,6 +659,106 @@ export default {
 
     // 深度推理相關狀態
     const isDeepReasoningEnabled = ref(false)
+
+    // 網路搜尋開關
+    const isWebSearchEnabled = ref(false)
+
+    // 首先在 setup 函數中添加新的狀態
+    const isImageGenerationEnabled = ref(false)
+    // 添加新的圖像生成請求函數
+    const sendImageGenerationRequest = async (message, currentMessageIndex) => {
+      try {
+        const response = await fetch(
+          `https://mynocodbapi.zeabur.app/image?prompt=${encodeURIComponent(message)}`,
+          {
+            method: 'GET',
+            headers: {
+              'accept': 'application/json'
+            }
+          }
+        )
+
+        const data = await response.json()
+        console.log('圖像生成 API 回應:', data)
+
+        if (data.status === 'success' && data.result && data.result.messages) {
+          const messages = data.result.messages
+          
+          // 找出最終的文字回應
+          const textMessages = messages.filter(msg => 
+            msg.type === 'TextMessage' && msg.source === 'assistant_agent'
+          )
+          
+          // 找出工具調用請求
+          const toolCallRequests = messages.filter(msg => 
+            msg.type === 'ToolCallRequestEvent'
+          )
+          
+          // 找出工具執行結果
+          const toolCallExecutions = messages.filter(msg => 
+            msg.type === 'ToolCallExecutionEvent'
+          )
+          
+          // 提取工具名稱和參數
+          let toolName = ''
+          let toolArguments = ''
+          let finalContent = ''
+          let imageUrl = null
+          
+          // 提取工具信息
+          if (toolCallRequests.length > 0) {
+            const toolCall = toolCallRequests[0]
+            if (toolCall.content && Array.isArray(toolCall.content) && toolCall.content.length > 0) {
+              const tool = toolCall.content[0]
+              
+              if (tool) {
+                toolName = tool.name || ''
+                toolArguments = tool.arguments || ''
+              }
+            }
+          }
+          
+          // 提取圖片URL
+          if (toolCallExecutions.length > 0) {
+            const execution = toolCallExecutions[0]
+            if (execution.content && Array.isArray(execution.content)) {
+              const content = execution.content[0].content
+              const imgMatch = content.match(/!\[.*?\]\((https:\/\/[^)]+)\)/)
+              if (imgMatch && imgMatch[1]) {
+                imageUrl = imgMatch[1]
+              }
+            }
+          }
+          
+          // 獲取最終回應內容
+          if (textMessages.length > 0) {
+            const lastTextMessage = textMessages[textMessages.length - 1]
+            if (typeof lastTextMessage.content === 'string') {
+              finalContent = lastTextMessage.content.replace(/TERMINATE\.?$/, '').trim()
+            }
+          }
+          
+          // 更新聊天記錄
+          chatHistory.value[currentMessageIndex] = {
+            content: finalContent || '圖片生成完成',
+            isUser: false,
+            toolInfo: toolName ? {
+              name: toolName,
+              arguments: toolArguments
+            } : null,
+            generatedImage: imageUrl
+          }
+        } else {
+          throw new Error('圖像生成請求失敗')
+        }
+      } catch (error) {
+        console.error('圖像生成 API 錯誤:', error)
+        chatHistory.value[currentMessageIndex] = {
+          content: '抱歉，圖像生成過程中發生錯誤，請稍後再試。',
+          isUser: false
+        }
+      }
+    }
 
     // 切換聊天視窗
     const toggleChat = () => {
@@ -590,7 +799,7 @@ export default {
     }, { deep: true })
 
     // 發送訊息到 Langflow API 或深度推理 API
-    const sendMessage = async () => {
+    const handleSend = async () => {
       if (!userInput.value.trim() || isLoading.value) return
 
       const message = userInput.value
@@ -599,7 +808,6 @@ export default {
         isUser: true
       })
 
-      // 添加 AI 思考中的佔位訊息
       chatHistory.value.push({
         content: '',
         isUser: false
@@ -607,26 +815,21 @@ export default {
 
       userInput.value = ''
       isLoading.value = true
-      console.log('發送訊息:', message)
-
-      // 獲取當前消息索引，用於更新回應
+      
       const currentMessageIndex = chatHistory.value.length - 1
 
       try {
-        // 根據深度推理開關選擇不同的 API
-        if (isDeepReasoningEnabled.value) {
+        if (isImageGenerationEnabled.value) {
+          await sendImageGenerationRequest(message, currentMessageIndex)
+        } else if (isWebSearchEnabled.value) {
+          await sendSearchRequest(message, currentMessageIndex)
+        } else if (isDeepReasoningEnabled.value) {
           await sendDeepReasoningRequest(message, currentMessageIndex)
         } else {
           await sendRegularRequest(message, currentMessageIndex)
         }
       } catch (error) {
-        console.error('API 請求失敗:', error)
-        // 添加更詳細的錯誤日誌
-        if (error.response) {
-          console.error('錯誤響應:', error.response)
-          console.error('錯誤狀態:', error.response.status)
-          console.error('錯誤數據:', error.response.data)
-        }
+        console.error('請求失敗:', error)
         chatHistory.value[currentMessageIndex].content = '抱歉，我現在無法回應。請稍後再試。'
       } finally {
         isLoading.value = false
@@ -664,7 +867,7 @@ export default {
         messages: chatMessages,
         stream: true,
         reasoning_effort: "low",
-        no_direct_answer: true
+        no_direct_answer: false
       }
       
       try {
@@ -713,54 +916,50 @@ export default {
                 const json = JSON.parse(jsonStr)
                 console.log("深度推理詳細回應:", json)
                 
-                // 檢查是否為推理或答案部分
                 if (json.choices && json.choices.length > 0) {
                   const delta = json.choices[0].delta
                   
-                  // 檢查是否有 type: "think" 標記 (新版 API)
                   if (delta.type === "think") {
                     isThinking = true
                     if (delta.content) {
-                      // 直接提取思考內容，不包含標籤
-                      reasoningProcess += delta.content
+                      // 將思考內容轉換為繁體中文
+                      reasoningProcess += s2t(delta.content)
                     }
                   }
-                  // 檢查是否有 type: "text" 標記 (最終答案)
                   else if (delta.type === "text") {
                     isThinking = false
                     if (delta.content) {
-                      finalAnswer += delta.content
+                      // 將最終答案轉換為繁體中文
+                      finalAnswer += s2t(delta.content)
                     }
                   }
-                  // 兼容舊版 API 格式
                   else if (delta.content) {
                     rawContent += delta.content
                     
-                    // 處理思考過程標籤
                     if (delta.content.includes("<think>")) {
                       isThinking = true
-                      // 完全移除<think>標籤
                       const cleanedContent = delta.content.replace(/<think>/g, "")
                       if (cleanedContent.trim()) {
-                        reasoningProcess += cleanedContent
+                        // 將思考內容轉換為繁體中文
+                        reasoningProcess += s2t(cleanedContent)
                       }
                     }
                     else if (delta.content.includes("</think>")) {
                       isThinking = false
-                      // 完全移除</think>標籤
                       const cleanedContent = delta.content.replace(/<\/think>/g, "")
                       if (cleanedContent.trim()) {
-                        reasoningProcess += cleanedContent
+                        // 將思考內容轉換為繁體中文
+                        reasoningProcess += s2t(cleanedContent)
                       }
                     }
                     else if (isThinking) {
-                      // 在思考過程中，檢查並清除可能的標籤
                       const cleanedContent = delta.content.replace(/<\/?think>/g, "")
-                      reasoningProcess += cleanedContent
+                      // 將思考內容轉換為繁體中文
+                      reasoningProcess += s2t(cleanedContent)
                     }
                     else {
-                      // 思考過程之外的內容為最終答案
-                      finalAnswer += delta.content
+                      // 將最終答案轉換為繁體中文
+                      finalAnswer += s2t(delta.content)
                     }
                   }
                   
@@ -781,14 +980,14 @@ export default {
         
         // 最終處理：確保移除所有標籤並清理內容
         if (rawContent) {
-          // 從完整回應中提取思考過程，但移除所有標籤
           const thinkMatch = rawContent.match(/<think>([\s\S]*?)<\/think>/);
           if (thinkMatch && thinkMatch[1]) {
-            reasoningProcess = thinkMatch[1].trim();
+            // 將思考過程轉換為繁體中文
+            reasoningProcess = s2t(thinkMatch[1].trim());
           }
           
-          // 從完整回應中提取答案（排除思考過程）
-          finalAnswer = rawContent.replace(/<think>[\s\S]*?<\/think>/, '').trim();
+          // 將最終答案轉換為繁體中文
+          finalAnswer = s2t(rawContent.replace(/<think>[\s\S]*?<\/think>/, '').trim());
         }
         
         // 最後一道防線 - 確保所有<think>標籤都被移除
@@ -835,7 +1034,7 @@ export default {
       try {
         // 使用API端點
         const response = await fetch(
-          `https://mynocodbapi.zeabur.app/query?question=${encodeURIComponent(message)}`,
+          `https://mynocodbapi.zeabur.app/knowledge?question=${encodeURIComponent(message)}`,
           {
             method: 'GET',
             headers: {
@@ -1132,6 +1331,272 @@ export default {
       )
     }
 
+    // 在 setup 函數中添加 sendSearchRequest 方法
+    const sendSearchRequest = async (message, currentMessageIndex) => {
+      try {
+        const response = await fetch(
+          `https://mynocodbapi.zeabur.app/search?query=${encodeURIComponent(message)}&num_results=1&category=web&search_type=keyword`,
+          {
+            method: 'GET',
+            headers: {
+              'accept': 'application/json'
+            }
+          }
+        )
+
+        const data = await response.json()
+        console.log('搜尋 API 回應:', data)
+
+        if (data.status === 'success' && data.result && data.result.messages) {
+          const messages = data.result.messages
+          
+          // 找出最終的文字回應
+          const textMessages = messages.filter(msg => 
+            msg.type === 'TextMessage' && msg.source === 'assistant_agent'
+          )
+          
+          // 找出工具調用請求
+          const toolCallRequests = messages.filter(msg => 
+            msg.type === 'ToolCallRequestEvent'
+          )
+          
+          // 找出工具調用摘要
+          const toolCallSummaries = messages.filter(msg => 
+            msg.type === 'ToolCallSummaryMessage'
+          )
+          
+          // 提取工具名稱和參數
+          let toolName = ''
+          let toolArguments = ''
+          let finalContent = ''
+          
+          if (toolCallRequests.length > 0) {
+            const toolCall = toolCallRequests[0]
+            if (toolCall.content && Array.isArray(toolCall.content) && toolCall.content.length > 0) {
+              const tool = toolCall.content[0]
+              
+              if (tool) {
+                toolName = tool.name || ''
+                
+                if (typeof tool.arguments === 'string') {
+                  try {
+                    const parsedArgs = JSON.parse(tool.arguments)
+                    toolArguments = JSON.stringify(parsedArgs, null, 2)
+                  } catch (e) {
+                    toolArguments = tool.arguments
+                  }
+                } else if (tool.arguments) {
+                  toolArguments = JSON.stringify(tool.arguments, null, 2)
+                }
+              }
+            }
+          }
+          
+          // 獲取最終回應內容
+          if (textMessages.length > 0) {
+            const lastTextMessage = textMessages[textMessages.length - 1]
+            
+            if (typeof lastTextMessage.content === 'string') {
+              // 移除 TERMINATE 標籤並轉換為繁體中文
+              finalContent = s2t(lastTextMessage.content.replace(/TERMINATE/gi, '').trim())
+            } else if (Array.isArray(lastTextMessage.content)) {
+              // 移除 TERMINATE 標籤並轉換為繁體中文
+              finalContent = s2t(lastTextMessage.content.join('\n').replace(/TERMINATE/gi, '').trim())
+            }
+          } else if (toolCallSummaries.length > 0) {
+            const summary = toolCallSummaries[0]
+            
+            if (typeof summary.content === 'string') {
+              // 移除 TERMINATE 標籤並轉換為繁體中文
+              finalContent = s2t(summary.content.replace(/TERMINATE/gi, '').trim())
+            } else if (Array.isArray(summary.content)) {
+              // 移除 TERMINATE 標籤並轉換為繁體中文
+              finalContent = s2t(summary.content.join('\n').replace(/TERMINATE/gi, '').trim())
+            }
+          }
+          
+          // 如果沒有找到內容
+          if (!finalContent) {
+            finalContent = '抱歉，沒有找到相關的搜尋結果。'
+          }
+          
+          // 更新聊天記錄
+          chatHistory.value[currentMessageIndex] = {
+            content: finalContent,
+            isUser: false,
+            toolInfo: toolName ? {
+              name: toolName,
+              arguments: toolArguments || JSON.stringify({
+                query: message,
+                category: 'web',
+                num_results: 1,
+                search_type: 'keyword'
+              }, null, 2)
+            } : null
+          }
+        } else {
+          throw new Error('搜尋請求失敗')
+        }
+      } catch (error) {
+        console.error('搜尋 API 錯誤:', error)
+        chatHistory.value[currentMessageIndex] = {
+          content: '抱歉，搜尋過程中發生錯誤，請稍後再試。',
+          isUser: false
+        }
+      }
+    }
+
+    // 修改三個切換函數
+    const toggleDeepReasoning = () => {
+      if (isWebSearchEnabled.value) {
+        isWebSearchEnabled.value = false;
+      }
+      if (isImageGenerationEnabled.value) {
+        isImageGenerationEnabled.value = false;
+      }
+      isDeepReasoningEnabled.value = !isDeepReasoningEnabled.value;
+    };
+
+    const toggleWebSearch = () => {
+      if (isDeepReasoningEnabled.value) {
+        isDeepReasoningEnabled.value = false;
+      }
+      if (isImageGenerationEnabled.value) {
+        isImageGenerationEnabled.value = false;
+      }
+      isWebSearchEnabled.value = !isWebSearchEnabled.value;
+    };
+
+    const toggleImageGeneration = () => {
+      if (isWebSearchEnabled.value) {
+        isWebSearchEnabled.value = false;
+      }
+      if (isDeepReasoningEnabled.value) {
+        isDeepReasoningEnabled.value = false;
+      }
+      isImageGenerationEnabled.value = !isImageGenerationEnabled.value;
+    };
+
+    // 在 setup 函數中添加格式化函數
+    const formatToolArguments = (args) => {
+      try {
+        if (typeof args === 'string') {
+          // 嘗試解析 JSON 字符串
+          const parsed = JSON.parse(args)
+          return JSON.stringify(parsed, null, 2)
+        }
+        // 如果已經是對象，直接格式化
+        return JSON.stringify(args, null, 2)
+      } catch (e) {
+        // 如果解析失敗，返回原始字符串
+        return args
+      }
+    }
+
+    // 在 setup 函數中添加
+    const imageInput = ref(null)
+
+    // 觸發文件選擇
+    const triggerImageUpload = () => {
+      imageInput.value.click()
+    }
+
+    // 處理圖片上傳
+    const handleImageUpload = async (event) => {
+      const file = event.target.files[0]
+      if (!file) return
+
+      try {
+        // 轉換圖片為 base64
+        const base64Image = await convertImageToBase64(file)
+        
+        // 構建消息
+        const messages = [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: {
+                  url: base64Image
+                }
+              },
+              {
+                type: "text",
+                text: "請描述這張圖片"
+              }
+            ]
+          }
+        ]
+
+        // 添加用戶的圖片消息到聊天記錄
+        chatHistory.value.push({
+          content: base64Image,
+          type: 'image',
+          isUser: true
+        })
+
+        // 添加 AI 的回應佔位
+        chatHistory.value.push({
+          content: '',
+          isUser: false
+        })
+
+        isLoading.value = true
+        const currentMessageIndex = chatHistory.value.length - 1
+
+        try {
+          const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+              "Authorization": `Bearer ZjfisL5plApv0d7ljLjmlQdnDvDGjtvO`
+            },
+            body: JSON.stringify({
+              model: "mistral-small-latest",
+              messages: messages
+            })
+          })
+
+          if (!response.ok) {
+            throw new Error(`API錯誤: ${response.status}`)
+          }
+
+          const data = await response.json()
+          const aiResponse = data.choices[0].message.content
+
+          // 更新 AI 回應
+          chatHistory.value[currentMessageIndex] = {
+            content: s2t(aiResponse), // 轉換為繁體中文
+            isUser: false
+          }
+        } catch (error) {
+          console.error('Mistral API 錯誤:', error)
+          chatHistory.value[currentMessageIndex] = {
+            content: '抱歉，圖片分析過程中發生錯誤，請稍後再試。',
+            isUser: false
+          }
+        }
+      } catch (error) {
+        console.error('圖片處理錯誤:', error)
+      } finally {
+        isLoading.value = false
+        // 清除文件輸入，允許重複選擇同一文件
+        event.target.value = ''
+      }
+    }
+
+    // 將圖片轉換為 base64
+    const convertImageToBase64 = (file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result)
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+      })
+    }
+
     return {
       isOpen,
       isFullscreen,
@@ -1143,14 +1608,24 @@ export default {
       isQuickQuestionsOpen,
       toggleChat,
       toggleFullscreen,
-      sendMessage,
+      handleSend,
       toggleQuickQuestions,
       handleQuickQuestion,
       clearHistory,
       quickQuestions,
       isImageUrl,
       extractImageSrc,
-      isDeepReasoningEnabled
+      isDeepReasoningEnabled,
+      isWebSearchEnabled,
+      sendSearchRequest,
+      toggleDeepReasoning,
+      toggleWebSearch,
+      formatToolArguments,
+      isImageGenerationEnabled,
+      toggleImageGeneration,
+      imageInput,
+      triggerImageUpload,
+      handleImageUpload,
     }
   }
 }

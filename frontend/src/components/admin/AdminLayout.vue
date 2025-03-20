@@ -394,11 +394,10 @@ export default {
       // 設置 token 檢查計時器
       tokenCheckInterval.value = setInterval(async () => {
         try {
-          console.log('執行token 檢查...')
+          console.log('執行 token 檢查...')
           await axios.get('/users/verify')
           console.log('Token 驗證成功')
         } catch (error) {
-          // 只有在特定錯誤碼時才登出
           if (error.response?.status === 401 || 
               error.response?.data?.code === 403 ||
               error.response?.data?.msg === 'permission error') {
@@ -408,7 +407,7 @@ export default {
             console.error('Token 驗證其他錯誤:', error)
           }
         }
-      }, parseInt(import.meta.env.VITE_CHECK_TOKEN_INTERVAL))  // 預設 1 小時
+      }, parseInt(import.meta.env.VITE_CHECK_TOKEN_INTERVAL)) // 預設 1 小時
     }
 
     // 格式化時間
@@ -550,7 +549,7 @@ export default {
           isTokenVerified.value = true  // 標記已驗證
           return true
         }
-        return true
+        return false
       } catch (error) {
         console.error('Token 驗證失敗:', error)
         await handleLogout()
@@ -558,9 +557,12 @@ export default {
       }
     }
 
-
+    // 修改 onBeforeMount
     onBeforeMount(async () => {
-      await checkAuth()
+      // 只在未驗證時執行一次檢查
+      if (!isTokenVerified.value) {
+        await checkAuth()
+      }
     })
 
     // 組件卸載時清理計時器
