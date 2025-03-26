@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
+from enum import Enum
 
 class RecommendDataCreate(BaseModel):
     """推薦數據創建請求"""
@@ -25,10 +26,24 @@ class RecommendDataResponse(BaseModel):
     sentiment_score: Optional[float] = Field(None, description='情感分數')
     weighted_score: Optional[float] = Field(None, description='加權分數')
 
+class SortField(str, Enum):
+    """排序欄位枚舉"""
+    RATING = "rating"
+    DISTANCE = "distance"
+    REVIEW_NUMBER = "review_number"
+    COMPOSITE_SCORE = "composite_score"
+
+class SortOrder(str, Enum):
+    """排序方向枚舉"""
+    ASC = "asc"
+    DESC = "desc"
+
 class RecommendationQuery(BaseModel):
     """推薦查詢參數模型"""
     user_id: int = Field(..., description='用戶ID')
     num_recommendations: int = Field(5, description='推薦數量')
+    sort_by: Optional[SortField] = Field(None, description='排序欄位')
+    sort_order: Optional[SortOrder] = Field(SortOrder.DESC, description='排序方向')
 
 class RestaurantRecommendation(BaseModel):
     """餐廳推薦資料模型"""
@@ -41,6 +56,7 @@ class RestaurantRecommendation(BaseModel):
     distance: float = Field(..., description='距離')
     rating: float = Field(..., description='評分')
     review_number: int = Field(..., description='評論數量')
+    composite_score: Optional[float] = Field(None, description='情緒分數')
 
 class BaseResponse(BaseModel):
     """基礎回應模型"""

@@ -28,4 +28,4 @@ export {
   learningAPI,
   bannerAPI,
   gitAPI
-} 
+}

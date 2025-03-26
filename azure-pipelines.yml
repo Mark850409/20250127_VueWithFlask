@@ -47,66 +47,66 @@ variables:
     value: 'recommendacr20250226.azurecr.io'
 
 stages:
-# - stage: Infrastructure
-#   displayName: 'Setup Infrastructure'
-#   jobs:
-#   - job: SetupACR
-#     displayName: 'Setup Azure Container Registry'
-#     pool:
-#       vmImage: 'ubuntu-latest'
-#     steps:
-#     # 建立資源組（如果不存在）
-#     - task: AzureCLI@2
-#       displayName: 'Create Resource Group'
-#       inputs:
-#         azureSubscription: '$(AZURE_SUBSCRIPTION)'
-#         scriptType: 'bash'
-#         scriptLocation: 'inlineScript'
-#         inlineScript: |
-#           # 檢查資源群組是否存在
-#           if [ "$(az group exists --name $(RESOURCE_GROUP))" = "false" ]; then
-#             echo "Creating resource group: $(RESOURCE_GROUP)..."
-#             az group create --name $(RESOURCE_GROUP) --location $(LOCATION)
-#           else
-#             echo "Resource group $(RESOURCE_GROUP) already exists. Skipping creation."
-#           fi
-#     # 建立 ACR（如果不存在）
-#     - task: AzureCLI@2
-#       displayName: 'Create ACR'
-#       inputs:
-#         azureSubscription: '$(AZURE_SUBSCRIPTION)'
-#         scriptType: 'bash'
-#         scriptLocation: 'inlineScript'
-#         inlineScript: |
-#           # 檢查 ACR 是否存在
-#           if ! az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) &>/dev/null; then
-#             echo "Creating ACR..."
-#             az acr create \
-#               --resource-group $(RESOURCE_GROUP) \
-#               --name $(ACR_NAME) \
-#               --sku Basic \
-#               --admin-enabled true
-#           else
-#             # 確保現有的 ACR 啟用了 admin
-#             echo "Enabling admin access for existing ACR..."
-#             az acr update --name $(ACR_NAME) --admin-enabled true
-#           fi
+- stage: Infrastructure
+  displayName: 'Setup Infrastructure'
+  jobs:
+  - job: SetupACR
+    displayName: 'Setup Azure Container Registry'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    # 建立資源組（如果不存在）
+    - task: AzureCLI@2
+      displayName: 'Create Resource Group'
+      inputs:
+        azureSubscription: '$(AZURE_SUBSCRIPTION)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # 檢查資源群組是否存在
+          if [ "$(az group exists --name $(RESOURCE_GROUP))" = "false" ]; then
+            echo "Creating resource group: $(RESOURCE_GROUP)..."
+            az group create --name $(RESOURCE_GROUP) --location $(LOCATION)
+          else
+            echo "Resource group $(RESOURCE_GROUP) already exists. Skipping creation."
+          fi
+    # 建立 ACR（如果不存在）
+    - task: AzureCLI@2
+      displayName: 'Create ACR'
+      inputs:
+        azureSubscription: '$(AZURE_SUBSCRIPTION)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # 檢查 ACR 是否存在
+          if ! az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) &>/dev/null; then
+            echo "Creating ACR..."
+            az acr create \
+              --resource-group $(RESOURCE_GROUP) \
+              --name $(ACR_NAME) \
+              --sku Basic \
+              --admin-enabled true
+          else
+            # 確保現有的 ACR 啟用了 admin
+            echo "Enabling admin access for existing ACR..."
+            az acr update --name $(ACR_NAME) --admin-enabled true
+          fi
           
-#           # 獲取 ACR 登入資訊
-#           ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query loginServer -o tsv)
-#           ACR_USERNAME=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query username -o tsv)
-#           ACR_PASSWORD=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query "passwords[0].value" -o tsv)
+          # 獲取 ACR 登入資訊
+          ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query loginServer -o tsv)
+          ACR_USERNAME=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query "passwords[0].value" -o tsv)
           
-#           # 設定 pipeline 變數
-#           echo "##vso[task.setvariable variable=REGISTRY_NAME;isOutput=true]$ACR_LOGIN_SERVER"
-#           echo "##vso[task.setvariable variable=ACR_USERNAME;isOutput=true]$ACR_USERNAME"
-#           echo "##vso[task.setvariable variable=ACR_PASSWORD;isOutput=true;issecret=true]$ACR_PASSWORD"
+          # 設定 pipeline 變數
+          echo "##vso[task.setvariable variable=REGISTRY_NAME;isOutput=true]$ACR_LOGIN_SERVER"
+          echo "##vso[task.setvariable variable=ACR_USERNAME;isOutput=true]$ACR_USERNAME"
+          echo "##vso[task.setvariable variable=ACR_PASSWORD;isOutput=true;issecret=true]$ACR_PASSWORD"
 
-#       name: acrDetails
+      name: acrDetails
 
 - stage: Build
   displayName: 'Build and Push'
-  #dependsOn: Infrastructure
+  dependsOn: Infrastructure
   variables:
     REGISTRY_NAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.REGISTRY_NAME'] ]
     ACR_USERNAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_USERNAME'] ]
@@ -128,26 +128,26 @@ stages:
       displayName: 'Login to ACR'
 
     # 建立並推送前端映像
-    # - task: Bash@3
-    #   displayName: 'Build and Push Frontend Image'
-    #   inputs:
-    #     targetType: 'inline'
-    #     script: |
-    #       # 創建 .env.production 文件
-    #       echo "VITE_API_URL=$(VITE_API_URL)" > frontend/.env.production
-    #       echo "VITE_BACKEND_URL=$(VITE_BACKEND_URL)" >> frontend/.env.production
+    - task: Bash@3
+      displayName: 'Build and Push Frontend Image'
+      inputs:
+        targetType: 'inline'
+        script: |
+          # 創建 .env.production 文件
+          echo "VITE_API_URL=$(VITE_API_URL)" > frontend/.env.production
+          echo "VITE_BACKEND_URL=$(VITE_BACKEND_URL)" >> frontend/.env.production
           
-    #       # 構建 Docker 映像
-    #       docker build \
-    #         --build-arg VITE_API_URL=$(VITE_API_URL) \
-    #         --build-arg VITE_BACKEND_URL=$(VITE_BACKEND_URL) \
-    #         -t $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
-    #         -t $(REGISTRY_NAME)/frontend:latest \
-    #         -f dockerfiles/frontend/Dockerfile_vue .
+          # 構建 Docker 映像
+          docker build \
+            --build-arg VITE_API_URL=$(VITE_API_URL) \
+            --build-arg VITE_BACKEND_URL=$(VITE_BACKEND_URL) \
+            -t $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
+            -t $(REGISTRY_NAME)/frontend:latest \
+            -f dockerfiles/frontend/Dockerfile_vue .
           
-    #       # 推送映像
-    #       docker push $(REGISTRY_NAME)/frontend:$(Build.BuildId)
-    #       docker push $(REGISTRY_NAME)/frontend:latest
+          # 推送映像
+          docker push $(REGISTRY_NAME)/frontend:$(Build.BuildId)
+          docker push $(REGISTRY_NAME)/frontend:latest
 
     # 建立並推送後端映像
     - task: Bash@3
@@ -189,162 +189,170 @@ stages:
           cat ./backend/config/firebase-adminsdk.json
 
           echo "開始構建 Docker 映像..."
-          docker build -t recommendacr20250226.azurecr.io/backend:$(Build.BuildId) \
-                      -t recommendacr20250226.azurecr.io/backend:latest \
+          docker build -t $(REGISTRY_NAME)/backend:$(Build.BuildId) \
+                      -t $(REGISTRY_NAME)/backend:latest \
                       -f dockerfiles/backend/Dockerfile_python .
 
           # 推送映像到 ACR
           echo "推送映像到 ACR..."
-          docker push recommendacr20250226.azurecr.io/backend:$(Build.BuildId)
-          docker push recommendacr20250226.azurecr.io/backend:latest
+          docker push $(REGISTRY_NAME)/backend:$(Build.BuildId)
+          docker push $(REGISTRY_NAME)/backend:latest
 
 
-# - stage: Deploy
-#   displayName: 'Deploy to Azure Web App'
-#   variables:
-#     REGISTRY_NAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.REGISTRY_NAME'] ]
-#     ACR_USERNAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_USERNAME'] ]
-#     ACR_PASSWORD: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_PASSWORD'] ]
-#     ACR_LOGIN_SERVER: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_LOGIN_SERVER'] ]
-#   condition: succeeded()
-#   jobs:
-#   - job: Deploy
-#     pool:
-#       vmImage: 'ubuntu-latest'
-#     steps:
-#     # 登入並驗證 ACR 連接
-#     - task: AzureCLI@2
-#       displayName: 'Login and Verify ACR Connection'
-#       inputs:
-#         azureSubscription: '$(AZURE_SUBSCRIPTION)'
-#         scriptType: 'bash'
-#         scriptLocation: 'inlineScript'
-#         inlineScript: |
-#           # 獲取 ACR 登入資訊
-#           ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query loginServer -o tsv)
-#           ACR_USERNAME=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query username -o tsv)
-#           ACR_PASSWORD=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query "passwords[0].value" -o tsv)
+- stage: Deploy
+  displayName: 'Deploy to Azure Web App'
+  variables:
+    REGISTRY_NAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.REGISTRY_NAME'] ]
+    ACR_USERNAME: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_USERNAME'] ]
+    ACR_PASSWORD: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_PASSWORD'] ]
+    ACR_LOGIN_SERVER: $[ stageDependencies.Infrastructure.SetupACR.outputs['acrDetails.ACR_LOGIN_SERVER'] ]
+  condition: succeeded()
+  jobs:
+  - job: Deploy
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    # 登入並驗證 ACR 連接
+    - task: AzureCLI@2
+      displayName: 'Login and Verify ACR Connection'
+      inputs:
+        azureSubscription: '$(AZURE_SUBSCRIPTION)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # 獲取 ACR 登入資訊
+          ACR_LOGIN_SERVER=$(az acr show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query loginServer -o tsv)
+          ACR_USERNAME=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP) --query "passwords[0].value" -o tsv)
 
-#           # 使用 Docker 登入 ACR
-#           echo "Logging in to ACR..."
-#           echo $ACR_PASSWORD | docker login $ACR_LOGIN_SERVER -u $ACR_USERNAME --password-stdin
-#           if [ $? -ne 0 ]; then
-#             echo "ACR 登入失敗"
-#             exit 1
-#           fi
+          # 使用 Docker 登入 ACR
+          echo "Logging in to ACR..."
+          echo $ACR_PASSWORD | docker login $ACR_LOGIN_SERVER -u $ACR_USERNAME --password-stdin
+          if [ $? -ne 0 ]; then
+            echo "ACR 登入失敗"
+            exit 1
+          fi
 
-#           # 測試 ACR 連接
-#           echo "Testing ACR connection..."
-#           az acr repository list --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP)
-#           if [ $? -ne 0 ]; then
-#             echo "無法存取 ACR，請檢查權限設定"
-#             exit 1
-#           fi
-#           echo "ACR 登入和連接測試成功"
+          # 測試 ACR 連接
+          echo "Testing ACR connection..."
+          az acr repository list --name $(ACR_NAME) --resource-group $(RESOURCE_GROUP)
+          if [ $? -ne 0 ]; then
+            echo "無法存取 ACR，請檢查權限設定"
+            exit 1
+          fi
+          echo "ACR 登入和連接測試成功"
 
-#     # 部署前端 Web App
-#     - task: AzureCLI@2
-#       displayName: 'Deploy Frontend Web App'
-#       inputs:
-#         azureSubscription: '$(AZURE_SUBSCRIPTION)'
-#         scriptType: 'bash'
-#         scriptLocation: 'inlineScript'
-#         inlineScript: |
-#           # 建立前端 App Service Plan
-#           az appservice plan create \
-#             --name frontend-plan \
-#             --resource-group $(RESOURCE_GROUP) \
-#             --sku F1 \
-#             --is-linux
+    # 部署前端 Web App
+    - task: AzureCLI@2
+      displayName: 'Deploy Frontend Web App'
+      inputs:
+        azureSubscription: '$(AZURE_SUBSCRIPTION)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # 建立前端 App Service Plan
+          az appservice plan create \
+            --name frontend-plan \
+            --resource-group $(RESOURCE_GROUP) \
+            --sku F1 \
+            --is-linux
 
-#           # 建立並配置前端 Web App
-#           az webapp create \
-#             --resource-group $(RESOURCE_GROUP) \
-#             --plan frontend-plan \
-#             --name frontend-$(APP_NAME) \
-#             --deployment-container-image-name $(ACR_LOGIN_SERVER)/frontend:latest
+          # 建立並配置前端 Web App
+          az webapp create \
+            --resource-group $(RESOURCE_GROUP) \
+            --plan frontend-plan \
+            --name frontend-$(APP_NAME) \
+            --deployment-container-image-name $(ACR_LOGIN_SERVER)/frontend:latest
 
-#           # 配置容器設定
-#           az webapp config container set \
-#             --name frontend-$(APP_NAME) \
-#             --resource-group $(RESOURCE_GROUP) \
-#             --docker-registry-server-url $(ACR_LOGIN_SERVER) \
-#             --docker-registry-server-user $(ACR_USERNAME) \
-#             --docker-registry-server-password $(ACR_PASSWORD)
+          # 配置容器設定
+          az webapp config container set \
+            --name frontend-$(APP_NAME) \
+            --resource-group $(RESOURCE_GROUP) \
+            --docker-registry-server-url $(ACR_LOGIN_SERVER) \
+            --docker-registry-server-user $(ACR_USERNAME) \
+            --docker-registry-server-password $(ACR_PASSWORD)
 
-#           # 配置前端環境變數
-#           az webapp config appsettings set \
-#             --resource-group $(RESOURCE_GROUP) \
-#             --name frontend-$(APP_NAME) \
-#             --settings \
-#               WEBSITES_PORT=$(FRONTEND_WEBSITES_PORT) \
-#               NODE_ENV=$(NODE_ENV) \
-#               VITE_BACKEND_URL=$(VITE_BACKEND_URL) \
-#               VITE_API_URL=$(VITE_API_URL) \
-#               VITE_JWT_EXPIRES_IN=$(VITE_JWT_EXPIRES_IN) \
-#               VITE_LANGFLOW_API_URL=$(VITE_LANGFLOW_API_URL) \
-#               VITE_LANGFLOW_API_KEY=$(VITE_LANGFLOW_API_KEY) \
-#               VITE_LANGFLOW_AUTH_TOKEN=$(VITE_LANGFLOW_AUTH_TOKEN) \
-#               VITE_CHECK_TOKEN_INTERVAL=$(VITE_CHECK_TOKEN_INTERVAL)
+          # 配置前端環境變數
+          az webapp config appsettings set \
+            --resource-group $(RESOURCE_GROUP) \
+            --name frontend-$(APP_NAME) \
+            --settings \
+              WEBSITES_PORT=$(FRONTEND_WEBSITES_PORT) \
+              NODE_ENV=$(NODE_ENV) \
+              VITE_BACKEND_URL=$(VITE_BACKEND_URL) \
+              VITE_API_URL=$(VITE_API_URL) \
+              VITE_JWT_EXPIRES_IN=$(VITE_JWT_EXPIRES_IN) \
+              VITE_LANGFLOW_API_URL=$(VITE_LANGFLOW_API_URL) \
+              VITE_LANGFLOW_API_KEY=$(VITE_LANGFLOW_API_KEY) \
+              VITE_LANGFLOW_AUTH_TOKEN=$(VITE_LANGFLOW_AUTH_TOKEN) \
+              VITE_CHECK_TOKEN_INTERVAL=$(VITE_CHECK_TOKEN_INTERVAL) \
+              VITE_MISTRAL_API_KEY=$(VITE_MISTRAL_API_KEY) \
+              VITE_MISTRAL_API_URL=$(VITE_MISTRAL_API_URL)\
+              VITE_JINA_API_KEY=$(VITE_JINA_API_KEY) \
+              VITE_JINA_API_URL=$(VITE_JINA_API_URL) \
+              VITE_AUTOGEN_API_URL=$(VITE_AUTOGEN_API_URL)
 
-#     # 部署後端 Web App
-#     - task: AzureCLI@2
-#       displayName: 'Deploy Backend Web App'
-#       inputs:
-#         azureSubscription: '$(AZURE_SUBSCRIPTION)'
-#         scriptType: 'bash'
-#         scriptLocation: 'inlineScript'
-#         inlineScript: |
-#           # 建立後端 App Service Plan
-#           az appservice plan create \
-#             --name backend-plan \
-#             --resource-group $(RESOURCE_GROUP) \
-#             --sku F1 \
-#             --is-linux
+    # 部署後端 Web App
+    - task: AzureCLI@2
+      displayName: 'Deploy Backend Web App'
+      inputs:
+        azureSubscription: '$(AZURE_SUBSCRIPTION)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # 建立後端 App Service Plan
+          az appservice plan create \
+            --name backend-plan \
+            --resource-group $(RESOURCE_GROUP) \
+            --sku F1 \
+            --is-linux
 
-#           # 建立並配置後端 Web App
-#           az webapp create \
-#             --resource-group $(RESOURCE_GROUP) \
-#             --plan backend-plan \
-#             --name backend-$(APP_NAME) \
-#             --deployment-container-image-name $(ACR_LOGIN_SERVER)/backend:latest
+          # 建立並配置後端 Web App
+          az webapp create \
+            --resource-group $(RESOURCE_GROUP) \
+            --plan backend-plan \
+            --name backend-$(APP_NAME) \
+            --deployment-container-image-name $(ACR_LOGIN_SERVER)/backend:latest
 
-#           # 配置容器設定
-#           az webapp config container set \
-#             --resource-group $(RESOURCE_GROUP) \
-#             --name backend-$(APP_NAME) \
-#             --docker-registry-server-url $(ACR_LOGIN_SERVER) \
-#             --docker-registry-server-user $(ACR_USERNAME) \
-#             --docker-registry-server-password $(ACR_PASSWORD)
+          # 配置容器設定
+          az webapp config container set \
+            --resource-group $(RESOURCE_GROUP) \
+            --name backend-$(APP_NAME) \
+            --docker-registry-server-url $(ACR_LOGIN_SERVER) \
+            --docker-registry-server-user $(ACR_USERNAME) \
+            --docker-registry-server-password $(ACR_PASSWORD)
 
-#           # 配置後端環境變數
-#           az webapp config appsettings set \
-#             --resource-group $(RESOURCE_GROUP) \
-#             --name backend-$(APP_NAME) \
-#             --settings \
-#               WEBSITES_PORT="$(BACKEND_WEBSITES_PORT)" \
-#               FLASK_ENV="$(FLASK_ENV)" \
-#               DB_HOST="$(DB_HOST)" \
-#               DB_PORT="$(DB_PORT)" \
-#               DB_USER="$(DB_USER)" \
-#               DB_PASSWORD="$(DB_PASSWORD)" \
-#               DB_NAME="$(DB_NAME)" \
-#               GOOGLE_MAPS_API_KEY="$(GOOGLE_MAPS_API_KEY)" \
-#               OPENAI_API_KEY="$(OPENAI_API_KEY)" \
-#               MAIL_SERVER="$(MAIL_SERVER)" \
-#               MAIL_PORT="$(MAIL_PORT)" \
-#               MAIL_USE_TLS="$(MAIL_USE_TLS)" \
-#               MAIL_USERNAME="$(MAIL_USERNAME)" \
-#               MAIL_PASSWORD="$(MAIL_PASSWORD)" \
-#               MAIL_DEFAULT_SENDER="$(MAIL_DEFAULT_SENDER)" \
-#               RESET_TOKEN_EXPIRE_TYPE="$(RESET_TOKEN_EXPIRE_TYPE)" \
-#               RESET_TOKEN_EXPIRE_VALUE="$(RESET_TOKEN_EXPIRE_VALUE)" \
-#               GOOGLE_APPLICATION_CREDENTIALS="$(GOOGLE_APPLICATION_CREDENTIALS)" \
-#               CORS_ORIGINS="$(CORS_ORIGINS)" \
-#               API_URL="$(API_URL)" \
-#               LANGFLOW_API_URL="$(LANGFLOW_API_URL)" \
-#               LANGFLOW_API_KEY="$(LANGFLOW_API_KEY)" \
-#               LANGFLOW_AUTH_TOKEN="$(LANGFLOW_AUTH_TOKEN)" \
-#               LANGFLOW_FOLDER_BASE_URL="$(LANGFLOW_FOLDER_BASE_URL)" \
-#               LANGFLOW_API_BASE_URL="$(LANGFLOW_API_BASE_URL)"
+          # 配置後端環境變數
+          az webapp config appsettings set \
+            --resource-group $(RESOURCE_GROUP) \
+            --name backend-$(APP_NAME) \
+            --settings \
+              WEBSITES_PORT="$(BACKEND_WEBSITES_PORT)" \
+              FLASK_ENV="$(FLASK_ENV)" \
+              DB_HOST="$(DB_HOST)" \
+              DB_PORT="$(DB_PORT)" \
+              DB_USER="$(DB_USER)" \
+              DB_PASSWORD="$(DB_PASSWORD)" \
+              DB_NAME="$(DB_NAME)" \
+              GOOGLE_MAPS_API_KEY="$(GOOGLE_MAPS_API_KEY)" \
+              OPENAI_API_KEY="$(OPENAI_API_KEY)" \
+              MAIL_SERVER="$(MAIL_SERVER)" \
+              MAIL_PORT="$(MAIL_PORT)" \
+              MAIL_USE_TLS="$(MAIL_USE_TLS)" \
+              MAIL_USERNAME="$(MAIL_USERNAME)" \
+              MAIL_PASSWORD="$(MAIL_PASSWORD)" \
+              MAIL_DEFAULT_SENDER="$(MAIL_DEFAULT_SENDER)" \
+              RESET_TOKEN_EXPIRE_TYPE="$(RESET_TOKEN_EXPIRE_TYPE)" \
+              RESET_TOKEN_EXPIRE_VALUE="$(RESET_TOKEN_EXPIRE_VALUE)" \
+              GOOGLE_APPLICATION_CREDENTIALS="$(GOOGLE_APPLICATION_CREDENTIALS)" \
+              CORS_ORIGINS="$(CORS_ORIGINS)" \
+              API_URL="$(API_URL)" \
+              LANGFLOW_API_URL_KOREA="$(LANGFLOW_API_URL_KOREA)" \
+              LANGFLOW_API_URL_MBTI="$(LANGFLOW_API_URL_MBTI)" \
+              LANGFLOW_API_URL_ORDER="$(LANGFLOW_API_URL_ORDER)" \
+              LANGFLOW_API_URL_GENERAL="$(LANGFLOW_API_URL_GENERAL)" \
+              LANGFLOW_API_KEY="$(LANGFLOW_API_KEY)" \
+              LANGFLOW_AUTH_TOKEN="$(LANGFLOW_AUTH_TOKEN)" \
+              LANGFLOW_FOLDER_BASE_URL="$(LANGFLOW_FOLDER_BASE_URL)" \
+              LANGFLOW_API_BASE_URL="$(LANGFLOW_API_BASE_URL)"
 

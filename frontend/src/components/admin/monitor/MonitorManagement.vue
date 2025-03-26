@@ -146,7 +146,7 @@ export default {
     const { logOperation } = useLogger()
 
     const searchForm = ref({
-      flow_id: 'ae94aa3d-ca48-4d32-afca-3913d1f1669c',  // 預設值
+      flow_id: '',  // 預設值
       session_id: '',
       sender: '',
       sender_name: '',
@@ -371,7 +371,6 @@ export default {
     }
     
     onMounted(async () => {
-      await handleSearch()
       await logOperation('【對話監控】訪問對話監控頁面', '查看')
     })
     

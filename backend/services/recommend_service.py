@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import random
 import traceback
+from schemas.recommend_schema import SortOrder
 
 class RecommendService:
     def __init__(self):
@@ -98,7 +99,19 @@ class RecommendService:
             print(f"初始化評分矩陣時發生錯誤: {str(e)}")
             self.train_user_restaurant_matrix = pd.DataFrame()
     
-    def get_recommendations(self, user_id, num_recommendations=5):
+    def _sort_recommendations(self, recommendations, sort_by=None, sort_order=SortOrder.DESC):
+        """排序推薦結果"""
+        if not sort_by or not recommendations:
+            return recommendations
+        
+        reverse = sort_order == SortOrder.DESC
+        return sorted(
+            recommendations,
+            key=lambda x: x[sort_by],
+            reverse=reverse
+        )
+
+    def get_recommendations(self, user_id, num_recommendations=5, sort_by=None, sort_order=SortOrder.DESC):
         """獲取混合推薦結果"""
         try:
             if user_id not in self.train_user_restaurant_matrix.index:
@@ -106,14 +119,15 @@ class RecommendService:
                 return []
             
             # 返回混合推薦結果
-            return self._hybrid_recommendations(user_id, num_recommendations)
+            recommendations = self._hybrid_recommendations(user_id, num_recommendations)
+            return self._sort_recommendations(recommendations, sort_by, sort_order)
             
         except Exception as e:
             print(f"獲取混合推薦過程發生錯誤: {str(e)}")
             traceback.print_exc()
             return []
 
-    def get_collaborative_recommendations(self, user_id, num_recommendations=5):
+    def get_collaborative_recommendations(self, user_id, num_recommendations=5, sort_by=None, sort_order=SortOrder.DESC):
         """獲取協同過濾推薦結果"""
         try:
             if user_id not in self.train_user_restaurant_matrix.index:
@@ -121,14 +135,15 @@ class RecommendService:
                 return []
             
             # 返回混合推薦結果
-            return self._collaborative_recommendations(user_id, num_recommendations)
+            recommendations = self._collaborative_recommendations(user_id, num_recommendations)
+            return self._sort_recommendations(recommendations, sort_by, sort_order)
             
         except Exception as e:
             print(f"獲取協同過濾推薦過程發生錯誤: {str(e)}")
             traceback.print_exc()
             return []
 
-    def get_content_recommendations(self, user_id, num_recommendations=5):
+    def get_content_recommendations(self, user_id, num_recommendations=5, sort_by=None, sort_order=SortOrder.DESC):
         """獲取內容推薦結果"""
         try:
             if user_id not in self.train_user_restaurant_matrix.index:
@@ -136,15 +151,54 @@ class RecommendService:
                 return []
             
             # 返回混合推薦結果
-            return self._content_recommendations(user_id, num_recommendations)
+            recommendations = self._content_recommendations(user_id, num_recommendations)
+            return self._sort_recommendations(recommendations, sort_by, sort_order)
             
         except Exception as e:
             print(f"獲取內容推薦過程發生錯誤: {str(e)}")
             traceback.print_exc()
             return []
 
+    def _get_restaurant_with_composite_score(self, restaurant_info, place_id):
+        """獲取餐廳資訊並添加情緒分數"""
+        try:
+            # 從 ratings_df 中獲取該餐廳的評分記錄
+            restaurant_rating = self.ratings_df[self.ratings_df['place_id'] == place_id]
+            
+            # 獲取情緒分數，如果有多筆取第一筆
+            composite_score = None
+            if not restaurant_rating.empty:
+                composite_score = float(restaurant_rating.iloc[0]['composite_score'])
+            
+            return {
+                'name': restaurant_info['name'],
+                'latitude': float(str(restaurant_info['latitude'])),
+                'longitude': float(str(restaurant_info['longitude'])),
+                'redirection_url': restaurant_info['redirection_url'],
+                'navigation_url': restaurant_info['navigation_url'],
+                'city': restaurant_info['city'],
+                'city_CN': restaurant_info['city_CN'],
+                'distance': float(str(restaurant_info['distance'])),
+                'rating': float(str(restaurant_info['rating'])),
+                'review_number': int(str(restaurant_info['review_number'])),
+                'hero_image': restaurant_info['hero_image'],
+                'hero_listing_image': restaurant_info['hero_listing_image'],
+                'tag': restaurant_info['tag'],
+                'is_new_until': restaurant_info['is_new_until'],
+                'description': restaurant_info['description'],
+                'address': restaurant_info['address'],
+                'customer_phone': restaurant_info['customer_phone'],
+                'budget': restaurant_info['budget'],
+                'id': int(str(restaurant_info['id'])),
+                'composite_score': composite_score
+            }
+        except Exception as e:
+            print(f"獲取餐廳情緒分數時發生錯誤: {str(e)}")
+            traceback.print_exc()
+            return None
+
     def _collaborative_recommendations(self, user_id, num_recommendations):
-        """協同過濾推薦 - 使用純評分"""
+        """協同過濾推薦"""
         try:
             if user_id not in self.train_user_restaurant_matrix.index:
                 return []
@@ -223,29 +277,11 @@ class RecommendService:
                 
                 # 限制每個城市最多推薦1家餐廳
                 if city not in processed_cities:
-                    recommended_restaurants.append({
-                        'name': restaurant_info['name'],
-                        'latitude': float(str(restaurant_info['latitude'])),
-                        'longitude': float(str(restaurant_info['longitude'])),
-                        'redirection_url': restaurant_info['redirection_url'],
-                        'navigation_url': restaurant_info['navigation_url'],
-                        'city': city,
-                        'city_CN': restaurant_info['city_CN'],
-                        'distance': float(str(restaurant_info['distance'])),
-                        'rating': float(str(restaurant_info['rating'])),
-                        'review_number': int(str(restaurant_info['review_number'])),
-                        'hero_image': restaurant_info['hero_image'],
-                        'hero_listing_image': restaurant_info['hero_listing_image'],
-                        'tag': restaurant_info['tag'],
-                        'is_new_until': restaurant_info['is_new_until'],
-                        'description': restaurant_info['description'],
-                        'address': restaurant_info['address'],
-                        'customer_phone': restaurant_info['customer_phone'],
-                        'budget': restaurant_info['budget'],
-                        'id': int(str(restaurant_info['id']))
-                    })
-                    recommended_ids.add(restaurant_id)
-                    processed_cities.add(city)
+                    restaurant_data = self._get_restaurant_with_composite_score(restaurant_info, restaurant_id)
+                    if restaurant_data:
+                        recommended_restaurants.append(restaurant_data)
+                        recommended_ids.add(restaurant_id)
+                        processed_cities.add(city)
             
             # 第二輪：如果還不夠，不限制城市數量
             if len(recommended_restaurants) < num_recommendations:
@@ -260,28 +296,10 @@ class RecommendService:
                         break
                         
                     restaurant_info, restaurant_id = rec
-                    recommended_restaurants.append({
-                        'name': restaurant_info['name'],
-                        'latitude': float(str(restaurant_info['latitude'])),
-                        'longitude': float(str(restaurant_info['longitude'])),
-                        'redirection_url': restaurant_info['redirection_url'],
-                        'navigation_url': restaurant_info['navigation_url'],
-                        'city': restaurant_info['city'],
-                        'city_CN': restaurant_info['city_CN'],
-                        'distance': float(str(restaurant_info['distance'])),
-                        'rating': float(str(restaurant_info['rating'])),
-                        'review_number': int(str(restaurant_info['review_number'])),
-                        'hero_image': restaurant_info['hero_image'],
-                        'hero_listing_image': restaurant_info['hero_listing_image'],
-                        'tag': restaurant_info['tag'],
-                        'is_new_until': restaurant_info['is_new_until'],
-                        'description': restaurant_info['description'],
-                        'address': restaurant_info['address'],
-                        'customer_phone': restaurant_info['customer_phone'],
-                        'budget': restaurant_info['budget'],
-                        'id': int(str(restaurant_info['id']))
-                    })
-                    recommended_ids.add(restaurant_id)
+                    restaurant_data = self._get_restaurant_with_composite_score(restaurant_info, restaurant_id)
+                    if restaurant_data:
+                        recommended_restaurants.append(restaurant_data)
+                        recommended_ids.add(restaurant_id)
             
             return recommended_restaurants[:num_recommendations]
             
@@ -291,7 +309,7 @@ class RecommendService:
             return []
 
     def _content_recommendations(self, user_id, num_recommendations):
-        """內容推薦 - 使用純情感分數"""
+        """內容推薦"""
         try:
             if user_id not in self.train_user_restaurant_matrix.index:
                 return []
@@ -301,139 +319,75 @@ class RecommendService:
             if np.all(user_vector == 0):
                 return []
             
-            # 修改：使用純情感分數進行排序
-            self.train_data['weighted_combined_score'] = self.train_data['composite_score']
-            
-            # 重新建立評分矩陣
-            self.train_user_restaurant_matrix = self.train_data.pivot_table(
-                index='user_id',
-                columns='place_id',
-                values='weighted_combined_score'
-            ).fillna(0)
-            
-            # 獲取用戶的歷史評分
+            # 獲取用戶的歷史評分中的餐廳 place_id
             user_ratings = self.train_data[self.train_data['user_id'] == user_id]
-            rated_restaurants = set(user_ratings.index)
+            rated_place_ids = set(user_ratings['place_id'])
             
-            # 預先過濾有評分資訊的餐廳
-            valid_restaurants = []
-            for idx, restaurant in self.restaurants_df.iterrows():
-                if idx not in rated_restaurants:
-                    valid_restaurants.append(idx)
+            # 從 restaurants_df 中獲取未評分的餐廳
+            unrated_restaurants = self.restaurants_df[
+                ~self.restaurants_df['place_id'].isin(rated_place_ids)
+            ]
             
-            # 隨機選擇有效的餐廳索引
-            num_random_restaurants = min(100, len(valid_restaurants))
-            if num_random_restaurants == 0:
+            if unrated_restaurants.empty:
                 return []
             
-            random_indices = random.sample(valid_restaurants, num_random_restaurants)
+            # 隨機選擇餐廳
+            num_random_restaurants = min(100, len(unrated_restaurants))
+            random_restaurants = unrated_restaurants.sample(n=num_random_restaurants)
             
             # 收集所有可能的推薦
             all_recommendations = []
             recommended_ids = set()
             processed_cities = set()
             
-            # 第一輪：嘗試找到不同城市的推薦
-            for idx in random_indices:
-                if len(recommended_ids) >= num_recommendations * 2:  # 收集更多候選
+            # 第一輪：按城市收集推薦
+            for _, restaurant in random_restaurants.iterrows():
+                if len(recommended_ids) >= num_recommendations * 2:
                     break
                     
-                restaurant_info = self.restaurants_df.iloc[idx]
-                city = restaurant_info['city']
+                city = restaurant['city']
+                place_id = restaurant['place_id']
                 
                 # 確保城市不重複且未處理過
-                if city not in processed_cities:
-                    all_recommendations.append((
-                        restaurant_info,
-                        idx
-                    ))
-                    recommended_ids.add(idx)
-                    processed_cities.add(city)
+                if city not in processed_cities and place_id not in recommended_ids:
+                    # 檢查該餐廳是否有情緒分數
+                    restaurant_rating = self.ratings_df[self.ratings_df['place_id'] == place_id]
+                    if not restaurant_rating.empty:
+                        all_recommendations.append((restaurant, place_id))
+                        recommended_ids.add(place_id)
+                        processed_cities.add(city)
             
-            # 打亂所有推薦
+            # 打亂推薦順序
             random.shuffle(all_recommendations)
             
-            # 用於存放推薦結果
+            # 用於存放最終推薦結果
             recommended_restaurants = []
-            processed_cities.clear()  # 重置已處理城市集合
+            processed_cities.clear()
             
             # 第一輪：優先選擇不同城市的餐廳
-            for rec in all_recommendations:
+            for restaurant_info, place_id in all_recommendations:
                 if len(recommended_restaurants) >= num_recommendations:
                     break
                     
-                restaurant_info, restaurant_id = rec
                 city = restaurant_info['city']
-                
-                # 限制每個城市最多推薦1家餐廳
                 if city not in processed_cities:
-                    recommended_restaurants.append({
-                        'name': restaurant_info['name'],
-                        'latitude': float(str(restaurant_info['latitude'])),
-                        'longitude': float(str(restaurant_info['longitude'])),
-                        'redirection_url': restaurant_info['redirection_url'],
-                        'navigation_url': restaurant_info['navigation_url'],
-                        'city': city,
-                        'city_CN': restaurant_info['city_CN'],
-                        'distance': float(str(restaurant_info['distance'])),
-                        'rating': float(str(restaurant_info['rating'])),
-                        'review_number': int(str(restaurant_info['review_number'])),
-                        'hero_image': restaurant_info['hero_image'],
-                        'hero_listing_image': restaurant_info['hero_listing_image'],
-                        'tag': restaurant_info['tag'],
-                        'is_new_until': restaurant_info['is_new_until'],
-                        'description': restaurant_info['description'],
-                        'address': restaurant_info['address'],
-                        'customer_phone': restaurant_info['customer_phone'],
-                        'budget': restaurant_info['budget'],
-                        'id': int(str(restaurant_info['id']))
-                    })
-                    processed_cities.add(city)
+                    restaurant_data = self._get_restaurant_with_composite_score(restaurant_info, place_id)
+                    if restaurant_data and restaurant_data['composite_score'] is not None:
+                        recommended_restaurants.append(restaurant_data)
+                        processed_cities.add(city)
             
-            # 如果推薦數量不足，從其他城市隨機補充
-            while len(recommended_restaurants) < num_recommendations:
-                # 獲取未處理的城市
-                remaining_cities = list(set(self.restaurants_df['city'].unique()) - processed_cities)
-                
-                # 如果沒有未處理的城市，則重新使用所有城市
-                if not remaining_cities:
-                    remaining_cities = list(self.restaurants_df['city'].unique())
-                    processed_cities.clear()  # 重置已處理城市集合
-                
-                # 隨機選擇一個城市
-                city = random.choice(remaining_cities)
-                
-                # 獲取該城市所有有效的餐廳
-                city_restaurants = []
-                for idx in valid_restaurants:
-                    restaurant = self.restaurants_df.iloc[idx]
-                    if restaurant['city'] == city and idx not in recommended_ids:
-                        city_restaurants.append(restaurant)
-                
-                if city_restaurants:
-                    restaurant_info = random.choice(city_restaurants)
-                    recommended_restaurants.append({
-                        'name': restaurant_info['name'],
-                        'latitude': float(str(restaurant_info['latitude'])),
-                        'longitude': float(str(restaurant_info['longitude'])),
-                        'redirection_url': restaurant_info['redirection_url'],
-                        'navigation_url': restaurant_info['navigation_url'],
-                        'city': city,
-                        'city_CN': restaurant_info['city_CN'],
-                        'distance': float(str(restaurant_info['distance'])),
-                        'rating': float(str(restaurant_info['rating'])),
-                        'review_number': int(str(restaurant_info['review_number'])),
-                        'hero_image': restaurant_info['hero_image'],
-                        'hero_listing_image': restaurant_info['hero_listing_image'],
-                        'tag': restaurant_info['tag'],
-                        'is_new_until': restaurant_info['is_new_until'],
-                        'description': restaurant_info['description'],
-                        'address': restaurant_info['address'],
-                        'customer_phone': restaurant_info['customer_phone'],
-                        'budget': restaurant_info['budget'],
-                        'id': int(str(restaurant_info['id']))
-                    })
-                    processed_cities.add(city)
+            # 如果推薦數量不足，從其他城市補充
+            remaining_recommendations = [
+                (restaurant_info, place_id) for restaurant_info, place_id in all_recommendations
+                if restaurant_info['city'] not in processed_cities
+            ]
+            
+            while len(recommended_restaurants) < num_recommendations and remaining_recommendations:
+                restaurant_info, place_id = remaining_recommendations.pop()
+                restaurant_data = self._get_restaurant_with_composite_score(restaurant_info, place_id)
+                if restaurant_data and restaurant_data['composite_score'] is not None:
+                    recommended_restaurants.append(restaurant_data)
+                    processed_cities.add(restaurant_info['city'])
             
             return recommended_restaurants[:num_recommendations]
             
@@ -443,7 +397,7 @@ class RecommendService:
             return []
     
     def _hybrid_recommendations(self, user_id, num_recommendations):
-        """混合推薦 - 使用加權評分"""
+        """混合推薦"""
         try:
             # 標準化評分和情感分數
             scaler = MinMaxScaler()
@@ -506,7 +460,8 @@ class RecommendService:
                             'address': rec['address'],
                             'customer_phone': rec['customer_phone'],
                             'budget': rec['budget'],
-                            'id': rec['id']
+                            'id': rec['id'],
+                            'composite_score': rec['composite_score']  # 直接使用已有的 composite_score
                         }
                         unique_recommendations.append(recommendation)
                         city_count[city] = city_count.get(city, 0) + 1

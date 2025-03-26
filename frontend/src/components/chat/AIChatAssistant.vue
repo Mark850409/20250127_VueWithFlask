@@ -73,15 +73,23 @@
               <div v-if="message.isUser" class="flex justify-end">
                 <div class="flex items-end space-x-2">
                   <div class="max-w-[70%] bg-blue-400 text-white px-4 py-2 rounded-2xl rounded-br-sm">
-                    <!-- 處理用戶圖片訊息 -->
-                    <template v-if="message.type === 'image' || isImageUrl(message.content)">
-                      <div class="relative">
-                        <a :href="extractImageSrc(message.content)" target="_blank" class="block hover:opacity-90 transition-opacity">
-                          <img :src="extractImageSrc(message.content)" class="w-64 h-64 object-cover rounded-lg cursor-pointer" alt="用戶上傳的圖片">
-                        </a>
+                    <!-- 處理圖片和文字組合的訊息 -->
+                    <template v-if="message.type === 'image_with_text'">
+                      <div class="space-y-2">
+                        <div class="relative w-full">
+                          <img 
+                            :src="message.content.image" 
+                            class="w-full max-h-[300px] object-contain rounded-lg cursor-pointer hover:opacity-90 transition-opacity bg-white/50"
+                            @click="previewStoredImage(message.content.image)"
+                            alt="用戶上傳的圖片"
+                          >
+                        </div>
+                        <div class="text-white mt-2">
+                          {{ message.content.text }}
+                        </div>
                       </div>
                     </template>
-                    <!-- 處理用戶文字訊息 -->
+                    <!-- 處理純文字訊息 -->
                     <template v-else>
                       {{ message.content }}
                     </template>
@@ -89,9 +97,6 @@
                   <div class="relative">
                     <div class="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white text-sm">
                       <i class="fas fa-user"></i>
-                    </div>
-                    <div class="absolute -bottom-4 left-0 bg-gradient-to-r from-amber-400 to-orange-400 text-white text-[10px] px-2 py-0.5 rounded-md whitespace-nowrap shadow-md backdrop-blur-sm border border-amber-300/30">
-                      <i class="fas fa-user-circle mr-1"></i>使用者
                     </div>
                   </div>
                 </div>
@@ -102,9 +107,6 @@
                   <div class="relative">
                     <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-indigo-500">
                       <i class="fas fa-robot"></i>
-                    </div>
-                    <div class="absolute -bottom-4 right-0 bg-gradient-to-r from-emerald-400 to-teal-400 text-white text-[10px] px-2 py-0.5 rounded-md whitespace-nowrap shadow-md backdrop-blur-sm border border-emerald-300/30">
-                      <i class="fas fa-robot mr-1"></i>AI 助手
                     </div>
                   </div>
                   <!-- 如果有內容，顯示聊天氣泡 -->
@@ -391,25 +393,30 @@
             <div v-if="message.isUser" class="flex justify-end">
               <div class="flex items-end space-x-2">
                 <div class="max-w-[70%] bg-blue-400 text-white px-4 py-2 rounded-2xl rounded-br-sm">
-                  <!-- 處理用戶圖片訊息 -->
-                  <template v-if="message.type === 'image' || isImageUrl(message.content)">
-                    <div class="relative">
-                      <a :href="extractImageSrc(message.content)" target="_blank" class="block hover:opacity-90 transition-opacity">
-                        <img :src="extractImageSrc(message.content)" class="w-64 h-64 object-cover rounded-lg cursor-pointer" alt="用戶上傳的圖片">
-                      </a>
+                  <!-- 處理圖片和文字組合的訊息 -->
+                  <template v-if="message.type === 'image_with_text'">
+                    <div class="space-y-2">
+                      <div class="relative w-full">
+                        <img 
+                          :src="message.content.image" 
+                          class="w-full max-h-[300px] object-contain rounded-lg cursor-pointer hover:opacity-90 transition-opacity bg-white/50"
+                          @click="previewStoredImage(message.content.image)"
+                          alt="用戶上傳的圖片"
+                        >
+                      </div>
+                      <div class="text-white mt-2">
+                        {{ message.content.text }}
+                      </div>
                     </div>
                   </template>
-                  <!-- 處理用戶文字訊息 -->
+                  <!-- 處理純文字訊息 -->
                   <template v-else>
                     {{ message.content }}
                   </template>
                 </div>
                 <div class="relative">
-                  <div class="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white text-sm">
+                  <div class="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white text-sm">
                     <i class="fas fa-user"></i>
-                  </div>
-                  <div class="absolute -bottom-4 left-0 bg-gradient-to-r from-amber-400 to-orange-400 text-white text-[10px] px-2 py-0.5 rounded-md whitespace-nowrap shadow-md backdrop-blur-sm border border-amber-300/30">
-                    <i class="fas fa-user-circle mr-1"></i>使用者
                   </div>
                 </div>
               </div>
@@ -421,9 +428,7 @@
                   <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-indigo-500">
                     <i class="fas fa-robot"></i>
                   </div>
-                  <div class="absolute -bottom-4 right-0 bg-gradient-to-r from-emerald-400 to-teal-400 text-white text-[10px] px-2 py-0.5 rounded-md whitespace-nowrap shadow-md backdrop-blur-sm border border-emerald-300/30">
-                    <i class="fas fa-robot mr-1"></i>AI 助手
-                  </div>
+
                 </div>
                 <!-- 如果有內容，顯示聊天氣泡 -->
                 <div v-if="message.content || message.toolInfo || message.generatedImage || (message.hasDeepReasoning && message.reasoningProcess)" class="max-w-2xl bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-6 py-4 rounded-xl shadow-sm">
@@ -693,6 +698,7 @@
 import { ref, onMounted, nextTick, watch } from 'vue'
 import { botAPI } from '@/api'
 import { s2t } from 'chinese-s2t'
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 export default {
   name: 'AIChatAssistant',
@@ -865,7 +871,6 @@ export default {
     const handleSend = async () => {
       if ((!userInput.value.trim() && !previewImage.value) || isLoading.value) return
 
-      // 儲存當前的輸入值
       const currentInput = userInput.value.trim()
       const currentImage = previewImage.value
 
@@ -873,79 +878,96 @@ export default {
       userInput.value = ''
       clearPreview()
 
-      // 如果有圖片和文字，構建包含圖片的消息
       if (currentImage) {
-        const messages = [
-          {
-            role: "user",
-            content: [
-              {
-                type: "image_url",
-                image_url: {
-                  url: currentImage
-                }
-              },
-              {
-                type: "text",
-                text: currentInput || "請描述這張圖片"
-              }
-            ]
-          }
-        ]
-
-        // 添加用戶的圖片和文字消息到聊天記錄
-        chatHistory.value.push({
-          content: currentImage,
-          type: 'image',
-          isUser: true
-        })
-
-        if (currentInput) {
-          chatHistory.value.push({
-            content: currentInput,
-            isUser: true
-          })
-        }
-
-        chatHistory.value.push({
-          content: '',
-          isUser: false
-        })
-
-        isLoading.value = true
-        const currentMessageIndex = chatHistory.value.length - 1
-
         try {
-          const response = await fetch(import.meta.env.VITE_MISTRAL_API_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Accept": "application/json",
-              "Authorization": `Bearer ${import.meta.env.VITE_MISTRAL_API_KEY}`
-            },
-            body: JSON.stringify({
-              model: "mistral-small-latest",
-              messages: messages
-            })
+          // 添加一個空的消息作為佔位符
+          chatHistory.value.push({
+            content: '',
+            isUser: false
           })
 
-          if (!response.ok) {
-            throw new Error(`API錯誤: ${response.status}`)
+          isLoading.value = true
+          const currentMessageIndex = chatHistory.value.length - 1
+
+          // 上傳圖片到 Firebase Storage 並獲取 URL
+          const imageUrl = await uploadImageToFirebase(currentImage)
+
+          // 先添加用戶的圖片和文字消息到聊天記錄
+          chatHistory.value[currentMessageIndex] = {
+            content: {
+              image: imageUrl,
+              text: currentInput || "分析這張圖片"
+            },
+            type: 'image_with_text',
+            isUser: true
           }
 
-          const data = await response.json()
-          const aiResponse = data.choices[0].message.content
-
-          chatHistory.value[currentMessageIndex] = {
-            content: s2t(aiResponse),
+          // 添加新的 AI 回應佔位符
+          chatHistory.value.push({
+            content: '',
             isUser: false
+          })
+
+          const aiMessageIndex = chatHistory.value.length - 1
+
+          // 使用獲取到的 URL 構建消息
+          const messages = [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: imageUrl
+                  }
+                },
+                {
+                  type: "text",
+                  text: currentInput || "請描述這張圖片"
+                }
+              ]
+            }
+          ]
+
+          // 發送請求到 Mistral API
+          try {
+            const response = await fetch(import.meta.env.VITE_MISTRAL_API_URL, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": `Bearer ${import.meta.env.VITE_MISTRAL_API_KEY}`
+              },
+              body: JSON.stringify({
+                model: "mistral-small-latest",
+                messages: messages
+              })
+            })
+
+            if (!response.ok) {
+              throw new Error(`API錯誤: ${response.status}`)
+            }
+
+            const data = await response.json()
+            const aiResponse = data.choices[0].message.content
+
+            chatHistory.value[aiMessageIndex] = {
+              content: s2t(aiResponse),
+              isUser: false
+            }
+          } catch (error) {
+            console.error('Mistral API 錯誤:', error)
+            chatHistory.value[aiMessageIndex] = {
+              content: '抱歉，圖片分析過程中發生錯誤，請稍後再試。',
+              isUser: false
+            }
           }
         } catch (error) {
-          console.error('Mistral API 錯誤:', error)
-          chatHistory.value[currentMessageIndex] = {
-            content: '抱歉，圖片分析過程中發生錯誤，請稍後再試。',
+          console.error('處理圖片上傳失敗:', error)
+          chatHistory.value.push({
+            content: '圖片上傳失敗，請稍後再試。',
             isUser: false
-          }
+          })
         } finally {
           isLoading.value = false
         }
@@ -1319,6 +1341,7 @@ export default {
           if (textMessages.length > 0) {
             // 使用最後一條文字訊息
             const lastTextMessage = textMessages[textMessages.length - 1]
+            console.log('最後一條文字訊息:', lastTextMessage)
             
             // 檢查內容的數據類型和處理
             if (typeof lastTextMessage.content === 'string') {
@@ -1684,6 +1707,57 @@ export default {
     // 在 setup 函數中添加新的狀態
     const previewImage = ref(null)
 
+    // 修改 uploadImageToFirebase 函數
+    const uploadImageToFirebase = async (base64Image) => {
+      try {
+        const storage = getStorage()
+        
+        // 修改時間戳格式為 YYYYMMDD_HHMMSS
+        const now = new Date()
+        const timestamp = now.getFullYear() +
+          String(now.getMonth() + 1).padStart(2, '0') +
+          String(now.getDate()).padStart(2, '0') + '_' +
+          String(now.getHours()).padStart(2, '0') +
+          String(now.getMinutes()).padStart(2, '0') +
+          String(now.getSeconds()).padStart(2, '0')
+        
+        // 修改檔案名稱格式
+        const filename = `ChatBot_image_${timestamp}.png`
+        const imageRef = storageRef(storage, `images/${filename}`)
+        
+        // 從 base64 創建 Blob
+        const base64Content = base64Image.split(',')[1]
+        const byteCharacters = atob(base64Content)
+        const byteNumbers = new Array(byteCharacters.length)
+        
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i)
+        }
+        
+        const byteArray = new Uint8Array(byteNumbers)
+        const blob = new Blob([byteArray], { type: 'image/png' })
+        
+        await uploadBytes(imageRef, blob, {
+          contentType: 'image/png'
+        })
+        
+        const image_url = await getDownloadURL(imageRef)
+        
+        console.log('Image URL:', image_url)
+        return image_url
+        
+      } catch (error) {
+        console.error('上傳圖片到 Firebase 失敗:', error)
+        throw error
+      }
+    }
+
+    // 修改圖片預覽方法
+    const previewStoredImage = (imageUrl) => {
+      if (!imageUrl) return
+      window.open(imageUrl, '_blank')
+    }
+
     return {
       isOpen,
       isFullscreen,
@@ -1715,460 +1789,8 @@ export default {
       handleImageUpload,
       previewImage,
       clearPreview,
+      previewStoredImage,
     }
   }
 }
 </script>
-
-<style scoped>
-/* 自定義捲動軸樣式 */
-.custom-scrollbar::-webkit-scrollbar {
-  height: 6px;
-  background-color: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(203, 213, 225, 0.5);
-  border-radius: 3px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(203, 213, 225, 0.8);
-}
-
-/* Firefox 捲動軸樣式 */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(203, 213, 225, 0.5) transparent;
-}
-
-.chat-container::-webkit-scrollbar {
-  width: 4px;
-}
-
-/* 添加訊息動畫 */
-.message-enter-active,
-.message-leave-active {
-  transition: all 0.3s ease;
-}
-
-.message-enter-from,
-.message-leave-to {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-/* 添加淡入動畫 */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.5s ease-out forwards;
-}
-
-/* 添加延遲淡入動畫 */
-@keyframes fade-in-delay {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  30% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-delay {
-  animation: fade-in-delay 1.2s ease-out forwards;
-}
-
-/* 添加更長延遲的淡入動畫 */
-@keyframes fade-in-delay-long {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  50% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-delay-long {
-  animation: fade-in-delay-long 2s ease-out forwards;
-}
-
-/* 添加彈跳動畫 */
-@keyframes bounce {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-5px);
-  }
-}
-
-button:hover .fas.fa-robot {
-  animation: bounce 1s infinite;
-}
-
-/* 添加打字動畫樣式 */
-.typing-dots {
-  display: flex;
-  align-items: center;
-  column-gap: 4px;
-  padding: 4px 0;
-}
-
-.typing-dots span {
-  width: 6px;
-  height: 6px;
-  background-color: #93c5fd;
-  border-radius: 50%;
-  animation: typing 1s infinite ease-in-out;
-}
-
-.typing-dots span:nth-child(1) {
-  animation-delay: 0.2s;
-}
-
-.typing-dots span:nth-child(2) {
-  animation-delay: 0.4s;
-}
-
-.typing-dots span:nth-child(3) {
-  animation-delay: 0.6s;
-}
-
-@keyframes typing {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.4;
-  }
-
-  50% {
-    transform: scale(1.2);
-    opacity: 1;
-  }
-}
-
-/* 添加平滑滾動效果 */
-.overflow-y-auto {
-  scroll-behavior: smooth;
-}
-
-/* 添加摺疊動畫 */
-.h-0 {
-  margin: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-/* 確保過渡效果平滑 */
-.transition-all {
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 300ms;
-}
-
-.quick-questions-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  overflow: hidden;
-  padding-bottom: 0.5rem;
-}
-
-.quick-questions-list.h-0 {
-  padding: 0;
-  margin: 0;
-}
-
-.quick-question-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.5rem 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
-  background-color: white;
-  color: #4a5568;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.quick-question-btn:hover {
-  background-color: #f7fafc;
-  border-color: #cbd5e0;
-}
-
-.quick-question-btn i {
-  font-size: 1rem;
-}
-
-.break-words {
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-/* 添加垃圾桶按鈕動畫 */
-.fa-trash-alt {
-  transition: transform 0.2s ease;
-}
-
-button:hover .fa-trash-alt {
-  transform: scale(1.1);
-}
-
-/* 大視窗展開動畫 */
-@keyframes chat-window {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.animate-chat-window {
-  animation: chat-window 0.3s ease-out forwards;
-}
-
-/* 背景模糊淡入效果 */
-.backdrop-blur-sm {
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-}
-
-/* 圖片懸停效果 */
-.hover\:opacity-90:hover {
-  opacity: 0.9;
-}
-
-/* 圖片過渡效果 */
-.transition-opacity {
-  transition: opacity 0.2s ease-in-out;
-}
-
-/* 確保圖片在容器中正確顯示 */
-.object-cover {
-  object-fit: cover;
-}
-
-/* 添加指針樣式 */
-.cursor-pointer {
-  cursor: pointer;
-}
-
-/* 工具調用區塊樣式 */
-.font-mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-}
-
-.overflow-x-auto {
-  overflow-x: auto;
-}
-
-/* 工具調用區塊的過渡效果 */
-.bg-blue-50, .bg-green-50 {
-  transition: background-color 0.2s ease-in-out;
-}
-
-/* 工具調用參數區塊的滾動條樣式 */
-.overflow-x-auto::-webkit-scrollbar, .overflow-auto::-webkit-scrollbar {
-  height: 4px;
-  width: 4px;
-}
-
-.overflow-x-auto::-webkit-scrollbar-thumb, .overflow-auto::-webkit-scrollbar-thumb {
-  background-color: rgba(59, 130, 246, 0.3);
-  border-radius: 2px;
-}
-
-.overflow-x-auto::-webkit-scrollbar-thumb:hover, .overflow-auto::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(59, 130, 246, 0.5);
-}
-
-/* 執行結果區塊樣式 */
-.max-h-60, .max-h-40 {
-  overflow-y: auto;
-}
-
-/* 圖片生成區塊樣式 */
-.bg-purple-50 {
-  transition: background-color 0.2s ease-in-out;
-}
-
-/* 圖片懸停效果 */
-.max-h-80, .max-h-60 {
-  transition: transform 0.2s ease-in-out;
-}
-
-.max-h-80:hover, .max-h-60:hover {
-  transform: scale(1.02);
-}
-
-/* 圖片陰影效果 */
-.shadow-md {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  transition: box-shadow 0.2s ease-in-out;
-}
-
-.shadow-md:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-/* 深度推理相關樣式 */
-.fa-brain {
-  transition: transform 0.3s ease;
-}
-
-button:hover .fa-brain {
-  transform: rotate(15deg);
-}
-
-.fa-lightbulb {
-  transition: transform 0.3s ease;
-}
-
-button:hover .fa-lightbulb {
-  animation: glow 1.5s infinite;
-}
-
-@keyframes glow {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 0.8;
-  }
-}
-
-/* 淡入效果 */
-.bg-indigo-50, .bg-green-50 {
-  animation: fade-in 0.5s ease-out forwards;
-}
-
-/* 開關按鈕效果 */
-.peer:checked ~ .peer-checked\:bg-blue-600 {
-  transition: background-color 0.3s ease-in-out;
-}
-
-.peer:checked ~ .peer-checked\:after\:translate-x-full::after {
-  transition: transform 0.3s ease-in-out;
-}
-
-/* 深度推理內容滾動條 */
-.max-h-40 {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(99, 102, 241, 0.5) transparent;
-}
-
-.max-h-40::-webkit-scrollbar {
-  width: 4px;
-}
-
-.max-h-40::-webkit-scrollbar-thumb {
-  background-color: rgba(99, 102, 241, 0.5);
-  border-radius: 2px;
-}
-
-.max-h-40::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(99, 102, 241, 0.7);
-}
-
-/* 脈衝環動畫效果 */
-.pulse-ring {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  animation: pulse 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
-  background: linear-gradient(45deg, rgba(99, 102, 241, 0.5), rgba(59, 130, 246, 0.5));
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(0.85);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.3);
-    opacity: 0.3;
-  }
-  100% {
-    transform: scale(0.85);
-    opacity: 1;
-  }
-}
-
-/* 思考小點動畫優化 */
-.thinking-dots {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  height: 20px;
-  padding: 0 10px;
-  background: linear-gradient(to right, rgb(219, 234, 254), rgb(224, 231, 255));
-  border-radius: 10px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.thinking-dots span {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: linear-gradient(to right, #6366f1, #3b82f6);
-  animation: thinking 1.4s ease-in-out infinite;
-}
-
-.thinking-dots span:nth-child(1) {
-  animation-delay: 0s;
-}
-
-.thinking-dots span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.thinking-dots span:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes thinking {
-  0%, 60%, 100% {
-    transform: scale(0.8);
-    opacity: 0.5;
-  }
-  30% {
-    transform: scale(1.2);
-    opacity: 1;
-  }
-}
-</style>

@@ -47,7 +47,7 @@
 
       <!-- 店家資訊 -->
       <div class="p-6">
-        <!-- 店家名稱 -->
+        <!-- 店家名稱和收藏按鈕 -->
         <div class="flex justify-between items-start mb-4">
           <h3 class="text-xl font-bold text-gray-900">{{ drink.name }}</h3>
           <button @click.stop="toggleFavorite(drink)" 
@@ -58,17 +58,41 @@
           </button>
         </div>
 
-        <!-- 縣市和評分資訊 -->
-        <div class="flex justify-between items-center mb-3">
-          <div class="flex items-center text-gray-600">
-            <i class="fas fa-map-marker-alt mr-2"></i>
-            <span>{{ drink.city_CN }}</span>
+        <!-- 評分和情緒分析資訊 -->
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <!-- 評分資訊 -->
+          <div class="bg-white rounded-lg p-2 shadow-sm border border-gray-100">
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-gray-500">評分</span>
+              <div class="flex items-center">
+                <span class="text-yellow-400 mr-1"><i class="fas fa-star"></i></span>
+                <span class="font-bold text-lg">{{ drink.rating }}</span>
+              </div>
+            </div>
+            <div class="text-xs text-gray-400">
+              {{ drink.review_number }}次瀏覽
+            </div>
           </div>
-          <div class="flex items-center">
-            <span class="text-yellow-400 mr-1"><i class="fas fa-star"></i></span>
-            <span class="font-bold">{{ drink.rating }}</span>
-            <span class="text-gray-500 ml-1">({{ drink.review_number }}次瀏覽)</span>
+          
+          <!-- 情緒分析分數 -->
+          <div class="bg-white rounded-lg p-2 shadow-sm border border-gray-100">
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-gray-500">情緒指數</span>
+              <div class="flex items-center">
+                <span class="text-purple-400 mr-1"><i class="fas fa-heart"></i></span>
+                <span class="font-bold text-lg">{{ (drink.composite_score || 0).toFixed(2) }}</span>
+              </div>
+            </div>
+            <div class="text-xs text-gray-400">
+              情緒分析評估
+            </div>
           </div>
+        </div>
+
+        <!-- 地址資訊 -->
+        <div class="flex items-center text-gray-600 mb-3">
+          <i class="fas fa-map-marker-alt mr-2"></i>
+          <span>{{ drink.city_CN }}</span>
         </div>
 
         <!-- 店家標籤 -->
@@ -83,9 +107,9 @@
         </div>
 
         <!-- 店家描述 -->
-        <p class="text-gray-600 mb-4 line-clamp-2">
+        <!-- <p class="text-gray-600 mb-4 line-clamp-2">
           {{ truncateDescription(drink.description) }}
-        </p>
+        </p> -->
 
         <!-- 分隔線 -->
         <div class="h-px bg-gray-200 dark:bg-gray-700 mb-4"></div>
@@ -185,71 +209,187 @@
           <!-- 頁籤內容區域 -->
           <div class="space-y-6 mt-6">
             <!-- 基本資訊 -->
-            <div v-if="activeTab === 'info'" class="space-y-4">
-              <!-- 店家名稱和評分 -->
-              <div class="mb-4">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <div v-if="activeTab === 'info'" class="space-y-6">
+              <!-- 店家名稱和評分區塊 -->
+              <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                   {{ selectedDrink.name }}
                 </h2>
-                <div class="flex items-center">
-                  <span class="text-yellow-500 mr-1">★</span>
-                  <span class="text-gray-600 dark:text-gray-300">{{ selectedDrink.rating }}</span>
-                  <span class="ml-2 text-gray-600 dark:text-gray-400">
-                    ({{ selectedDrink.review_number }}次瀏覽)
-                  </span>
+                
+                <!-- 評分和情緒分析卡片 -->
+                <div class="grid grid-cols-2 gap-6">
+                  <!-- 評分卡片 -->
+                  <div class="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-gray-600 dark:text-gray-300">整體評分</span>
+                      <div class="flex items-center">
+                        <span class="text-yellow-400 mr-2">
+                          <i class="fas fa-star text-xl"></i>
+                        </span>
+                        <span class="text-2xl font-bold text-gray-900 dark:text-white">
+                          {{ selectedDrink.rating }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                      {{ selectedDrink.review_number }}次瀏覽
+                    </div>
+                  </div>
+
+                  <!-- 情緒分析卡片 -->
+                  <div class="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-gray-600 dark:text-gray-300">情緒指數</span>
+                      <div class="flex items-center">
+                        <span class="text-purple-400 mr-2">
+                          <i class="fas fa-heart text-xl"></i>
+                        </span>
+                        <span class="text-2xl font-bold text-gray-900 dark:text-white">
+                          {{ (selectedDrink.composite_score || 0).toFixed(2) }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                      情緒分析評估
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <!-- 店家詳細資訊使用網格布局 -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="space-y-2">
-                  <h3 class="font-semibold text-gray-900 dark:text-white">飲料店資訊</h3>
-                  <div class="space-y-2 text-gray-600 dark:text-gray-400">
-                    <p><i class="fas fa-map w-6"></i> 縣市：{{ selectedDrink.city_CN || selectedDrink.city }}</p>
-                    <p><i class="fas fa-map-marker-alt w-6"></i> 地址：{{ selectedDrink.address }}</p>
-                    <p><i class="fas fa-phone w-6"></i> 電話：{{ selectedDrink.phone }}</p>
-                    <p><i class="fas fa-clock w-6"></i> 開始營業時間：{{ formatDateTime(selectedDrink.start_time) }}</p>
+              <!-- 飲料店資訊區塊 -->
+              <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">飲料店資訊</h3>
+                <div class="grid gap-6">
+                  <!-- 店家標籤 -->
+                  <div v-if="selectedDrink.tag" class="flex items-start">
+                    <div class="w-24 flex-shrink-0">
+                      <i class="fas fa-tags text-indigo-500 mr-2"></i>
+                      <span class="text-gray-600">標籤</span>
+                    </div>
+                    <div class="flex-1 flex flex-wrap gap-2">
+                      <span v-for="(tag, index) in selectedDrink.tag.split(',')" :key="index"
+                            class="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-full flex items-center">
+                        <i class="fas fa-tag text-xs mr-1.5"></i>
+                        {{ tag.trim() }}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <h3 class="font-semibold text-gray-900 dark:text-white">店家標誌</h3>
-                  <div v-if="selectedDrink.tag" class="flex flex-wrap gap-2 mt-2">
-                    <span class="px-3 py-1 text-sm bg-purple-500 text-white rounded-full flex items-center shadow-md">
-                      <i class="fas fa-tag text-xs mr-1.5"></i>
-                      {{ selectedDrink.tag }}
-                    </span>
+
+                  <!-- 距離和預估時間 -->
+                  <div v-if="selectedDrink.distance" class="flex items-start">
+                    <div class="w-24 flex-shrink-0">
+                      <i class="fas fa-route text-indigo-500 mr-2"></i>
+                      <span class="text-gray-600">距離</span>
+                    </div>
+                    <div class="flex-1 flex items-center space-x-8">
+                      <span>{{ formatDistance(selectedDrink.distance) }}</span>
+                      <div class="flex items-center">
+                        <i class="fas fa-clock text-indigo-500 mr-2"></i>
+                        <span>預估時間：{{ formatDuration(selectedDrink.duration) }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 其他資訊 -->
+                  <div class="flex items-start">
+                    <div class="w-24 flex-shrink-0">
+                      <i class="fas fa-map-marker-alt text-indigo-500 mr-2"></i>
+                      <span class="text-gray-600">縣市</span>
+                    </div>
+                    <div class="flex-1">{{ selectedDrink.city_CN }}</div>
+                  </div>
+
+                  <div class="flex items-start">
+                    <div class="w-24 flex-shrink-0">
+                      <i class="fas fa-location-arrow text-indigo-500 mr-2"></i>
+                      <span class="text-gray-600">地址</span>
+                    </div>
+                    <div class="flex-1">{{ selectedDrink.address || '暫無資訊' }}</div>
+                  </div>
+
+                  <div class="flex items-start">
+                    <div class="w-24 flex-shrink-0">
+                      <i class="fas fa-phone text-indigo-500 mr-2"></i>
+                      <span class="text-gray-600">電話</span>
+                    </div>
+                    <div class="flex-1">{{ selectedDrink.customer_phone || '暫無資訊' }}</div>
                   </div>
                 </div>
               </div>
-              
-              <!-- 分隔線和操作按鈕 -->
-              <div class="pt-4 mt-6">
+
+              <!-- 分隔線和按鈕 -->
+              <div class="pt-4">
                 <div class="h-px bg-gray-200 dark:bg-gray-700 mb-4"></div>
                 <div class="flex justify-end space-x-4">
-                  <a :href="selectedDrink.navigation_url" 
-                     target="_blank"
-                     class="p-2 text-gray-600 hover:text-indigo-500 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors duration-300"
-                     title="查看地圖">
-                    <i class="fas fa-map-marker-alt text-xl"></i>
-                  </a>
                   <a :href="selectedDrink.foodpanda_url" 
                      target="_blank"
-                     class="p-2 text-gray-600 hover:text-pink-500 dark:text-gray-400 dark:hover:text-pink-400 transition-colors duration-300"
+                     class="p-2 text-gray-600 hover:text-pink-500 transition-colors duration-300"
                      title="前往點餐">
                     <i class="fas fa-utensils text-xl"></i>
                   </a>
+                  <button 
+                    @click="handleMapClick(selectedDrink)"
+                    class="p-2 text-gray-600 hover:text-blue-500 transition-colors duration-300"
+                    title="查看地圖">
+                    <i class="fas fa-map-marker-alt text-xl"></i>
+                  </button>
                 </div>
               </div>
             </div>
 
             <!-- 店家介紹 -->
             <div v-else-if="activeTab === 'description'" class="space-y-6">
-              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                  店家介紹
-                </h3>
-                <div class="text-gray-700 dark:text-gray-300 whitespace-pre-line">
-                  {{ formatDescription(selectedDrink.description) }}
+              <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+                <!-- 標題區塊 -->
+                <div class="flex items-center mb-6">
+                  <div class="flex-shrink-0 w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-store text-indigo-600"></i>
+                  </div>
+                  <h3 class="text-xl font-semibold text-gray-900 ml-4">
+                    店家介紹
+                  </h3>
+                </div>
+
+                <!-- 證號資訊區塊 -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-6 space-y-3">
+                  <div class="flex items-center text-gray-700">
+                    <div class="w-32 flex-shrink-0 text-gray-500 text-sm">
+                      <i class="fas fa-certificate mr-2"></i>
+                      登錄字號
+                    </div>
+                    <span class="text-sm">{{ selectedDrink.registration_number || '暫無資訊' }}</span>
+                  </div>
+                  <div class="flex items-center text-gray-700">
+                    <div class="w-32 flex-shrink-0 text-gray-500 text-sm">
+                      <i class="fas fa-shield-alt mr-2"></i>
+                      保險字號
+                    </div>
+                    <span class="text-sm">{{ selectedDrink.insurance_number || '暫無資訊' }}</span>
+                  </div>
+                </div>
+
+                <!-- 店家描述區塊 -->
+                <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg p-5">
+                  <div class="relative">
+                    <i class="fas fa-quote-left text-indigo-200 text-xl absolute -top-2 -left-2"></i>
+                    <div class="text-gray-700 leading-relaxed whitespace-pre-line pl-6 pr-4">
+                      {{ formatDescription(selectedDrink.description) }}
+                    </div>
+                    <i class="fas fa-quote-right text-indigo-200 text-xl absolute -bottom-2 -right-2"></i>
+                  </div>
+                </div>
+
+                <!-- 環保政策提示 -->
+                <div class="mt-6 flex items-start p-4 bg-green-50 rounded-lg">
+                  <div class="flex-shrink-0">
+                    <i class="fas fa-leaf text-green-500 mt-1"></i>
+                  </div>
+                  <div class="ml-3">
+                    <h4 class="text-sm font-medium text-green-800">環保政策</h4>
+                    <p class="mt-1 text-sm text-green-600">
+                      本店每筆訂單的收餐點包裝費2元，因應環保署政策，店家不得免費提供購物用環保袋，為確保送餐品質，餐點皆由塑膠袋包裝。
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -280,15 +420,16 @@
                 </div>
                 <button 
                   @click="showReviewForm = true"
-                  class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  class="px-4 py-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 transition-all duration-300 ease-in-out transform hover:scale-105 flex items-center"
                 >
+                  <i class="fas fa-pencil-alt mr-2"></i>
                   撰寫評論
                 </button>
               </div>
 
               <!-- 評論列表 -->
               <div class="max-h-[400px] overflow-y-auto pr-2">
-                <div v-if="getReviewCount > 0" 
+                <div v-if="processedReviews && processedReviews.length > 0" 
                      class="space-y-4">
                   <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-medium text-gray-900">最新評論</h3>
@@ -330,8 +471,21 @@
                     </div>
                   </div>
                 </div>
-                <div v-else class="text-center text-gray-500 py-8">
-                  暫無評論，成為第一個評論的人吧！
+                <div v-else class="flex flex-col items-center justify-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <i class="fas fa-comments text-5xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                  <p class="text-lg font-medium text-gray-600 dark:text-gray-300 mb-2">
+                    暫無評論
+                  </p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    成為第一個評論的人吧！
+                  </p>
+                  <button 
+                    @click="showReviewForm = true"
+                    class="mt-6 px-6 py-2 bg-indigo-100 text-indigo-600 rounded-full hover:bg-indigo-200 transition-all duration-300 ease-in-out transform hover:scale-105 flex items-center"
+                  >
+                    <i class="fas fa-pencil-alt mr-2"></i>
+                    撰寫評論
+                  </button>
                 </div>
               </div>
             </div>
@@ -343,29 +497,37 @@
 
   <!-- 評論表單彈窗 -->
   <div v-if="showReviewForm" 
-       class="fixed inset-0 bg-black bg-opacity-50 flex justify-center z-[70] pt-20 px-4 pb-4"
+       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70]"
        @click.self="closeReviewForm">
-    <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-lg relative">
+    <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-lg mx-4 relative">
+      <!-- 關閉按鈕 -->
       <button @click="closeReviewForm" 
               class="absolute -top-2 -right-2 bg-white text-gray-600 rounded-full p-2 hover:bg-gray-100 shadow-md z-50 transition-colors duration-200">
         <i class="fas fa-times"></i>
       </button>
+
+      <!-- 表單內容 -->
       <div class="p-6">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+        <!-- 標題 -->
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
             撰寫評論
           </h3>
         </div>
-        <div class="rating mb-4">
-          <div class="flex items-center mb-2">
-            <span class="mr-2">評分：</span>
+
+        <!-- 評分區域 -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            評分
+          </label>
+          <div class="flex items-center">
             <div class="flex text-2xl text-yellow-400">
               <button v-for="n in 5"
                       :key="n"
                       @click="setRating(n)"
                       @mouseover="hoverRating = n"
                       @mouseleave="hoverRating = 0"
-                      class="focus:outline-none mr-1">
+                      class="focus:outline-none mr-2">
                 <i class="fas fa-star" 
                  :class="{
                    'text-yellow-400': hoverRating >= n || (!hoverRating && rating >= n),
@@ -374,19 +536,35 @@
                 </i>
               </button>
             </div>
-            <span class="ml-2 text-sm text-gray-600">{{ rating }} 分</span>
+            <span class="ml-3 text-sm text-gray-600 dark:text-gray-400">
+              {{ rating }} 分
+            </span>
           </div>
-          
-          <div class="mb-4">
-            <textarea v-model="comment"
-                      placeholder="請寫下您的評論..."
-                      class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                      rows="4">
-            </textarea>
-          </div>
-          
-          <button @click="handleSubmitComment"
-                   class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+        </div>
+
+        <!-- 評論文字區域 -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            評論內容
+          </label>
+          <textarea 
+            v-model="comment"
+            placeholder="請寫下您的評論..."
+            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            rows="4"
+          ></textarea>
+        </div>
+
+        <!-- 按鈕區域 -->
+        <div class="flex justify-end space-x-3">
+          <button 
+            @click="closeReviewForm"
+            class="px-4 py-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-all duration-300 ease-in-out transform hover:scale-105">
+            取消
+          </button>
+          <button 
+            @click="handleSubmitComment"
+            class="px-4 py-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 transition-all duration-300 ease-in-out transform hover:scale-105">
             發布評論
           </button>
         </div>
@@ -815,20 +993,20 @@ export default {
           start_time: shop.is_new_until || '暫無營業時間資訊',
           description: shop.description || '暫無店家介紹',
           tag: shop.tag || '',
+          composite_score: shop.composite_score || 0
         }))
       }
       return storesData
     }
 
     const fetchRecommendations = async () => {
-      const sortBy = props.sortBy || 'hybrid' // 添加預設值
+      const sortBy = props.sortBy || 'hybrid'
       const currentCacheKey = getCacheKey(sortBy, props.userId)
       const cachedData = getFromCache(currentCacheKey)
 
       if (cachedData) {
         drinks.value = cachedData
         loading.value = false
-        // 在背景預熱下一個頁籤的數據
         preloadNextData(sortBy)
         return
       }
@@ -845,13 +1023,17 @@ export default {
           case 'rating':
             response = await recommendAPI.getContentRecommendations({
               limit: 10,
-              user_id: props.userId
+              user_id: props.userId,
+              sort_by: 'rating',
+              sort_order: 'desc'
             })
             break
           case 'preference':
             response = await recommendAPI.getCollaborativeRecommendations({
               limit: 10,
-              user_id: props.userId
+              user_id: props.userId,
+              sort_by: 'composite_score',
+              sort_order: 'desc'
             })
             break
           case 'favorite':
@@ -1034,12 +1216,7 @@ export default {
     }
 
     const getReviewCount = computed(() => {
-      if (!selectedDrink.value?.reviews) {
-        return 0
-      }
-      
-      // 直接返回評論總數，不檢查 status
-      return selectedDrink.value.reviews.length
+      return processedReviews.value ? processedReviews.value.length : 0
     })
 
     return {

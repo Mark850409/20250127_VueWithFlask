@@ -24,6 +24,8 @@ def get_recommendations(query: RecommendationQuery):
         query (RecommendationQuery): 查詢參數
             - user_id: 用戶ID
             - num_recommendations: 推薦數量
+            - sort_by: 排序欄位 (rating/distance/review_number)
+            - sort_order: 排序方向 (asc/desc)
             
     Returns:
         200: 推薦列表
@@ -32,7 +34,9 @@ def get_recommendations(query: RecommendationQuery):
     try:
         recommendations = recommend_service.get_recommendations(
             query.user_id, 
-            query.num_recommendations
+            query.num_recommendations,
+            query.sort_by,
+            query.sort_order
         )
         return success_response(recommendations)
     except Exception as e:
@@ -51,6 +55,8 @@ def get_collaborative_recommendations(query: RecommendationQuery):
         query (RecommendationQuery): 查詢參數
             - user_id: 用戶ID
             - num_recommendations: 推薦數量
+            - sort_by: 排序欄位 (rating/distance/review_number)
+            - sort_order: 排序方向 (asc/desc)
             
     Returns:
         200: 推薦列表
@@ -59,7 +65,9 @@ def get_collaborative_recommendations(query: RecommendationQuery):
     try:
         recommendations = recommend_service.get_collaborative_recommendations(
             query.user_id, 
-            query.num_recommendations
+            query.num_recommendations,
+            query.sort_by,
+            query.sort_order
         )
         return success_response(recommendations)
     except Exception as e:
@@ -78,6 +86,8 @@ def get_content_recommendations(query: RecommendationQuery):
         query (RecommendationQuery): 查詢參數
             - user_id: 用戶ID
             - num_recommendations: 推薦數量
+            - sort_by: 排序欄位 (rating/distance/review_number)
+            - sort_order: 排序方向 (asc/desc)
             
     Returns:
         200: 推薦列表
@@ -86,7 +96,9 @@ def get_content_recommendations(query: RecommendationQuery):
     try:
         recommendations = recommend_service.get_content_recommendations(
             query.user_id, 
-            query.num_recommendations
+            query.num_recommendations,
+            query.sort_by,
+            query.sort_order
         )
         return success_response(recommendations)
     except Exception as e:

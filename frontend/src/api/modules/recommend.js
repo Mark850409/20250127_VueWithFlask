@@ -86,9 +86,9 @@ export default {
     })
   },
 
-  // 混合推薦 API (預設)
+  // 混合推薦 API
   getHybridRecommendations(params) {
-    console.log('getHybridRecommendations', params)
+    console.log('getHybridRecommendations params:', params)
     return axios.get('/hybrid_recommend_data', {
       params: {
         user_id: params.user_id || 1,
@@ -100,12 +100,14 @@ export default {
     })
   },
 
-  // 內容推薦 API (評分排序)
+  // 內容推薦 API
   getContentRecommendations(params) {
     return axios.get('/content_recommendations', {
       params: {
         user_id: params.user_id || 1,
-        num_recommendations: params.limit || 10
+        num_recommendations: params.limit || 10,
+        sort_by: params.sort_by || 'rating',
+        sort_order: params.sort_order || 'desc'
       }
     }).catch(error => {
       console.error('GetContentRecommendations Error:', error.response?.data || error.message)
@@ -113,12 +115,14 @@ export default {
     })
   },
 
-  // 協同過濾推薦 API (好感度排序)
+  // 協同過濾推薦 API
   getCollaborativeRecommendations(params) {
     return axios.get('/collaborative_recommendations', {
       params: {
         user_id: params.user_id || 1,
-        num_recommendations: params.limit || 10
+        num_recommendations: params.limit || 10,
+        sort_by: params.sort_by || 'composite_score',
+        sort_order: params.sort_order || 'desc'
       }
     }).catch(error => {
       console.error('GetCollaborativeRecommendations Error:', error.response?.data || error.message)

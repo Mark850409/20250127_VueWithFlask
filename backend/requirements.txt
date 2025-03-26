@@ -29,3 +29,4 @@ Flask-Mail==0.9.1
 flask-migrate==4.0.5
 firebase-admin==6.4.0
 tenacity==8.2.3
+snownlp==1.0.0

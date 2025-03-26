@@ -497,6 +497,16 @@ export default {
     // 上傳檔案
     const uploadFiles = async () => {
       try {
+        // 顯示上傳中的提示對話框
+        Swal.fire({
+          title: '檔案上傳中',
+          html: '請稍後...',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading()
+          }
+        })
+
         for (const file of selectedFiles.value) {
           const formData = new FormData()
           formData.append('file', file)
@@ -529,8 +539,22 @@ export default {
     // 獲取檔案列表
     const fetchFiles = async () => {
       try {
+        // 顯示載入提示
+        Swal.fire({
+          title: '查詢中...',
+          html: '請稍後',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading()
+          }
+        })
+
         const response = await knowledgeAPI.listFiles()
         files.value = response.data.files || []
+
+        // 關閉載入提示
+        Swal.close()
+
       } catch (error) {
         console.error('獲取檔案列表失敗:', error)
         Swal.fire({
@@ -555,12 +579,25 @@ export default {
           return
         }
 
+        // 顯示載入提示
+        Swal.fire({
+          title: '查詢中...',
+          html: '請稍後',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading()
+          }
+        })
+
         // 呼叫 API 列出檔案
         const response = await knowledgeAPI.listFiles(searchForm.value.flowId)
         
         // 更新搜尋結果
         searchResults.value = response.data.files || []
         hasSearched.value = true
+        
+        // 關閉載入提示
+        Swal.close()
         
         // 如果沒有檔案，顯示提示
         if (searchResults.value.length === 0) {

@@ -17,6 +17,9 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics.pairwise import cosine_similarity as cosine_similarity_metric
 from config.config import SQLALCHEMY_DATABASE_URI
 import traceback
+from datetime import datetime
+from sqlalchemy import text
+import requests
 
 # 獲取當前文件的目錄
 current_dir = Path(__file__).parent
@@ -60,7 +63,6 @@ ratings_df = pd.read_sql('''
         s.review_number
     FROM ratings r
     JOIN stores s ON s.id = r.id
-    WHERE r.composite_score >= 0.6
     ORDER BY RAND()
 ''', con=engine)
 
@@ -762,27 +764,91 @@ def run_experiment(experiment_type):
     
     return results
 
-# 主程式執行
-print('''
-# ===========================================================
-# 歡迎使用點餐推薩系統
-# ===========================================================
-''')
+def save_experiment_results(experiment_results, experiment_item="未指定實驗項目"):
+    """
+    將實驗結果批次透過 API 儲存到資料庫
+    Args:
+        experiment_results: 實驗結果字典
+        experiment_item: 實驗項目名稱（預設為"未指定實驗項目"）
+    """
+    try:
+        # 取得當前時間作為實驗時間
+        experiment_time = datetime.now().strftime('%Y-%m-%d %H:%M')
+        
+        # 準備批次寫入的資料陣列
+        batch_data = []
+        
+        # 收集所有實驗結果
+        for exp_type, results in experiment_results.items():
+            if results:
+                rmse, mae, _, accuracy, precision, recall, f1, _ = results
+                
+                # 將每個實驗結果加入陣列，新增實驗項目欄位，並統一格式化到小數點後兩位
+                batch_data.append({
+                    "實驗時間": experiment_time,
+                    "實驗類別": exp_type,
+                    "實驗項目": experiment_item,
+                    "RMSE": f"{rmse:.2f}",
+                    "MAE": f"{mae:.2f}",
+                    "準確率": f"{accuracy:.2f}",
+                    "精確率": f"{precision:.2f}",
+                    "召回率": f"{recall:.2f}",  # 確保格式化到小數點後兩位
+                    "F1評分": f"{f1:.2f}"       # 確保格式化到小數點後兩位
+                })
+        
+        # 如果有資料要寫入
+        if batch_data:
+            try:
+                # 發送批次寫入請求
+                response = requests.post(
+                        os.getenv('NOCO_API_URL'),
+                        headers={
+                            'accept': 'application/json',
+                            'xc-token': os.getenv('NOCO_API_KEY'),
+                            'Content-Type': 'application/json'
+                        },
+                    json=batch_data
+                )
+                
+                if response.status_code == 200:
+                    print(f"成功批次儲存 {len(batch_data)} 筆實驗結果")
+                else:
+                    print(f"API 請求失敗: {response.status_code}")
+                    print(f"錯誤訊息: {response.text}")
+                    
+            except Exception as e:
+                print(f"API 請求發生錯誤: {str(e)}")
+                traceback.print_exc()
+                
+    except Exception as e:
+        print(f"儲存實驗結果時發生錯誤: {str(e)}")
+        traceback.print_exc()
 
-# 執行三種實驗
-experiments = ['rating_only', 'sentiment_only', 'hybrid']
-all_results = {}
+# 修改主程式最後的部分
+if __name__ == "__main__":
+    print('''
+    # ===========================================================
+    # 歡迎使用點餐推薩系統
+    # ===========================================================
+    ''')
 
-for exp_type in experiments:
-    all_results[exp_type] = run_experiment(exp_type)
+    # 執行三種實驗
+    experiments = ['hybrid']
+    all_results = {}
 
-# 比較三種實驗結果
-print("\n" + "="*30 + " 實驗結果比較 " + "="*30)
-print(f"{'實驗類型':^15} {'RMSE':^8} {'MAE':^8} {'準確率':^8} {'精確率':^8} {'召回率':^8} {'F1評分':^8}")
-print("-"*70)
+    for exp_type in experiments:
+        all_results[exp_type] = run_experiment(exp_type)
 
-for exp_type, results in all_results.items():
-    if results:
-        rmse, mae, _, accuracy, precision, recall, f1, _ = results
-        print(f"{exp_type:^15} {rmse:8.2f} {mae:8.2f} {accuracy:8.2f} {precision:8.2f} {recall:8.2f} {f1:8.2f}")
+    # 比較三種實驗結果
+    print("\n" + "="*30 + " 實驗結果比較 " + "="*30)
+    print(f"{'實驗類型':^15} {'RMSE':^8} {'MAE':^8} {'準確率':^8} {'精確率':^8} {'召回率':^8} {'F1評分':^8}")
+    print("-"*70)
+
+    for exp_type, results in all_results.items():
+        if results:
+            rmse, mae, _, accuracy, precision, recall, f1, _ = results
+            print(f"{exp_type:^15} {rmse:8.2f} {mae:8.2f} {accuracy:8.2f} {precision:8.2f} {recall:8.2f} {f1:8.2f}")
+
+    # 儲存實驗結果到資料庫，並指定實驗項目
+    save_experiment_results(all_results, "權重比例調整0.7 - 0.3")  # 或 "沒有使用語言模型翻譯" 或 "權重比例調整"
 

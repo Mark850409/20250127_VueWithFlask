@@ -276,3 +276,659 @@ strong, b, .font-bold {
 .footer-gradient {
   background: linear-gradient(180deg, rgba(31,41,55,0) 0%, rgba(31,41,55,1) 100%);
 }
+
+
+/* 自定義捲動軸樣式 */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  background-color: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(203, 213, 225, 0.5);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(203, 213, 225, 0.8);
+}
+
+/* Firefox 捲動軸樣式 */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(203, 213, 225, 0.5) transparent;
+}
+
+.chat-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+/* 添加訊息動畫 */
+.message-enter-active,
+.message-leave-active {
+  transition: all 0.3s ease;
+}
+
+.message-enter-from,
+.message-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* 添加淡入動畫 */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+/* 添加延遲淡入動畫 */
+@keyframes fade-in-delay {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  30% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-delay {
+  animation: fade-in-delay 1.2s ease-out forwards;
+}
+
+/* 添加更長延遲的淡入動畫 */
+@keyframes fade-in-delay-long {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  50% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-delay-long {
+  animation: fade-in-delay-long 2s ease-out forwards;
+}
+
+/* 添加彈跳動畫 */
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+button:hover .fas.fa-robot {
+  animation: bounce 1s infinite;
+}
+
+/* 添加打字動畫樣式 */
+.typing-dots {
+  display: flex;
+  align-items: center;
+  column-gap: 4px;
+  padding: 4px 0;
+}
+
+.typing-dots span {
+  width: 6px;
+  height: 6px;
+  background-color: #93c5fd;
+  border-radius: 50%;
+  animation: typing 1s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(1) {
+  animation-delay: 0.2s;
+}
+
+.typing-dots span:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.typing-dots span:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes typing {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* 添加平滑滾動效果 */
+.overflow-y-auto {
+  scroll-behavior: smooth;
+}
+
+/* 添加摺疊動畫 */
+.h-0 {
+  margin: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* 確保過渡效果平滑 */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+.quick-questions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  overflow: hidden;
+  padding-bottom: 0.5rem;
+}
+
+.quick-questions-list.h-0 {
+  padding: 0;
+  margin: 0;
+}
+
+.quick-question-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background-color: white;
+  color: #4a5568;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quick-question-btn:hover {
+  background-color: #f7fafc;
+  border-color: #cbd5e0;
+}
+
+.quick-question-btn i {
+  font-size: 1rem;
+}
+
+.break-words {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 添加垃圾桶按鈕動畫 */
+.fa-trash-alt {
+  transition: transform 0.2s ease;
+}
+
+button:hover .fa-trash-alt {
+  transform: scale(1.1);
+}
+
+/* 大視窗展開動畫 */
+@keyframes chat-window {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-chat-window {
+  animation: chat-window 0.3s ease-out forwards;
+}
+
+/* 背景模糊淡入效果 */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* 圖片懸停效果 */
+.hover\:opacity-90:hover {
+  opacity: 0.9;
+}
+
+/* 圖片過渡效果 */
+.transition-opacity {
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* 確保圖片在容器中正確顯示 */
+.object-cover {
+  object-fit: cover;
+}
+
+/* 添加指針樣式 */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* 工具調用區塊樣式 */
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.overflow-x-auto {
+  overflow-x: auto;
+}
+
+/* 工具調用區塊的過渡效果 */
+.bg-blue-50, .bg-green-50 {
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* 工具調用參數區塊的滾動條樣式 */
+.overflow-x-auto::-webkit-scrollbar, .overflow-auto::-webkit-scrollbar {
+  height: 4px;
+  width: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb, .overflow-auto::-webkit-scrollbar-thumb {
+  background-color: rgba(59, 130, 246, 0.3);
+  border-radius: 2px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover, .overflow-auto::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(59, 130, 246, 0.5);
+}
+
+/* 執行結果區塊樣式 */
+.max-h-60, .max-h-40 {
+  overflow-y: auto;
+}
+
+/* 圖片生成區塊樣式 */
+.bg-purple-50 {
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* 圖片懸停效果 */
+.max-h-80, .max-h-60 {
+  transition: transform 0.2s ease-in-out;
+}
+
+.max-h-80:hover, .max-h-60:hover {
+  transform: scale(1.02);
+}
+
+/* 圖片陰影效果 */
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.shadow-md:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* 深度推理相關樣式 */
+.fa-brain {
+  transition: transform 0.3s ease;
+}
+
+button:hover .fa-brain {
+  transform: rotate(15deg);
+}
+
+.fa-lightbulb {
+  transition: transform 0.3s ease;
+}
+
+button:hover .fa-lightbulb {
+  animation: glow 1.5s infinite;
+}
+
+@keyframes glow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* 淡入效果 */
+.bg-indigo-50, .bg-green-50 {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+/* 開關按鈕效果 */
+.peer:checked ~ .peer-checked\:bg-blue-600 {
+  transition: background-color 0.3s ease-in-out;
+}
+
+.peer:checked ~ .peer-checked\:after\:translate-x-full::after {
+  transition: transform 0.3s ease-in-out;
+}
+
+/* 深度推理內容滾動條 */
+.max-h-40 {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 102, 241, 0.5) transparent;
+}
+
+.max-h-40::-webkit-scrollbar {
+  width: 4px;
+}
+
+.max-h-40::-webkit-scrollbar-thumb {
+  background-color: rgba(99, 102, 241, 0.5);
+  border-radius: 2px;
+}
+
+.max-h-40::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(99, 102, 241, 0.7);
+}
+
+/* 脈衝環動畫效果 */
+.pulse-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  animation: pulse 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+  background: linear-gradient(45deg, rgba(99, 102, 241, 0.5), rgba(59, 130, 246, 0.5));
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(0.85);
+    opacity: 1;
+  }
+}
+
+/* 思考小點動畫優化 */
+.thinking-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 20px;
+  padding: 0 10px;
+  background: linear-gradient(to right, rgb(219, 234, 254), rgb(224, 231, 255));
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.thinking-dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: linear-gradient(to right, #6366f1, #3b82f6);
+  animation: thinking 1.4s ease-in-out infinite;
+}
+
+.thinking-dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.thinking-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.thinking-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes thinking {
+  0%, 60%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  30% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+
+/* 修正按鈕樣式 */
+.chatbot-btn {
+  min-width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+}
+
+/* 修正輸入框樣式 */
+.chatbot-input input {
+  height: 44px;
+  padding: 8px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* 修正快速問答按鈕樣式 */
+.quick-question-btn {
+  height: 36px;
+  padding: 0 12px;
+  font-size: 14px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 修正工具欄按鈕樣式 */
+.toggleChat {
+  width: 56px !important;
+  height: 56px !important;
+  min-width: 56px;
+}
+
+
+/* 修正用戶頭像樣式 */
+.w-10.h-10 {
+  flex-shrink: 0;
+}
+
+/* 修正工具欄樣式 */
+.flex.items-center.justify-end.mb-3.space-x-2 {
+  display: flex;
+  flex-wrap: nowrap !important; /* 強制不換行 */
+  gap: 8px;
+  overflow-x: auto; /* 允許水平滾動 */
+  padding-bottom: 4px; /* 為滾動條預留空間 */
+  margin-bottom: 12px;
+  -webkit-overflow-scrolling: touch; /* 在 iOS 上實現平滑滾動 */
+}
+
+/* 修正功能按鈕樣式 */
+.px-4.py-2.rounded-full {
+  height: 36px;
+  min-width: fit-content; /* 根據內容設置最小寬度 */
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0; /* 防止按鈕被壓縮 */
+  padding: 0 12px; /* 統一按鈕內邊距 */
+}
+
+/* 修正按鈕文字樣式 */
+.px-4.py-2.rounded-full .text-sm {
+  font-size: 13px;
+  margin-left: 4px;
+}
+
+/* 修正按鈕圖標樣式 */
+.px-4.py-2.rounded-full i {
+  font-size: 14px;
+  width: 16px;
+  text-align: center;
+}
+
+/* 美化滾動條 */
+.flex.items-center.justify-end.mb-3.space-x-2::-webkit-scrollbar {
+  height: 3px;
+}
+
+.flex.items-center.justify-end.mb-3.space-x-2::-webkit-scrollbar-thumb {
+  background-color: rgba(99, 102, 241, 0.2);
+  border-radius: 4px;
+}
+
+.flex.items-center.justify-end.mb-3.space-x-2::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 確保按鈕容器在小螢幕上也能正確顯示 */
+@media (max-width: 640px) {
+  .flex.items-center.justify-end.mb-3.space-x-2 {
+    justify-content: flex-start; /* 在小螢幕上左對齊 */
+    margin-bottom: 8px;
+  }
+  
+  .px-4.py-2.rounded-full {
+    padding: 0 10px; /* 在小螢幕上減少內邊距 */
+  }
+}
+
+/* 修正聊天內容區域樣式 */
+.flex-1.p-4.overflow-y-auto {
+  height: calc(100% - 180px); /* 調整高度，扣除頂部和底部區域 */
+}
+
+/* 修正輸入區域樣式 */
+.p-4.border-t {
+  position: relative;
+  background-color: white;
+}
+
+/* 修正圖片上傳按鈕樣式 */
+button[title="上傳圖片"] {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 修正發送按鈕圖標樣式 */
+.chat-icon-color {
+  color: white;
+}
+
+/* 修正深色模式樣式 */
+.dark .chatbot-input input {
+  background-color: rgb(31, 41, 55);
+  color: white;
+}
+
+/* 修正工具調用區塊樣式 */
+.font-mono {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* 修正快速問答區域樣式 */
+.quick-section {
+  border-top: 1px solid rgba(229, 231, 235, 1);
+  background-color: rgb(249, 250, 251);
+}
+
+/* 修正滾動條樣式 */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(203, 213, 225, 0.5) transparent;
+}
+
+/* 修正消息載入動畫樣式 */
+.thinking-dots {
+  padding: 8px 12px;
+  border-radius: 16px;
+}
+
+/* 修正工具欄按鈕間距 */
+.space-x-2 > * + * {
+  margin-left: 0.5rem;
+}
+
+/* 修正聊天氣泡間距 */
+.mb-6:not(:last-child) {
+  margin-bottom: 1.5rem;
+}
+
+/* 修正輸入區域的 flex 布局 */
+.flex.gap-4 {
+  gap: 1rem;
+  align-items: center;
+}
+
+/* 修正全螢幕模式下的樣式 */
+.fixed.inset-0 .max-w-4xl {
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* 用戶和 AI 標籤的基礎樣式 */
+.absolute.-bottom-4 {
+  position: absolute;
+  bottom: -16px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 10;
+}
+
+.grid[data-v-8d8faf29]{
+  min-height: 100px;
+}
