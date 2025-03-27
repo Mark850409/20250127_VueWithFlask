@@ -867,9 +867,44 @@ export default {
       })
     }, { deep: true })
 
-    // 發送訊息到 Langflow API 或深度推理 API
+    // 在 setup 函數中添加環境變數檢查函數
+    const checkEnvironmentVariables = () => {
+      const requiredEnvVars = {
+        'VITE_AUTOGEN_API_URL': import.meta.env.VITE_AUTOGEN_API_URL,
+        'VITE_JINA_API_URL': import.meta.env.VITE_JINA_API_URL,
+        'VITE_MISTRAL_API_URL': import.meta.env.VITE_MISTRAL_API_URL,
+        'VITE_MISTRAL_API_KEY': import.meta.env.VITE_MISTRAL_API_KEY,
+      }
+
+      console.log('環境變數檢查結果:', {
+        ...requiredEnvVars,
+        'VITE_MISTRAL_API_KEY': import.meta.env.VITE_MISTRAL_API_KEY ? '已設置' : '未設置'
+      })
+
+      const missingEnvVars = Object.entries(requiredEnvVars)
+        .filter(([_, value]) => !value)
+        .map(([key]) => key)
+
+      if (missingEnvVars.length > 0) {
+        console.error('缺少必要的環境變數:', missingEnvVars)
+        chatHistory.value.push({
+          content: `系統配置錯誤：缺少以下必要的環境變數：\n${missingEnvVars.join('\n')}`,
+          isUser: false
+        })
+        return false
+      }
+
+      return true
+    }
+
+    // 修改 handleSend 函數，添加環境變數檢查
     const handleSend = async () => {
       if ((!userInput.value.trim() && !previewImage.value) || isLoading.value) return
+
+      // 在發送請求前檢查環境變數
+      if (!checkEnvironmentVariables()) {
+        return
+      }
 
       const currentInput = userInput.value.trim()
       const currentImage = previewImage.value
@@ -1462,8 +1497,9 @@ export default {
       userInput.value = ''
     }
 
-    // 組件掛載時獲取數據
+    // 修改 onMounted 函數，添加環境變數檢查
     onMounted(() => {
+      checkEnvironmentVariables()
       fetchDefaultMessage()
       fetchQuickQuestions()
     })

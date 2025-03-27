@@ -552,9 +552,15 @@
     padding: 0 1rem;
     display: flex;
     align-items: center;
-    justify-content: center;
+    z-index: 100000;
     gap: 0.5rem;
     flex-shrink: 0;
+  }
+
+  .banner-control-btn {
+    width: 25px !important;
+    height: 25px !important;
+    aspect-ratio: 1/1 !important;
   }
 
   /* 搜尋和視圖切換容器 */
@@ -659,10 +665,13 @@
   .flex.border.rounded-lg button {
     padding: 0.5rem 1rem;
   }
-    /* 更多按鈕樣式 */
-    .relative button {
-      height: 30px;
+    
+    .banner-control-btn {
+      width: 25px !important;
+      height: 25px !important;
+      aspect-ratio: 1/1 !important;
     }
+  
 
       /* 文字大小調整 */
   h1, .h1 {
@@ -751,8 +760,8 @@
     min-width: 180px;
   }
   /* 更多按鈕樣式 */
-  .relative button {
-    height: 30px;
+  .banner-control-btn {
+    height: 20px;
   }
 
   /* 聊天視窗寬度調整 */

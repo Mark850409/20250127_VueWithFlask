@@ -48,52 +48,90 @@
       </div>
 
       <!-- 熱門店家排行 -->
-      <div class="bg-white rounded-xl shadow-sm p-6">
+      <div class="bg-white rounded-xl shadow-sm p-4 md:p-6">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold">熱門店家排行</h3>
+          <h3 class="text-base md:text-lg font-semibold text-purple-600">熱門店家排行</h3>
           <router-link to="/admin/shops" 
-                       class="text-blue-500 hover:text-blue-600 text-sm">
+                       class="text-purple-500 hover:text-purple-600 text-sm flex items-center">
             查看全部 <i class="fas fa-arrow-right ml-1"></i>
           </router-link>
         </div>
-        <div class="space-y-4">
+        
+        <div class="space-y-3">
           <div v-for="(shop, index) in topShops" :key="shop.id" 
-               class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-               @click="goToStore(shop.id)">
-            <span :class="[
-              'w-8 h-8 flex items-center justify-center rounded-full mr-4 text-white',
-              index < 3 ? 'bg-yellow-400' : 'bg-gray-400'
-            ]">
-              {{ index + 1 }}
-            </span>
-            <div class="flex-1">
-              <h4 class="font-medium">{{ shop.name }}</h4>
-              <p class="text-sm text-gray-500">{{ shop.city_CN }} - {{ shop.address }}</p>
-              <div class="flex items-center mt-1 space-x-4">
+               class="group flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+               @click="router.push(`/admin/shops/${shop.id}`)">
+            <!-- 左側：排名和店家資訊 -->
+            <div class="flex items-center flex-1 min-w-0">
+              <!-- 排名 -->
+              <div :class="[
+                'flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full mr-3 text-white font-medium',
+                index === 0 ? 'bg-yellow-400' : 
+                index === 1 ? 'bg-gray-400' :
+                index === 2 ? 'bg-orange-400' : 'bg-gray-300'
+              ]">
+                {{ index + 1 }}
+              </div>
+              
+              <!-- 店家資訊 -->
+              <div class="min-w-0 flex-1">
+                <h4 class="font-medium text-gray-900 truncate">{{ shop.name }}</h4>
+                <p class="text-sm text-gray-500 truncate">{{ shop.city_CN }}</p>
+              </div>
+            </div>
+
+            <!-- 右側：評分和統計資訊 -->
+            <div class="flex items-center gap-6">
+              <!-- 評分區塊 -->
+              <div class="hidden md:flex items-center gap-6">
                 <!-- 原始評分 -->
                 <div class="flex items-center">
                   <span class="text-sm text-gray-500 mr-2">評分:</span>
-                  <star-rating :rating="5" :read-only="true" :star-size="15" />
+                  <div class="flex items-center">
+                    <star-rating 
+                      :rating="5"
+                      :read-only="true"
+                      :star-size="15"
+                      :show-rating="false"
+                      class="flex-shrink-0"
+                    />
+                    <span class="ml-1 text-sm text-gray-700">{{ shop.rating }}</span>
+                  </div>
                 </div>
+                
                 <!-- 平均評分 -->
                 <div class="flex items-center">
                   <span class="text-sm text-gray-500 mr-2">平均:</span>
-                  <star-rating :rating="shop.rating" :read-only="true" :star-size="15" />
+                  <div class="flex items-center">
+                    <star-rating 
+                      :rating="shop.rating"
+                      :read-only="true"
+                      :star-size="15"
+                      :show-rating="false"
+                      class="flex-shrink-0"
+                    />
+                    <span class="ml-1 text-sm text-gray-700">{{ shop.rating }}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="text-right">
-              <p class="text-sm font-medium">{{ shop.review_number }}則評論</p>
-              <p :class="[
-                'text-sm',
-                shop.increase >= 0 ? 'text-green-500' : 'text-red-500'
-              ]">
-                <i :class="[
-                  shop.increase >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down',
-                  'mr-1'
-                ]"></i>
-                {{ Math.abs(shop.increase) }}%
-              </p>
+
+              <!-- 評論和增長率 -->
+              <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-600 whitespace-nowrap">
+                  {{ shop.review_number }}則評論
+                </span>
+                <div :class="[
+                  'flex items-center text-sm whitespace-nowrap',
+                  shop.increase >= 0 ? 'text-green-500' : 'text-red-500'
+                ]">
+                  <i :class="[
+                    'fas',
+                    shop.increase >= 0 ? 'fa-arrow-up' : 'fa-arrow-down',
+                    'mr-1'
+                  ]"></i>
+                  {{ Math.abs(shop.increase) }}%
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -348,7 +386,7 @@ export default {
     }
 
     const goToStore = (storeId) => {
-      router.push(`/admin/stores/${storeId}`)
+      router.push(`/admin/shops/${storeId}`)
     }
 
     onMounted(() => {

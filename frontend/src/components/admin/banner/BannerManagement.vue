@@ -37,7 +37,7 @@
             </div>
             
             <!-- 更多頁籤下拉選單 -->
-            <div class="relative">
+            <div class="relative" v-click-outside="closeMoreTabs">
               <button @click="showMoreTabs = !showMoreTabs"
                       class="px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-1
                              text-gray-600 hover:bg-gray-50 hover:text-gray-800">
@@ -47,16 +47,16 @@
               
               <!-- 下拉選單內容 -->
               <div v-if="showMoreTabs" 
-                   class="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10
-                          min-w-[160px]">
+                   class="more-btn absolute top-full right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-[9999]
+                          w-48">
                 <button v-for="tab in moreTabs" 
                         :key="tab.value"
                         @click="handleMoreTabSelect(tab.value)"
-                        class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors
-                               flex items-center space-x-2"
+                        class="w-full px-4 py-2.5 text-left hover:bg-gray-50 transition-colors
+                               flex items-center space-x-3"
                         :class="{'text-blue-600 bg-blue-50': currentTab === tab.value}">
-                  <i :class="getTabIcon(tab.value)" class="w-4"></i>
-                  <span>{{ tab.label }}</span>
+                  <i :class="[getTabIcon(tab.value), 'w-5']"></i>
+                  <span class="text-sm whitespace-nowrap">{{ tab.label }}</span>
                 </button>
               </div>
             </div>
@@ -524,6 +524,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { bannerAPI, menuAPI } from '@/api'
 import Swal from 'sweetalert2'
 import { useLogger } from '@/composables/useLogger'
+import { vClickOutside } from '@/directives/clickOutside'
 
 // 視圖模式
 const viewMode = ref('card')
@@ -1129,6 +1130,11 @@ const handleMoreTabSelect = (value) => {
   handleTabChange(value)
   showMoreTabs.value = false
 }
+
+// 關閉更多選單
+const closeMoreTabs = () => {
+  showMoreTabs.value = false
+}
 </script>
 
 <style scoped>
@@ -1312,5 +1318,93 @@ img {
 /* 確保載入文字不會換行 */
 .whitespace-nowrap {
   white-space: nowrap;
+}
+
+/* 新增下拉選單相關樣式 */
+.relative {
+  position: relative;
+}
+
+/* 確保下拉選單在手機上可以正常點擊 */
+@media (max-width: 640px) {
+  .more-btn {
+    position: fixed;
+    top: 45%;
+    left: 80%;
+    transform: translateX(-50%);
+    width: calc(100% - 2rem);
+    max-width: 150px;
+    margin-top: 0.5rem;
+  }
+}
+
+/* 添加遮罩層樣式 */
+.fixed.inset-0 {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+/* 確保下拉選單內容在最上層 */
+.absolute.top-full {
+  z-index: 50;
+}
+
+/* 下拉選單容器 */
+.dropdown-wrapper {
+  position: relative;
+  z-index: 9999;
+}
+
+/* 下拉選單基本樣式 */
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 180px;
+}
+
+/* 電腦版樣式 */
+@media (min-width: 641px) {
+  .dropdown-menu {
+    position: absolute;
+    width: auto;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 9999;
+  }
+}
+
+/* 手機版樣式 */
+@media (max-width: 640px) {
+  .dropdown-menu {
+    position: fixed;
+    left: 50%;
+    bottom: 35vh;
+    transform: translateX(-50%);
+    width: calc(100vw - 3rem);
+    max-width: 300px;
+  }
+}
+
+/* 下拉動畫 */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+@media (max-width: 640px) {
+  .dropdown-enter-from,
+  .dropdown-leave-to {
+    transform: translate(-50%, 10px);
+  }
 }
 </style> 

@@ -146,45 +146,53 @@
         <!-- 店家資訊 -->
         <div class="p-6">
           <!-- 頁籤選項固定在頂部 -->
-          <div class="border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white z-10">
-            <nav class="flex">
-              <button 
-                @click="activeTab = 'info'"
-                :class="[
-                  'py-4 px-6 border-b-2 font-medium text-sm flex items-center',
-                  activeTab === 'info' 
-                    ? 'border-indigo-500 text-indigo-600' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                ]"
-              >
-                <i class="fas fa-info-circle mr-2"></i>
-                基本資訊
-              </button>
-              <button 
-                @click="activeTab = 'description'"
-                :class="[
-                  'py-4 px-6 border-b-2 font-medium text-sm flex items-center',
-                  activeTab === 'description' 
-                    ? 'border-indigo-500 text-indigo-600' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                ]"
-              >
-                <i class="fas fa-store mr-2"></i>
-                店家介紹
-              </button>
-              <button 
-                @click="activeTab = 'reviews'"
-                :class="[
-                  'py-4 px-6 border-b-2 font-medium text-sm flex items-center',
-                  activeTab === 'reviews' 
-                    ? 'border-indigo-500 text-indigo-600' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                ]"
-              >
-                <i class="fas fa-comments mr-2"></i>
-                顧客評論
-              </button>
-            </nav>
+          <div class="border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white z-10 mb-4">
+            <!-- 外層容器 -->
+            <div class="relative max-w-3xl mx-auto">
+              <!-- 滑動容器 -->
+              <div class="overflow-x-auto scrollbar-hide">
+                <nav class="flex space-x-4 px-4">
+                  <button 
+                    @click="activeTab = 'info'"
+                    :class="[
+                      'py-4 px-2 font-medium border-b-2 transition-colors flex items-center space-x-2',
+                      activeTab === 'info' 
+                        ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' 
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                    ]"
+                  >
+                    <i class="fas fa-info-circle"></i>
+                    <span>基本資訊</span>
+                  </button>
+                  
+                  <button 
+                    @click="activeTab = 'description'"
+                    :class="[
+                      'py-4 px-2 font-medium border-b-2 transition-colors flex items-center space-x-2',
+                      activeTab === 'description' 
+                        ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' 
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                    ]"
+                  >
+                    <i class="fas fa-store"></i>
+                    <span>店家介紹</span>
+                  </button>
+                  
+                  <button 
+                    @click="activeTab = 'reviews'"
+                    :class="[
+                      'py-4 px-2 font-medium border-b-2 transition-colors flex items-center space-x-2',
+                      activeTab === 'reviews' 
+                        ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' 
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                    ]"
+                  >
+                    <i class="fas fa-comments"></i>
+                    <span>顧客評論</span>
+                  </button>
+                </nav>
+              </div>
+            </div>
           </div>
 
           <!-- 頁籤內容區域 -->
@@ -1298,4 +1306,18 @@ a:hover::after {
   pointer-events: none;
 }
 
+/* 隱藏滾動條但保持功能 */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;            /* Chrome, Safari and Opera */
+}
+
+/* 添加觸控滑動支持 */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
 </style> 

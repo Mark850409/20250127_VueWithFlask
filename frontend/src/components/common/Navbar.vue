@@ -75,23 +75,46 @@
                 </div>
                 <!-- 下拉選單 -->
                 <div v-if="isDropdownOpen" 
-                     class="absolute right-0 mt-2 w-48 bg-black/90 backdrop-blur-md rounded-lg shadow-lg py-1 z-50
-                            border border-white/20 transition-all duration-200">
-                  <!-- 只有管理員才看得到管理後台選項 -->
-                  <router-link v-if="isAdmin"
-                              to="/admin"
-                              class="flex items-center px-4 py-2 text-white hover:bg-white/10">
-                    <i class="fas fa-user-cog mr-2"></i>
-                    <span>管理後台</span>
-                  </router-link>
-                  <!-- 如果是管理員就顯示分隔線 -->
-                  <div v-if="isAdmin" class="border-t border-white/20 my-1"></div>
-                  <button @click="handleLogout"
-                          class="flex items-center w-full px-4 py-2 text-left text-red-400 
-                                 hover:bg-white/10 transition-colors">
-                    <i class="fas fa-sign-out-alt mr-2"></i>
-                    <span>登出</span>
-                  </button>
+                     class="absolute right-0 mt-2 w-56 rounded-xl shadow-lg py-2 z-50
+                            bg-black/90 backdrop-blur-md border border-white/20
+                            animate-fadeIn">
+                  <!-- 用戶資訊區塊 -->
+                  <div class="px-4 py-3 border-b border-white/10">
+                    <div class="flex items-start space-x-3">
+                      <img :src="getAvatarUrl" 
+                           alt="User Avatar"
+                           class="h-10 w-10 rounded-full ring-2 ring-purple-500/50"
+                           @error="handleAvatarError">
+                      <div class="flex flex-col">
+                        <span class="text-white font-medium">{{ userName }}</span>
+                        <span class="text-white/70 text-sm">使用者</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 選單項目 -->
+                  <div class="py-1">
+                    <!-- 只有管理員才看得到管理後台選項 -->
+                    <template v-if="isAdmin">
+                      <router-link 
+                        to="/admin"
+                        class="group flex items-center w-full px-4 py-2.5 hover:bg-white/10 transition-colors"
+                      >
+                        <i class="fas fa-user-cog w-5 text-purple-400"></i>
+                        <span class="ml-3 text-white">管理後台</span>
+                      </router-link>
+                      <div class="my-1 border-t border-white/10"></div>
+                    </template>
+
+                    <!-- 登出按鈕 -->
+                    <button 
+                      @click="handleLogout"
+                      class="logout-btn group flex items-center w-full px-4 py-2.5 hover:bg-white/10 transition-colors"
+                    >
+                      <i class="fas fa-sign-out-alt w-5 text-red-400"></i>
+                      <span class="ml-3 text-white">登出</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </template>

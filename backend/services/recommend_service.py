@@ -163,12 +163,13 @@ class RecommendService:
         """獲取餐廳資訊並添加情緒分數"""
         try:
             # 從 ratings_df 中獲取該餐廳的評分記錄
-            restaurant_rating = self.ratings_df[self.ratings_df['place_id'] == place_id]
+            restaurant_ratings = self.ratings_df[self.ratings_df['place_id'] == place_id]
             
-            # 獲取情緒分數，如果有多筆取第一筆
+            # 計算平均情緒分數
             composite_score = None
-            if not restaurant_rating.empty:
-                composite_score = float(restaurant_rating.iloc[0]['composite_score'])
+            if not restaurant_ratings.empty:
+                # 計算所有評分的平均值，並取到小數點第2位
+                composite_score = round(float(restaurant_ratings['composite_score'].mean()), 2)
             
             return {
                 'name': restaurant_info['name'],

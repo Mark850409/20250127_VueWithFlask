@@ -824,7 +824,7 @@ button:hover .fa-lightbulb {
 @media (max-width: 640px) {
   .flex.items-center.justify-end.mb-3.space-x-2 {
     justify-content: flex-start; /* 在小螢幕上左對齊 */
-    margin-bottom: 8px;
+    margin-bottom: 15px;
   }
   
   .px-4.py-2.rounded-full {
@@ -930,5 +930,5 @@ button[title="上傳圖片"] {
 }
 
 .grid[data-v-8d8faf29]{
-  min-height: 100px;
+  min-height: 100px !important;
 }

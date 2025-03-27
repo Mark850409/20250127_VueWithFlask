@@ -37,9 +37,10 @@
         <h2 class="text-lg font-semibold">次功能區塊排序</h2>
         <div class="text-sm text-gray-500">拖曳調整順序</div>
       </div>
+      
       <!-- 按類別分組顯示選單 -->
-      <div v-for="category in uniqueCategories" :key="category" class="space-y-3 bg-white rounded-lg p-6">
-        <h3 class="text-lg font-medium text-gray-700 px-2 mb-4">{{ category }}</h3>
+      <div v-for="category in uniqueCategories" :key="category" class="bg-white rounded-lg p-6">
+        <h3 class="text-lg font-medium text-gray-700 mb-4">{{ category }}</h3>
         <draggable 
           v-model="menusByCategory[category]"
           :component-data="{
@@ -52,23 +53,27 @@
           @start="drag=true" 
           @end="drag=false"
           @change="onDragChange"
-          class="space-y-3 px-2"
+          class="space-y-3"
           handle=".handle">
           <template #item="{ element: menu }">
-            <div>
+            <div class="w-full">
+              <!-- 主選單項目 -->
               <div class="flex items-center bg-gray-50 p-4 rounded-lg hover:shadow transition-shadow duration-200">
                 <div class="handle cursor-move mr-4 text-gray-400 hover:text-gray-600">
                   <i class="fas fa-grip-vertical"></i>
                 </div>
-                <!-- 主選單 -->
-                <div class="flex items-center space-x-3">
+                
+                <!-- 選單資訊 -->
+                <div class="flex-1 min-w-0 flex items-center space-x-3">
                   <i :class="['text-xl', menu.icon]"></i>
-                  <div>
-                    <h3 class="font-medium text-gray-900">{{ menu.name }}</h3>
-                    <p class="text-sm text-gray-500">{{ menu.path }}</p>
+                  <div class="min-w-0 flex-1">
+                    <h3 class="font-medium text-gray-900 truncate">{{ menu.name }}</h3>
+                    <p class="text-sm text-gray-500 truncate">{{ menu.path }}</p>
                   </div>
                 </div>
-                <div class="ml-auto flex items-center space-x-2">
+
+                <!-- 操作按鈕 -->
+                <div class="flex items-center space-x-2 flex-shrink-0">
                   <button @click="addSubmenu(menu)" 
                           class="p-1.5 text-gray-600 hover:text-green-600 rounded-full hover:bg-green-50">
                     <i class="fas fa-plus"></i>
@@ -89,15 +94,17 @@
                    class="mt-3 ml-12 space-y-3">
                 <div v-for="submenu in menu.children" 
                      :key="submenu.id" 
-                     class="flex justify-between items-center bg-white rounded-lg p-4">
-                  <div class="flex items-center space-x-3">
+                     class="flex items-center bg-white rounded-lg p-4 hover:shadow transition-shadow duration-200">
+                  <div class="flex-1 min-w-0 flex items-center space-x-3">
                     <i :class="['text-lg', submenu.icon]"></i>
-                    <div>
-                      <h4 class="font-medium text-gray-800">{{ submenu.name }}</h4>
-                      <p class="text-sm text-gray-500">{{ submenu.path }}</p>
+                    <div class="min-w-0 flex-1">
+                      <h4 class="font-medium text-gray-800 truncate">{{ submenu.name }}</h4>
+                      <p class="text-sm text-gray-500 truncate">{{ submenu.path }}</p>
                     </div>
                   </div>
-                  <div class="flex items-center space-x-2">
+                  
+                  <!-- 子選單操作按鈕 -->
+                  <div class="flex items-center space-x-2 flex-shrink-0">
                     <button @click="editMenu(submenu)" 
                             class="p-1.5 text-gray-600 hover:text-blue-600 rounded-full hover:bg-blue-50">
                       <i class="fas fa-edit"></i>
@@ -1029,5 +1036,47 @@ export default defineComponent({
 /* 當父元素hover時也顯示拖曳圖標 */
 div:hover .section-handle {
   opacity: 1;
+}
+
+/* 調整拖曳區域樣式 */
+.draggable-container {
+  min-height: 50px;
+  width: 100%;
+}
+
+/* 確保選單項目不會擠壓 */
+.menu-item {
+  width: 100%;
+  min-width: 0;
+}
+
+/* 防止文字溢出 */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 拖曳時的視覺效果 */
+.ghost {
+  opacity: 0.5;
+  background: #f3f4f6 !important;
+}
+
+.sortable-chosen {
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 確保子選單縮進正確 */
+.submenu-list {
+  margin-left: 3rem;
+  width: calc(100% - 3rem);
+}
+
+/* 確保內容不會溢出容器 */
+.menu-content {
+  min-width: 0;
+  flex: 1;
 }
 </style> 

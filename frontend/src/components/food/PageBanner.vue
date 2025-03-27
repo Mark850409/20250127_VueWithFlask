@@ -62,7 +62,7 @@
       <button v-for="(_, index) in bannerImages"
               :key="index"
               @click="updateCurrentIndex(index)"
-              class="w-3 h-3 rounded-full transition-all duration-300"
+              class="banner-control-btn w-3 h-3 rounded-full transition-all duration-300"
               :class="currentImageIndex === index ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/70'">
       </button>
     </div>

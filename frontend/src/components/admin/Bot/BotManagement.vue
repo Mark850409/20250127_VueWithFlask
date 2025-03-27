@@ -56,6 +56,12 @@
             <i :class="[item.icon || 'fas fa-robot', 'text-xl text-gray-600']"></i>
           </div>
         </template>
+        <!-- 自定義訊息內容列 -->
+        <template #message="{ item }">
+          <div :title="item.message" class="truncate">
+            {{ item.message }}
+          </div>
+        </template>
       </DataTable>
     </div>
 
@@ -375,8 +381,8 @@ export default {
     // 在 columns 中加入 icon 列
     const columns = [
       { key: 'icon', label: '圖示', width: '60px' },
-      { key: 'title', label: '快速問答名稱', width: '150px' },
-      { key: 'message', label: '訊息內容', width: '40%' },
+      { key: 'title', label: '快速問答名稱', width: '180px' },
+      { key: 'message', label: '訊息內容', width: '35%' },
       { key: 'sort_order', label: '排序', width: '80px' },
       { key: 'is_active', label: '狀態', width: '100px' },
       { key: 'is_default', label: '類型', width: '100px' }
@@ -615,71 +621,93 @@ export default {
   background: #555;
 }
 
-/* 控制訊息內容欄位寬度 */
-:deep(td[data-label="訊息內容"]) {
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 滑鼠懸停時顯示完整內容 */
-:deep(td[data-label="訊息內容"]:hover) {
-  white-space: normal;
-  position: relative;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  z-index: 10;
-}
-
-/* 確保表格容器可以水平滾動但不會超出視窗 */
+/* 調整表格容器樣式 */
 :deep(.table-container) {
   max-width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* 設定表格最小寬度，避免內容擠壓 */
+/* 調整表格基本樣式 */
 :deep(table) {
-  width: 100% !important;
-  table-layout: fixed;
-}
-
-/* 確保表格不會超出容器 */
-:deep(.table-wrapper) {
+  min-width: 1000px;
   width: 100%;
-  overflow-x: hidden;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
-/* 調整各欄位的基本寬度 */
+/* 調整表格標題和內容的對齊 */
 :deep(th),
 :deep(td) {
-  padding: 0.75rem;
-  white-space: nowrap;
+  padding: 12px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+/* 調整訊息內容欄位的顯示 */
+:deep(td[data-label="訊息內容"]) {
+  max-width: 0; /* 強制使用 text-overflow */
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* 確保操作欄位的按鈕不會換行 */
-:deep(.actions-cell) {
   white-space: nowrap;
 }
 
-/* 移除操作欄位的省略效果 */
-:deep(td[data-label="操作"]) {
-  white-space: nowrap;
-  overflow: visible;
+/* 調整圖示欄位的對齊 */
+:deep(td[data-label="圖示"]),
+:deep(th[data-label="圖示"]) {
+  text-align: center;
+  width: 60px;
 }
 
-/* 移除操作欄位的重複顯示 */
-:deep(th[data-label="操作"]:not(:last-child)),
-:deep(td[data-label="操作"]:not(:last-child)) {
-  display: none;
+/* 調整排序欄位的對齊 */
+:deep(td[data-label="排序"]),
+:deep(th[data-label="排序"]) {
+  text-align: center;
+  width: 80px;
 }
 
-/* 確保操作欄位內容完整顯示 */
-:deep(td[data-label="操作"]) {
-  white-space: nowrap;
-  overflow: visible;
-  text-overflow: clip;
+/* 調整狀態和類型欄位的對齊 */
+:deep(td[data-label="狀態"]),
+:deep(th[data-label="狀態"]),
+:deep(td[data-label="類型"]),
+:deep(th[data-label="類型"]) {
+  text-align: center;
+  width: 100px;
+}
+
+/* 確保標題列樣式 */
+:deep(thead) {
+  background-color: #f9fafb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+:deep(th) {
+  font-weight: 600;
+  color: #374151;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* 移除之前的懸停效果，改用 tooltip */
+:deep(td[data-label="訊息內容"]) {
+  position: relative;
+}
+
+:deep(td[data-label="訊息內容"]):hover::after {
+  content: attr(title);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  background: white;
+  padding: 8px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 20;
+  max-width: 400px;
+  word-break: break-word;
+  white-space: normal;
 }
 </style> 
