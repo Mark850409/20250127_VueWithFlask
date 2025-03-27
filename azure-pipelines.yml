@@ -141,6 +141,11 @@ stages:
           docker build \
             --build-arg VITE_API_URL=$(VITE_API_URL) \
             --build-arg VITE_BACKEND_URL=$(VITE_BACKEND_URL) \
+            --build-arg VITE_AUTOGEN_API_URL=$(VITE_AUTOGEN_API_URL) \
+            --build-arg VITE_JINA_API_URL=$(VITE_JINA_API_URL) \
+            --build-arg VITE_JINA_API_KEY=$(VITE_JINA_API_KEY) \
+            --build-arg VITE_MISTRAL_API_URL=$(VITE_MISTRAL_API_URL) \
+             --build-arg VITE_MISTRAL_API_KEY=$(VITE_MISTRAL_API_KEY) \
             -t $(REGISTRY_NAME)/frontend:$(Build.BuildId) \
             -t $(REGISTRY_NAME)/frontend:latest \
             -f dockerfiles/frontend/Dockerfile_vue .
