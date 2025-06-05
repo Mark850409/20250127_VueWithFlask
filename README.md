@@ -47,11 +47,11 @@ graph TD
     D --> D2[Redis<br/>緩存服務]
     D --> D3[File System<br/>文件存儲]
 
-    %% 樣式定義
-    classDef interface fill:#f9f,stroke:#333,stroke-width:2px
-    classDef frontend fill:#bbf,stroke:#333,stroke-width:2px
-    classDef backend fill:#bfb,stroke:#333,stroke-width:2px
-    classDef database fill:#fbb,stroke:#333,stroke-width:2px
+    %% 新樣式定義 - 更佳可讀性
+    classDef interface fill:#1f77b4,stroke:#fff,stroke-width:2px,color:#fff
+    classDef frontend fill:#ff7f0e,stroke:#fff,stroke-width:2px,color:#fff
+    classDef backend fill:#2ca02c,stroke:#fff,stroke-width:2px,color:#fff
+    classDef database fill:#d62728,stroke:#fff,stroke-width:2px,color:#fff
 
     class A,A1,A2,A3,A4,A5,A6 interface
     class B,B1,B2,B3,B4,B5 frontend
