@@ -1240,7 +1240,7 @@ export default {
       try {
         // 使用API端點
         const response = await fetch(
-          `${import.meta.env.VITE_AUTOGEN_API_URL}/knowledge?question=${encodeURIComponent(message)}`,
+          `${import.meta.env.VITE_AUTOGEN_API_URL}/n8n?query=${encodeURIComponent(message)}`,
           {
             method: 'GET',
             headers: {
