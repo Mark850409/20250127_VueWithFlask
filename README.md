@@ -352,11 +352,12 @@ docker build ^
   --build-arg VITE_BACKEND_URL=https://backend-recommend-app.azurewebsites.net ^
   --build-arg VITE_AUTOGEN_API_URL=https://mynocodbapi.zeabur.app ^
   --build-arg VITE_JINA_API_URL=https://deepsearch.jina.ai/v1/chat/completions ^
-  --build-arg VITE_JINA_API_KEY= VITE_JINA_API_KEY ^
+  --build-arg VITE_JINA_API_KEY=%VITE_JINA_API_KEY% ^
   --build-arg VITE_MISTRAL_API_URL=https://api.mistral.ai/v1/chat/completions ^
-  --build-arg VITE_MISTRAL_API_KEY=VITE_MISTRAL_API_KEY ^
+  --build-arg VITE_MISTRAL_API_KEY=%VITE_MISTRAL_API_KEY% ^
   -t frontend:latest ^
   -f dockerfiles/frontend/Dockerfile_vue .
+
 
 docker build -t backend:latest -f dockerfiles/backend/Dockerfile_python .
 

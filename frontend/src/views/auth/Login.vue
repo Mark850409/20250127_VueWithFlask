@@ -527,13 +527,14 @@ export default {
             })
 
             // 判斷是否為管理員帳號
-            if (userData.username === 'MarkHSU') {
-              localStorage.setItem('isAdmin', 'true')
-              router.push('/admin')
-            } else {
-              localStorage.setItem('isAdmin', 'false')
-              router.push('/')
-            }
+            // if (userData.username === 'MarkHSU') {
+            //   localStorage.setItem('isAdmin', 'true')
+            //   router.push('/admin')
+            // } else {
+            //   localStorage.setItem('isAdmin', 'false')
+            //   router.push('/')
+            // }
+            router.push('/admin')
           }
         }
       } catch (error) {
@@ -580,13 +581,15 @@ export default {
           })
 
           // 判斷是否為管理員帳號
-          if (userData.username === '徐小彥') {
-              localStorage.setItem('isAdmin', 'true')
-              router.push('/admin')
-            } else {
-              localStorage.setItem('isAdmin', 'false')
-              router.push('/')
-          }
+          // if (userData.username === '徐小彥') {
+          //     localStorage.setItem('isAdmin', 'true')
+          //     router.push('/admin')
+          //   } else {
+          //     localStorage.setItem('isAdmin', 'false')
+          //     router.push('/')
+          // }
+          localStorage.setItem('isAdmin', 'true')
+          router.push('/admin')
           
         } else {
           throw new Error('登入回應格式錯誤')
@@ -645,13 +648,15 @@ export default {
           })
           
           // 判斷是否為管理員帳號
-          if (userData.username === '徐小彥') {
-            localStorage.setItem('isAdmin', 'true')
-            router.push('/admin')
-          } else {
-            localStorage.setItem('isAdmin', 'false')
-            router.push('/')
-          }
+          // if (userData.username === '徐小彥') {
+          //   localStorage.setItem('isAdmin', 'true')
+          //   router.push('/admin')
+          // } else {
+          //   localStorage.setItem('isAdmin', 'false')
+          //   router.push('/')
+          // }
+          localStorage.setItem('isAdmin', 'true')
+          router.push('/admin')
         } else {
           throw new Error('登入回應格式錯誤')
         }
@@ -724,16 +729,17 @@ export default {
               await authStore.setAuth(response.data)
               
               // 判斷是否為管理員帳號
-              if (response.data.user.username === '徐小彥') {
-                localStorage.setItem('isAdmin', 'true')
-                console.log('管理員登入，準備跳轉到後台')
-                router.push('/admin')
-              } else {
-                localStorage.setItem('isAdmin', 'false')
-                console.log('一般用戶登入，準備跳轉到首頁')
-                router.push('/')
-              }
-              
+              // if (response.data.user.username === '徐小彥') {
+              //   localStorage.setItem('isAdmin', 'true')
+              //   console.log('管理員登入，準備跳轉到後台')
+              //   router.push('/admin')
+              // } else {
+              //   localStorage.setItem('isAdmin', 'false')
+              //   console.log('一般用戶登入，準備跳轉到首頁')
+              //   router.push('/')
+              // }
+              localStorage.setItem('isAdmin', 'true')
+              router.push('/admin')
               // 顯示登入成功訊息
               await Swal.fire({
                 icon: 'success',

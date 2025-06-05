@@ -350,6 +350,11 @@ export default {
 
     // 開始計時器
     const startExpirationTimer = () => {
+      // 防止重複啟動
+      if (timerInterval.value || tokenCheckInterval.value) {
+        console.log('Timer 已存在，不重複啟動')
+        return
+      }
       // 從 localStorage 獲取登入時間戳
       const loginTime = localStorage.getItem('loginTime')
       if (!loginTime) {
@@ -374,10 +379,6 @@ export default {
         handleLogout()
         return
       }
-      
-      // 清除現有的計時器
-      if (timerInterval.value) clearInterval(timerInterval.value)
-      if (tokenCheckInterval.value) clearInterval(tokenCheckInterval.value)
       
       // 設置初始剩餘時間
       remainingTime.value = remainingSeconds
