@@ -17,7 +17,7 @@ COPY ./backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 首先複製 Firebase 配置文件
-COPY ./backend/config/firebase-adminsdk.json /usr/src/app/config/
+COPY ./backend/firebase-adminsdk.json /usr/src/app/config/
 
 # 然後複製其餘的源代碼
 COPY ./backend .
