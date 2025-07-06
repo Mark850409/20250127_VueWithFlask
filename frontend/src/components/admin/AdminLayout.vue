@@ -351,10 +351,14 @@ export default {
 
     // 開始計時器
     const startExpirationTimer = () => {
-      // 防止重複啟動
-      if (timerInterval.value || tokenCheckInterval.value) {
-        console.log('Timer 已存在，不重複啟動')
-        return
+      // 防止重複啟動，若已存在先清除再啟動
+      if (timerInterval.value) {
+        clearInterval(timerInterval.value)
+        timerInterval.value = null
+      }
+      if (tokenCheckInterval.value) {
+        clearInterval(tokenCheckInterval.value)
+        tokenCheckInterval.value = null
       }
       // 從 localStorage 獲取登入時間戳
       const loginTime = localStorage.getItem('loginTime')
@@ -362,28 +366,23 @@ export default {
         // 如果沒有登入時間，記錄當前時間
         localStorage.setItem('loginTime', Date.now().toString())
       }
-      
       // 計算剩餘秒數
       const currentTime = Date.now()
       const loginTimeStamp = parseInt(localStorage.getItem('loginTime'))
       const elapsedSeconds = Math.floor((currentTime - loginTimeStamp) / 1000)
       const totalSeconds = Math.floor(import.meta.env.VITE_JWT_EXPIRES_IN)  // 一天的秒數
       const remainingSeconds = Math.max(0, totalSeconds - elapsedSeconds)
-      
       console.log('登入時間:', new Date(loginTimeStamp).toLocaleString())
       console.log('當前時間:', new Date(currentTime).toLocaleString())
       console.log('已經過時間:', elapsedSeconds, '秒')
       console.log('剩餘時間:', remainingSeconds, '秒')
-      
       // 如果已經過期，執行登出
       if (remainingSeconds <= 0) {
         handleLogout()
         return
       }
-      
       // 設置初始剩餘時間
       remainingTime.value = remainingSeconds
-      
       // 設置倒數計時器
       timerInterval.value = setInterval(() => {
         remainingTime.value--
@@ -392,8 +391,13 @@ export default {
           handleLogout()
         }
       }, 1000)
-
       // 設置 token 檢查計時器
+      let checkInterval = parseInt(import.meta.env.VITE_CHECK_TOKEN_INTERVAL)
+      if (isNaN(checkInterval) || checkInterval < 1000) {
+        checkInterval = 3600000 // 預設 1 小時
+        console.warn('VITE_CHECK_TOKEN_INTERVAL 設定過小，自動調整為 1 小時 (3600000 ms)')
+      }
+      console.log('Token 檢查間隔(ms):', checkInterval)
       tokenCheckInterval.value = setInterval(async () => {
         try {
           console.log('執行 token 檢查...')
@@ -409,7 +413,8 @@ export default {
             console.error('Token 驗證其他錯誤:', error)
           }
         }
-      }, parseInt(import.meta.env.VITE_CHECK_TOKEN_INTERVAL)) // 預設 1 小時
+      }, checkInterval)
+      console.log('tokenCheckInterval 啟動，id:', tokenCheckInterval.value)
     }
 
     // 格式化時間
