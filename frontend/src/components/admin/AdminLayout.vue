@@ -270,6 +270,7 @@ export default {
     const bannerData = ref({})
     const isTokenVerified = ref(false)
     const isLoading = ref(false)
+    const isCheckingAuth = ref(false)
     
     // 動態載入 CSS
     const loadThemeCSS = async (themeName) => {
@@ -522,10 +523,11 @@ export default {
 
     // 檢查用戶是否已登入
     const checkAuth = async () => {
-      // 如果已經驗證過，直接返回 true
-      if (isTokenVerified.value) {
+      // 如果已經驗證過，或正在驗證，直接返回 true
+      if (isTokenVerified.value || isCheckingAuth.value) {
         return true
       }
+      isCheckingAuth.value = true
 
       const token = localStorage.getItem('token')
       const user = localStorage.getItem('user')
@@ -539,6 +541,7 @@ export default {
           allowOutsideClick: false
         })
         router.push('/login')
+        isCheckingAuth.value = false
         return false
       }
 
@@ -548,12 +551,15 @@ export default {
           startExpirationTimer() // 驗證成功後開始計時
           await syncTheme() // 同步主題設置
           isTokenVerified.value = true  // 標記已驗證
+          isCheckingAuth.value = false
           return true
         }
+        isCheckingAuth.value = false
         return false
       } catch (error) {
         console.error('Token 驗證失敗:', error)
         await handleLogout()
+        isCheckingAuth.value = false
         return false
       }
     }
